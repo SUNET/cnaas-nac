@@ -4,7 +4,6 @@ from contextlib import contextmanager
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from pymongo import MongoClient
 
 
 def get_dbdata(config='/etc/cnaas-nms/db_config.yml'):

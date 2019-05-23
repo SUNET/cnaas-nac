@@ -2,7 +2,7 @@ FROM debian:buster
 
 # Install package dependencies
 RUN apt update
-RUN apt install -y python3 python3-pip git python3-venv
+RUN apt install -y python3 python3-pip git python3-venv python3-yaml
 
 # Create directories
 RUN mkdir /cnaas
