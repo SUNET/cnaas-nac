@@ -24,7 +24,10 @@ def upgrade():
     sa.Column('password', sa.Unicode(length=128), nullable=False),
     sa.Column('description', sa.Unicode(length=255), nullable=True),
     sa.Column('attributes', sa.Unicode(length=1024), nullable=True),
-    sa.Column('active', sa.Boolean, nullable=False))
+    sa.Column('active', sa.Boolean, nullable=False),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('username')
+    )
     # ### end Alembic commands ###
 
 
