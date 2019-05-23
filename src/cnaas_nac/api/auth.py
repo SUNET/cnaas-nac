@@ -51,7 +51,8 @@ class AuthApi(Resource):
             new_user = User()
             new_user.username = json_data['username']
             new_user.password = json_data['password']
-            new_user.attributes = json_data['attributes']
+            if 'attributes' in json_data:
+                new_user.attributes = json_data['attributes']
             if 'description' in json_data:
                 new_user.description = json_data['description']
             if 'attributes' in json_data:
