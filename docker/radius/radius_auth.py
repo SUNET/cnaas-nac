@@ -19,7 +19,7 @@ def get_user(argv):
     except Exception:
         reject()
     if response.status_code == 200:
-        if 'attributes' in json['data']:
+        if 'attributes' in json['data'] and json['data']['attributes'] != None:
             for _ in json['data']['attributes'].split(','):
                 print(_)
         accept()
