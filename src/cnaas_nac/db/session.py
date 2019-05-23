@@ -6,14 +6,13 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 
-def get_dbdata(config='/etc/cnaas-nms/db_config.yml'):
+def get_dbdata(config='/etc/cnaas-nac/db_config.yml'):
     with open(config, 'r') as db_file:
         return yaml.safe_load(db_file)
 
 
 def get_sqlalchemy_conn_str(**kwargs) -> str:
     db_data = get_dbdata(**kwargs)
-    db_data['database'] = 'nac'
     if 'CNAAS_DB_HOSTNAME' in os.environ:
         db_data['hostname'] = os.environ['CNAAS_DB_HOSTNAME']
     if 'CNAAS_DB_PORT' in os.environ:
