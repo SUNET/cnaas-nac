@@ -24,7 +24,7 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from cnaas_nac.db.user import User
+from cnaas_nac.db.user import User, Reply
 
 Base = declarative_base()
 target_metadata = Base.metadata
