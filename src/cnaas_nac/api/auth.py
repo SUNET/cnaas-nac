@@ -2,61 +2,68 @@ from cnaas_nac.api.generic import build_filter, empty_result
 from cnaas_nac.db.session import sqla_session
 from cnaas_nac.db.user import User
 
+from flask import request
 from flask_restful import Resource
 from flask import request
 
 
 class AuthApi(Resource):
-    def _validate_args(sef, args):
-        if 'username' not in args:
-            return -1
-        if 'password' not in args:
-            return -1
-        if args['username'] is '':
-            return -1
-        if args['password'] is '':
-            return -1
-        return 0
-
-    def _validate_credential(self, credential, args):
-        if not credential:
-            return empty_result(status='error', data='User not found'), 404
-        if credential.active == False:
-            return empty_result(status='error', data='Account disabled'), 404
-        if credential.password != args['password']:
-            return empty_result(status='error', data='Invalid password'), 404
-        response = {'attributes': credential.attributes}
-        return empty_result(status='success', data=response)
-
+    def error(self, errstr):
+        return empty_result(status='error', data=errstr), 404
+    
     def get(self):
-        results = []
-        args = request.args
-        if self._validate_args(args) is -1:
-            return empty_result(status='error', data='Malformed input'), 404
-        with sqla_session() as session:
-            username: User = session.query(User).filter(User.username ==
-                                                        args['username']).one_or_none()
-            return self._validate_credential(username, args)
-        return empty_result(status='error', data='Authentication denied'), 404
+        user = User.user_get()
+        for _ in user:
+            reply = User.reply_get(_['username'])
+            _['reply'] = reply        
+        reply = User.reply_get('test0')        
+        result = {'users': user}
+        return empty_result(status='success', data=result)
 
     def post(self):
+        errors = []
         json_data = request.get_json()
-        if self._validate_args(json_data) is -1:
-            return empty_result(status='error', data='Malformed input'), 404
-        with sqla_session() as session:
-            instance: User = session.query(User).filter(User.username ==
-                                                        json_data['username']).one_or_none()
-            if instance != None:
-                return empty_result(status='error', data='User already exists')
-            new_user = User()
-            new_user.username = json_data['username']
-            new_user.password = json_data['password']
-            if 'attributes' in json_data:
-                new_user.attributes = json_data['attributes']
-            if 'description' in json_data:
-                new_user.description = json_data['description']
-            if 'attributes' in json_data:
-                new_user.attributes = json_data['attributes']
-            new_user.active = False
-            session.add(new_user)
+        if 'username' not in json_data:
+            return self.error('Username not found')
+        if 'password' not in json_data:
+            return self.error('Password not found')
+        if 'vlan' in json_data:
+            try:
+                vlan = int(json_data['vlan'])
+            except Exception:
+                return self.error('Invalid VLAN')
+        result = User.user_add(json_data['username'], json_data['password'])
+        if result != '':
+            errors.append(result)
+        if json_data['vlan'] != 0:
+            result = User.reply_add(json_data['username'], json_data['vlan'])
+        if result != '':
+            errors.append(result)
+        if errors != []:
+            return self.error(errors)
+        return empty_result(status='success')
+
+class AuthApiByName(Resource):
+    def error(self, errstr):
+        return empty_result(status='error', data=errstr), 404
+    
+    def get(self, username):
+        user = User.user_get(username)
+        for _ in user:
+            reply = User.reply_get(_['username'])
+            _['reply'] = reply        
+        reply = User.reply_get('test0')        
+        result = {'users': user}
+        return empty_result(status='success', data=result)
+    
+    def delete(self, username):
+        errors = []
+        result = User.user_del(username)
+        if result != '':
+            errors.append(result)
+        result = User.reply_del(username)
+        if result != '':
+            errors.append(result)
+        if errors != []:
+            return self.error(errors)
         return empty_result(status='success')
