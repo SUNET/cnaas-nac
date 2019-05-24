@@ -16,6 +16,7 @@ COPY radius_auth.py /usr/local/bin/
 RUN cp /root/config/clients.conf .
 RUN cp /root/config/mods-available/* mods-available/
 RUN cp /root/config/mods-config/files/authorize mods-config/files/authorize
+RUN ln -s mods-available/sql mods-enabled/sql
 
 # Run freeradius with debug enabled
 CMD /usr/sbin/freeradius -X -f
