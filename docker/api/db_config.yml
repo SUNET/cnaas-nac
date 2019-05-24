@@ -1,5 +1,5 @@
 type: postgresql
-hostname: localhost
+hostname: docker_nac_postgres_1
 port: 5432
 username: cnaas
 password: cnaas

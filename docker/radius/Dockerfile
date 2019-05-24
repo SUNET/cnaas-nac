@@ -4,13 +4,14 @@ ENV DEBIAN_FRONTEND noninteractive
 
 # Install freeradius
 RUN apt update
-RUN apt install -y freeradius python3 python3-requests
+RUN apt install -y freeradius python3 python3-requests postgresql netcat
 
 WORKDIR /etc/freeradius/3.0/
 
 # Copy to container
 COPY config/ /root/config/
-COPY radius_auth.py /usr/local/bin/
+COPY schema.sql /tmp/
+COPY entrypoint.sh /usr/local/bin/
 
 # Copy individual files
 RUN cp /root/config/clients.conf .
@@ -19,4 +20,4 @@ RUN cp /root/config/mods-config/files/authorize mods-config/files/authorize
 RUN ln -s mods-available/sql mods-enabled/sql
 
 # Run freeradius with debug enabled
-CMD /usr/sbin/freeradius -X -f
+CMD sh /usr/local/bin/entrypoint.sh
