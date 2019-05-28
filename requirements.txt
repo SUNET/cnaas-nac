@@ -10,4 +10,3 @@ psycopg2-binary==2.7.7
 SQLAlchemy==1.3.0b2
 sqlalchemy-stubs==0.1
 SQLAlchemy-Utils==0.33.11
-Sphinx==2.0.1
