@@ -4,17 +4,14 @@ services:
     build: ./api/
     ports:
       - 5001:5001
+    networks:
+      - cnaas
   nac_radius:
     build: ./radius
     ports:
       - 1812:1812/udp
       - 1813:1813/udp
-  nac_postgres:
-    image: postgres:latest
-    ports:
-      - 5432:5432
-    environment:
-      - POSTGRES_USER=cnaas
-      - POSTGRES_PASSWD=cnaas
-      - POSTGRES_DB=nac
-    
+    networks:
+      - cnaas
+networks:
+  cnaas:
