@@ -3,7 +3,7 @@ services:
   nac_api:
     build: ./api/
     ports:
-      - 5001:5001
+      - 1443:443
     networks:
       - cnaas
   nac_radius:
