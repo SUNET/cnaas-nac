@@ -10,10 +10,6 @@ while ! nc -z cnaas_postgres 5432; do
 done
 
 createdb -h cnaas_postgres -U cnaas nac
-if [ $? -ne 0 ]; then
-    echo "Error: Failed to create database"
-    exit 1
-fi
 
 psql -h cnaas_postgres -U cnaas nac -f /tmp/schema.sql
 if [ $? -ne 0 ]; then

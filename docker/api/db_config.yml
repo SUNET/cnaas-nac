@@ -1,6 +1,0 @@
-type: postgresql
-hostname: cnaas_postgres
-port: 5432
-username: cnaas
-password: cnaas
-database: nac

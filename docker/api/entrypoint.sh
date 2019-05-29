@@ -9,4 +9,3 @@ while ! nc -z cnaas_postgres 5432; do
     fi
 done
 
-PYTHONPATH=`pwd` python3 cnaas_nac/run.py

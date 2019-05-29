@@ -2,31 +2,35 @@ FROM debian:buster
 
 # Install package dependencies
 RUN apt update
-RUN apt install -y python3 python3-pip git python3-venv python3-yaml netcat
+RUN apt install -y python3 python3-pip git python3-venv python3-yaml netcat \
+	nginx supervisor
+RUN pip3 install uwsgi
 
 # Create directories
-RUN mkdir /cnaas
 RUN mkdir -p /opt/cnaas
 RUN mkdir /etc/cnaas-nac
 
 # Start venv
 RUN python3 -m venv /opt/cnaas/venv
-
 WORKDIR /opt/cnaas/venv/
-
 RUN sh ./bin/activate
 
 # Fetch the code
 RUN git clone https://github.com/SUNET/cnaas-nac.git
-
 WORKDIR /opt/cnaas/venv/cnaas-nac/
-
 RUN python3 -m pip install -r requirements.txt
-COPY db_config.yml /etc/cnaas-nac/db_config.yml
-COPY entrypoint.sh /usr/local/bin/
 
-WORKDIR /opt/cnaas/venv/cnaas-nac/src/
+COPY config/db_config.yml /etc/cnaas-nac/db_config.yml
+COPY config/uwsgi.ini /opt/cnaas/venv/cnaas-nac/
+COPY config/supervisord_app.conf /etc/supervisor/conf.d
+COPY config/nginx_app.conf /etc/nginx/sites-available/
+COPY cert/* /etc/nginx/conf.d/
 
-EXPOSE 5001
+# Give nginx some special treatment
+RUN unlink /etc/nginx/sites-enabled/default
+RUN ln -s /etc/nginx/sites-available/nginx_app.conf /etc/nginx/sites-enabled/default
 
-CMD sh /usr/local/bin/entrypoint.sh
+# Expose 1443
+EXPOSE 1443
+
+ENTRYPOINT "supervisord"
