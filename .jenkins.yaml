@@ -1,0 +1,33 @@
+#
+# Jenkins pipeline for CNaaS
+#
+
+disabled: false
+downstream:
+  - cnaas-radius
+  - cnaas-authapi
+
+git:
+  branch: master
+  extensions:
+    shallow_clone: true
+
+script:
+  - "python3.7 -m venv venv"
+  - ". venv/bin/activate"
+  - "pip install --upgrade setuptools pip wheel mypy"
+  - "pip install --index-url https://pypi.sunet.se -r requirements.txt"
+  - "nosetests --with-xunit"
+
+extra_jobs:
+  - name: cnaas-authapi
+    builders:
+      - docker
+    docker_name: cnaas/authapi
+    docker_context_dir: docker/api
+
+  - name: cnaas-radius
+    builders:
+      - docker
+    docker_name: cnaas/radius
+    docker_context_dir: docker/radius
