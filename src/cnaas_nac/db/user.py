@@ -105,7 +105,7 @@ class User(Base):
             new_user.username = username
             new_user.attribute = 'Cleartext-Password'
             new_user.value = password
-            new_user.op = '='
+            new_user.op = ':='
             session.add(new_user)
         return ''
     @classmethod

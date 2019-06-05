@@ -31,7 +31,6 @@ class WebApi(Resource):
     def index(cls):
         users = User.user_get()
         form = UserForm()
-        errors = []
 
         for _ in users:
             reply = User.reply_get(_['username'])
