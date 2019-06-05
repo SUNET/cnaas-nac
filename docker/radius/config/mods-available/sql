@@ -125,7 +125,7 @@ sql {
 	groupreply_table = "radgroupreply"
 
 	# Table to keep group info
-	usergroup_table = "usergroup"
+	usergroup_table = "radusergroup"
 
 	# If set to 'yes' (default) we read the group tables unless Fall-Through = no in the reply table.
 	# If set to 'no' we do not read the group tables unless Fall-Through = yes in the reply table.
