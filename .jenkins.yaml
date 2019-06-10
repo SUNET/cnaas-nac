@@ -3,9 +3,9 @@
 #
 
 disabled: false
-downstream:
-  - cnaas-radius
-  - cnaas-authapi
+# downstream:
+#   - cnaas-radius
+#   - cnaas-authapi
 
 git:
   branch: master
