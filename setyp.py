@@ -17,7 +17,7 @@ setuptools.setup(
     author='SUNET',
     author_email='',
     version=version,
-    description='Campus Network as-a-Service - Network Management System (Campus network automation software)',
+    description='Campus Network as-a-Service - Network Admission Control',
     long_description=README,
     long_description_content_type='text/markdown',
     url='https://github.com/sunet/cnaas-nac',
