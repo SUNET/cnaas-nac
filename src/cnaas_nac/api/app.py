@@ -3,7 +3,8 @@ from flask_restful import Api
 from cnaas_nac.api.auth import AuthApi, AuthApiByName
 from cnaas_nac.api.webapi import WebApi
 
-API_VERSION = 'v1.0'
+from cnaas_nac.version import __api_version__
+
 
 app = Flask(__name__)
 api = Api(app)
@@ -13,6 +14,7 @@ app.config['SECRET_KEY'] = 'kakakekekeff'
 @app.route('/', methods=['GET', 'POST'])
 def index():
     return WebApi.index()
-    
-api.add_resource(AuthApi, '/api/v1.0/auth')
-api.add_resource(AuthApiByName, '/api/v1.0/auth/<string:username>')
+
+
+api.add_resource(AuthApi, f'/api/{ __api_version__ }/auth')
+api.add_resource(AuthApiByName, f'/api/{ __api_version__ }/auth/<string:username>')
