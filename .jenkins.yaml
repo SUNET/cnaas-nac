@@ -19,8 +19,6 @@ script:
   - "pip install --index-url https://pypi.sunet.se -r requirements.txt"
   - "nosetests --with-xunit"
 
-docker_tags: ['v0.1.0']
-
 extra_jobs:
   - name: cnaas-authapi
     builders:
