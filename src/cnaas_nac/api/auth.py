@@ -23,6 +23,9 @@ class AuthApi(Resource):
     def post(self):
         errors = []
         json_data = request.get_json()
+
+        print(json_data)
+
         if 'username' not in json_data:
             return self.error('Username not found')
         if 'password' not in json_data:

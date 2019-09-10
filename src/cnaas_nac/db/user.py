@@ -108,6 +108,7 @@ class User(Base):
             new_user.op = ':='
             session.add(new_user)
         return ''
+
     @classmethod
     def reply_add(cls, username, vlan):
         if cls.reply_get(username) != []:
@@ -144,7 +145,6 @@ class User(Base):
                 session.delete(_)
                 session.commit()
         return ''
-
 
     @classmethod
     def user_del(cls, username):
