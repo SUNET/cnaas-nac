@@ -4,14 +4,14 @@ rest {
 		check_cert_cn = no
 	}
 
-	connect_uri = "https://cnaas_api:1443/api/v1.0/auth"
+	connect_uri = "https://nac_api:1443/api/v1.0/auth"
 
 	authorize {
 		uri = "${..connect_uri}"
 		method = 'post'
 		tls = ${..tls}
 		body = json
-		data = "Username: %{User-Name}"
+		data = '{"username": "%{User-Name}"}'
 	}
 
 	authenticate {
