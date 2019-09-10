@@ -20,7 +20,11 @@ RUN cp /root/config/sites-available/* sites-available/
 RUN cp /root/config/mods-config/files/authorize mods-config/files/authorize
 
 # Make symlinks
-RUN ln -s mods-available/rest mods-enabled/rest
+WORKDIR /etc/freeradius/3.0/mods-enabled/
+RUN ln -s ../mods-available/rest rest
+
+WORKDIR /etc/freeradius/3.0/
+RUN chown freerad:freerad mods-available/*
 RUN chown freerad:freerad mods-enabled/*
 
 # Run freeradius with debug enabled
