@@ -14,6 +14,7 @@ COPY schema.sql /tmp/
 COPY entrypoint.sh /usr/local/bin/
 
 # Copy individual files
+RUN cp /root/config/dictionary .
 RUN cp /root/config/clients.conf .
 RUN cp /root/config/mods-available/* mods-available/
 RUN cp /root/config/sites-available/* sites-available/
