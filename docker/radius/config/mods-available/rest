@@ -11,7 +11,7 @@ rest {
 		method = 'post'
 		tls = ${..tls}
 		body = json
-		data = '{"username": "%{User-Name}"}'
+		data = '{"username": "%{User-Name}", "EAP-Message": %{EAP-Message}}'
 	}
 
 	pool {

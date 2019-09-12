@@ -22,6 +22,12 @@ class AuthApi(Resource):
         errors = []
         json_data = request.get_json()
 
+        # We should only handle clients using MAB. If the user authenticates
+        # with 802.1X we will get an EAP message, just return a 202 and don't
+        # create that user in the database.
+        if 'EAP-Message' in json_data:
+            return empty_result(status='success')
+
         users = User.user_get(json_data['username'])
         for _ in users:
             if _ == json_data['username']:
