@@ -1,10 +1,8 @@
-from cnaas_nac.api.generic import build_filter, empty_result
-from cnaas_nac.db.session import sqla_session
+from cnaas_nac.api.generic import empty_result
 from cnaas_nac.db.user import User
 
 from flask import request
 from flask_restful import Resource
-from flask import request
 
 
 class AuthApi(Resource):
@@ -24,7 +22,10 @@ class AuthApi(Resource):
         errors = []
         json_data = request.get_json()
 
-        print(json_data)
+        users = User.user_get(json_data['username'])
+        for _ in users:
+            if _ == json_data['username']:
+                return empty_result(status='success')
 
         if 'username' not in json_data:
             return self.error('Username not found')
@@ -40,7 +41,7 @@ class AuthApi(Resource):
         result = User.user_add(json_data['username'], json_data['password'])
         if result != '':
             errors.append(result)
-        if json_data['vlan'] != 0 and json_data['vlan'] != 100:
+        if json_data['vlan'] != 0:
             result = User.reply_add(json_data['username'], json_data['vlan'])
         if result != '':
             errors.append(result)
