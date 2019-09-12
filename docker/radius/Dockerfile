@@ -22,10 +22,9 @@ RUN cp /root/config/mods-config/files/authorize mods-config/files/authorize
 # Make symlinks
 WORKDIR /etc/freeradius/3.0/mods-enabled/
 RUN ln -s ../mods-available/rest rest
+RUN ln -s ../mods-available/sql sql
 
 WORKDIR /etc/freeradius/3.0/
-RUN chown freerad:freerad mods-available/*
-RUN chown freerad:freerad mods-enabled/*
 
 # Run freeradius with debug enabled
 CMD sh /usr/local/bin/entrypoint.sh
