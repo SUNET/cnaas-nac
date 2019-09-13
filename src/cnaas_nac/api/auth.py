@@ -68,6 +68,19 @@ class AuthApiByName(Resource):
         result = {'users': user}
         return empty_result(status='success', data=result)
 
+    def put(self, username):
+        json_data = request.get_json()
+        result = ''
+        if 'enabled' not in json_data:
+            return self.error('Missing argument enabled in JSON string')
+        if json_data['enabled'] is True:
+            result = User.user_enable(username)
+        else:
+            result = User.user_disable(username)
+        if result != '':
+            return self.error(result)
+        return empty_result(status='success')
+
     def delete(self, username):
         errors = []
         result = User.user_del(username)

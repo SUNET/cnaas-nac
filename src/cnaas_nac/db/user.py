@@ -11,6 +11,7 @@ from cnaas_nac.db.session import sqla_session
 
 Base = declarative_base()
 
+
 class Reply(Base):
     __tablename__ = 'radreply'
     __table_args__ = (
@@ -107,6 +108,30 @@ class User(Base):
             new_user.value = password
             new_user.op = ':='
             session.add(new_user)
+        return ''
+
+    @classmethod
+    def user_enable(cls, username):
+        with sqla_session() as session:
+            user: User = session.query(User).filter(User.username ==
+                                              username).one_or_none()
+            if not user:
+                return 'Username not found'
+            user.attribute = 'Cleartext-Password'
+            user.op = ':='
+            user.value = user.username
+        return ''
+
+    @classmethod
+    def user_disable(cls, username):
+        with sqla_session() as session:
+            user: User = session.query(User).filter(User.username ==
+                                                    username).one_or_none()
+            if not user:
+                return 'Username not found'
+            user.attribute = 'Auth-Type'
+            user.op = ':='
+            user.value = 'Reject'
         return ''
 
     @classmethod
