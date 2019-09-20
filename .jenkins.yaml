@@ -25,12 +25,9 @@ extra_jobs:
       - docker
     docker_name: cnaas/authapi
     docker_context_dir: docker/api
-    managed_scripts:
-      - docker_tag.sh
+
   - name: cnaas-radius
     builders:
       - docker
     docker_name: cnaas/radius
     docker_context_dir: docker/radius
-    managed_scripts:
-      - docker_tag.sh
