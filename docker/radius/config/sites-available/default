@@ -54,7 +54,10 @@ listen {
 }
 
 authorize {
-	rest
+	if (!&EAP-Message) {
+          rest
+        }
+
 	filter_username
 #	filter_password
 
