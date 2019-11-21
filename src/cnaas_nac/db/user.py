@@ -12,6 +12,49 @@ from cnaas_nac.db.session import sqla_session
 Base = declarative_base()
 
 
+class NasPort(Base):
+    __tablename__ = 'nas_port'
+    __table_args__ = (
+        None,
+        UniqueConstraint('id'),
+    )
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    username = Column(Unicode(64), nullable=False)
+    nas_port = Column(Unicode(64), nullable=False)
+
+    def as_dict(self):
+        """Return JSON serializable dict."""
+        d = {}
+        for col in self.__table__.columns:
+            value = getattr(self, col.name)
+            if issubclass(value.__class__, enum.Enum):
+                value = value.value
+            elif issubclass(value.__class__, Base):
+                continue
+            elif issubclass(value.__class__, ipaddress.IPv4Address):
+                value = str(value)
+            elif issubclass(value.__class__, datetime.datetime):
+                value = str(value)
+            d[col.name] = value
+        return d
+
+    @classmethod
+    def user_get(cls, username=''):
+        result = []
+        with sqla_session() as session:
+            result = []
+            query = session.query(NasPort)
+            for _ in query:
+                user = _.as_dict()
+                user_dict = dict()
+                user_dict['id'] = user['id']
+                user_dict['nas_port'] = user['nas_port']
+                if username != '' and username != user['nas_port']:
+                    continue
+                result.append(user_dict)
+        return result
+
+
 class Reply(Base):
     __tablename__ = 'radreply'
     __table_args__ = (
@@ -74,7 +117,7 @@ class User(Base):
         result = []
         with sqla_session() as session:
             result = []
-            query = session.query(User)
+            query = session.query(User).order_by('username')
             for _ in query:
                 user = _.as_dict()
                 user_dict = dict()
@@ -117,9 +160,7 @@ class User(Base):
                                               username).one_or_none()
             if not user:
                 return 'Username not found'
-            user.attribute = 'Cleartext-Password'
             user.op = ':='
-            user.value = user.username
         return ''
 
     @classmethod
@@ -130,9 +171,20 @@ class User(Base):
             if not user:
                 return 'Username not found'
             user.attribute = 'Auth-Type'
-            user.op = ':='
-            user.value = 'Reject'
+            user.op = ''
         return ''
+
+    @classmethod
+    def user_is_enabled(cls, username):
+        enabled = False
+        with sqla_session() as session:
+            user: User = session.query(User).filter(User.username ==
+                                                    username).one_or_none()
+            if not user:
+                return None
+            if user.op == ':=':
+                enabled = True
+        return enabled
 
     @classmethod
     def reply_add(cls, username, vlan):
