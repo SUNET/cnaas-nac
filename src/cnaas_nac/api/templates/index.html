@@ -1,0 +1,71 @@
+<html>
+  <head>
+    <title>CNaaS</title>
+  </head>
+  <style>
+  #users {
+      font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+  }
+  #users td, #users th {
+      border: 1px solid #ddd;
+      padding: 8px;
+  }
+  #users tr:nth-child(even){background-color: #f2f2f2;}
+  #users tr:hover {background-color: #ddd;}
+  #users th {
+      padding-top: 12px;
+      padding-bottom: 12px;
+      text-align: left;
+      background-color: #4CAF50;
+      color: white;
+  }
+  </style>
+
+  <body style="background-color:#d0d0d0;text-align:left">
+    <table id="users">
+      <tr>
+       <th>Username</th>
+       <th>Attribute</th>
+       <th>Type</th>
+       <th>Value</th>
+       <th>NAS Port</th>
+      </tr>
+
+      {% for user in users %}
+      <tr>
+       <td>{{ user.username }}</td>
+       {% for attr in user.reply %}
+       <td>
+       {{ attr.value }}
+       </td>
+       {% endfor %}
+       <td>
+	 {{ user.nas_port }}
+       </td>
+      </tr>
+      {% endfor %}
+    </table>
+    <br/>
+    <hr>
+      <form action="" method="post" novalidate>
+       {{ form.hidden_tag() }}
+       <p>
+           {{ form.username.label }}<br>
+           {{ form.username(size=32) }}
+       </p>
+       <p>
+           {{ form.password.label }}<br>
+           {{ form.password(size=32) }}
+       </p>
+       <p>
+           {{ form.vlan.label }}<br>
+           {{ form.vlan(size=32) }}
+       </p>
+       If you want to remove a user, fill in the username in the username field and hit delete.
+       <p>{{ form.submit() }}</p>
+       <p>{{ form.delete() }}</p>
+    </form>
+  </body>
+</html>
