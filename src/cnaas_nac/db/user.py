@@ -117,7 +117,7 @@ class User(Base):
         result = []
         with sqla_session() as session:
             result = []
-            query = session.query(User)
+            query = session.query(User).order_by('username')
             for _ in query:
                 user = _.as_dict()
                 user_dict = dict()
@@ -160,9 +160,7 @@ class User(Base):
                                               username).one_or_none()
             if not user:
                 return 'Username not found'
-            user.attribute = 'Cleartext-Password'
             user.op = ':='
-            user.value = user.username
         return ''
 
     @classmethod
@@ -173,9 +171,20 @@ class User(Base):
             if not user:
                 return 'Username not found'
             user.attribute = 'Auth-Type'
-            user.op = ':='
-            user.value = 'Reject'
+            user.op = ''
         return ''
+
+    @classmethod
+    def user_is_enabled(cls, username):
+        enabled = False
+        with sqla_session() as session:
+            user: User = session.query(User).filter(User.username ==
+                                                    username).one_or_none()
+            if not user:
+                return None
+            if user.op == ':=':
+                enabled = True
+        return enabled
 
     @classmethod
     def reply_add(cls, username, vlan):
