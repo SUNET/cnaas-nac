@@ -19,8 +19,8 @@ class UserForm(FlaskForm):
     selected = BooleanField('selectfield', default=False)
     submit = SubmitField('Add user')
     delete = SubmitField('Delete user(s)')
-    enable = SubmitField('Enable')
-    disable = SubmitField('Disable')
+    enable = SubmitField('Enable user(s)')
+    disable = SubmitField('Disable user(s)')
 
 
 class WebAdmin(Resource):
