@@ -11,10 +11,10 @@ rest {
 		method = 'post'
 		tls = ${..tls}
 		body = json
-		data = '{"username": "%{User-Name}", "EAP-Message": %{EAP-Message}}'
+		data = '{"username": "%{User-Name}", "EAP-Message": "%{EAP-Message}", "NAS-Identifier": "%{NAS-Identifier}", "NAS-Port-Id": "%{NAS-Port-Id}", "Calling-Station-Id": "%{Calling-Station-Id}", "Called-Station-Id": "%{Called-Station-Id}"}'
 	}
 
-	pool {
+	Pool {
 		start = ${thread[pool].start_servers}
 		min = ${thread[pool].min_spare_servers}
 		max = ${thread[pool].max_servers}
