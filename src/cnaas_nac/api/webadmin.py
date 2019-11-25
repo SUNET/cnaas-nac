@@ -9,7 +9,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired
 
-from cnaas_nac.db.user import User, NasPort
+from cnaas_nac.db.user import User, NasPort, PostAuth
 
 
 class UserForm(FlaskForm):
@@ -35,6 +35,7 @@ class WebAdmin(Resource):
             _['reply'] = reply
             _['nas_port'] = nas_port
             _['active'] = User.user_is_enabled(_['username'])
+            _['last_seen'] = PostAuth.get_last_seen(_['username'])
 
         if request.method == 'POST':
             result = request.form

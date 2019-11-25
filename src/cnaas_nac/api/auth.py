@@ -4,7 +4,8 @@ from flask_jwt_extended import jwt_required
 
 from cnaas_nac.api.generic import empty_result
 from cnaas_nac.tools.log import get_logger
-from cnaas_nac.db.user import User
+from cnaas_nac.db.user import User, PostAuth
+from cnaas_nac.db.oui import DeviceOui
 from cnaas_nac.version import __api_version__
 
 
@@ -12,7 +13,7 @@ logger = get_logger()
 
 
 api = Namespace('auth', description='Authentication API',
-                     prefix='/api/{}'.format(__api_version__))
+                prefix='/api/{}'.format(__api_version__))
 
 user_add = api.model('auth', {
     'EAP-Message': fields.String(required=False),
@@ -36,7 +37,7 @@ class AuthApi(Resource):
         for _ in user:
             reply = User.reply_get(_['username'])
             _['reply'] = reply
-        reply = User.reply_get('test0')
+            _['last_seen'] = str(PostAuth.get_last_seen(_['username']))
         result = {'users': user}
         return empty_result(status='success', data=result)
 
@@ -75,6 +76,8 @@ class AuthApi(Resource):
             errors.append(result)
         if json_data['vlan'] != 0:
             result = User.reply_add(json_data['username'], json_data['vlan'])
+        if DeviceOui.exists(json_data['username']):
+            User.user_enable(json_data['username'])
         if result != '':
             errors.append(result)
         if errors != []:

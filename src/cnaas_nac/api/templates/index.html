@@ -45,6 +45,7 @@
 	  <th>Switch</th>
 	  <th>Port</th>
 	  <th>Status</th>
+	  <th>Last seen</td>
 	</tr>
 
 	{% for user in users %}
@@ -57,8 +58,10 @@
 	  </td>
 	  {% endfor %}
 	  <td>
+	    None
 	  </td>
 	  <td>
+	    None
 	  </td>
 	  <td>
 	    {{ user.nas_port }}
@@ -71,7 +74,10 @@
 	  <td>
 	    Disabled
 	  </td>
-	    {% endif %}
+	  {% endif %}
+	  <td>
+	    {{ user.last_seen }}
+	  </td>
 	</tr>
 	{% endfor %}
       </table>
