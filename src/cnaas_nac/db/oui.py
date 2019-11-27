@@ -16,6 +16,7 @@ class DeviceOui(Base):
         None,
         UniqueConstraint('id'),
     )
+
     id = Column(Integer, autoincrement=True, primary_key=True)
     oui = Column(Unicode(64), nullable=False)
     description = Column(Unicode(64), nullable=False)
