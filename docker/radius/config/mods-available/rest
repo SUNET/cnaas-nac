@@ -11,7 +11,7 @@ rest {
 		method = 'post'
 		tls = ${..tls}
 		body = json
-		data = '{"username": "%{User-Name}", "EAP-Message": "%{EAP-Message}", "NAS-Identifier": "%{NAS-Identifier}", "NAS-Port-Id": "%{NAS-Port-Id}", "Calling-Station-Id": "%{Calling-Station-Id}", "Called-Station-Id": "%{Called-Station-Id}"}'
+		data = '{"username": "%{User-Name}", "eap_message": "%{EAP-Message}", "nas-identifier": "%{NAS-Identifier}", "nas-port-id": "%{NAS-Port-Id}", "calling-station-id": "%{Calling-Station-Id}", "called-station-id": "%{Called-Station-Id}"}'
 	}
 
 	Pool {
