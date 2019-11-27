@@ -6,6 +6,7 @@ from cnaas_nac.api.generic import empty_result
 from cnaas_nac.tools.log import get_logger
 from cnaas_nac.db.user import User, PostAuth
 from cnaas_nac.db.oui import DeviceOui
+from cnaas_nac.db.nas import NasPort
 from cnaas_nac.version import __api_version__
 
 
@@ -16,10 +17,14 @@ api = Namespace('auth', description='Authentication API',
                 prefix='/api/{}'.format(__api_version__))
 
 user_add = api.model('auth', {
-    'EAP-Message': fields.String(required=False),
-    'username': fields.String(required=False),
-    'password': fields.String(required=False),
-    'vlan': fields.Integer(required=False)
+    'eap_message': fields.String(required=True),
+    'username': fields.String(required=True),
+    'password': fields.String(required=True),
+    'vlan': fields.Integer(required=True),
+    'nas_identifier': fields.String(required=True),
+    'nas_port_id': fields.String(required=True),
+    'calling_station_id': fields.String(required=True),
+    'called_station_id': fields.String(required=True)
 })
 
 user_enable = api.model('auth_enable', {
@@ -50,41 +55,73 @@ class AuthApi(Resource):
         # We should only handle clients using MAB. If the user authenticates
         # with 802.1X we will get an EAP message, just return a 202 and don't
         # create that user in the database.
-        if 'EAP-Message' in json_data:
+        if 'eap_message' in json_data and json_data['eap_message'] != '':
             logger.info('EAP-message, ignoring')
             return empty_result(status='success')
 
-        users = User.user_get(json_data['username'])
-        for _ in users:
-            if _ == json_data['username']:
-                logger.info('User {} already exists'.format(_))
-                return empty_result(status='success')
-
         if 'username' not in json_data:
             return self.error('Username not found')
+
+        username = json_data['username']
+        nas_identifier = json_data['nas_identifier']
+        nas_port_id = json_data['nas_port_id']
+        calling_station_id = json_data['calling_station_id']
+        called_station_id = json_data['called_station_id']
+
+        users = User.user_get(username)
+        for _ in users:
+            if _ == username:
+                logger.info('User {} already exists'.format(_))
+                nas_port = NasPort.get(username)
+                if nas_port['nas_identifier'] != nas_identifier:
+                    return self.error('Invalid NAS identifier')
+                if nas_port['nas_port'] != nas_port:
+                    return self.error('Invalid NAS port')
+                return empty_result(status='success')
+
         if 'password' not in json_data:
-            json_data['password'] = json_data['username']
+            password = json_data['username']
+        else:
+            password = json_data['password']
+
         if 'vlan' in json_data:
             try:
                 vlan = int(json_data['vlan'])
             except Exception:
                 return self.error('Invalid VLAN')
         else:
-            json_data['vlan'] = 100
-        result = User.user_add(json_data['username'], json_data['password'])
+            vlan = 100
+
+        result = User.user_add(username, password)
+
         if result != '':
             errors.append(result)
-        if json_data['vlan'] != 0:
-            result = User.reply_add(json_data['username'], json_data['vlan'])
-        if DeviceOui.exists(json_data['username']):
-            User.user_enable(json_data['username'])
+
+        result = User.reply_add(username, vlan)
+
         if result != '':
             errors.append(result)
+
+        result = NasPort.add(username, nas_identifier, nas_port_id,
+                             calling_station_id,
+                             called_station_id)
+
+        if result != '':
+            errors.append(result)
+
+        if DeviceOui.exists(username):
+            User.user_enable(username)
+
+        if result != '':
+            errors.append(result)
+
         if errors != []:
             logger.info('Error: {}'.format(errors))
             return self.error(errors)
-        user = User.user_get(json_data['username'])
+
+        user = User.user_get(username)
         logger.info('User: {}'.format(user))
+
         return empty_result(status='success', data=user)
 
 
