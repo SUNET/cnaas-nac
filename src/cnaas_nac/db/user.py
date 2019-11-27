@@ -111,7 +111,7 @@ class User(Base):
         return d
 
     @classmethod
-    def user_get(cls, username=''):
+    def get(cls, username=''):
         result = []
         with sqla_session() as session:
             result = []
@@ -139,8 +139,8 @@ class User(Base):
         return result
 
     @classmethod
-    def user_add(cls, username, password):
-        if cls.user_get(username) != []:
+    def add(cls, username, password):
+        if cls.get(username) != []:
             return 'User already exists'
         with sqla_session() as session:
             new_user = User()
@@ -152,7 +152,7 @@ class User(Base):
         return ''
 
     @classmethod
-    def user_enable(cls, username):
+    def enable(cls, username):
         with sqla_session() as session:
             user: User = session.query(User).filter(User.username ==
                                               username).one_or_none()
@@ -162,7 +162,7 @@ class User(Base):
         return ''
 
     @classmethod
-    def user_disable(cls, username):
+    def disable(cls, username):
         with sqla_session() as session:
             user: User = session.query(User).filter(User.username ==
                                                     username).one_or_none()
@@ -173,7 +173,7 @@ class User(Base):
         return ''
 
     @classmethod
-    def user_is_enabled(cls, username):
+    def is_enabled(cls, username):
         enabled = False
         with sqla_session() as session:
             user: User = session.query(User).filter(User.username ==
@@ -210,7 +210,7 @@ class User(Base):
         return ''
 
     @classmethod
-    def reply_del(cls, username):
+    def reply_delete(cls, username):
         with sqla_session() as session:
             instance = session.query(Reply).filter(Reply.username ==
                                                    username).all()
@@ -222,7 +222,7 @@ class User(Base):
         return ''
 
     @classmethod
-    def user_del(cls, username):
+    def delete(cls, username):
         with sqla_session() as session:
             instance = session.query(User).filter(User.username ==
                                                   username).all()
