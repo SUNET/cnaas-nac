@@ -95,25 +95,22 @@ class AuthApi(Resource):
         result = User.user_add(username, password)
 
         if result != '':
-            errors.append(result)
+            logger.info('Not creating user {} again'.format(username))
 
         result = User.reply_add(username, vlan)
 
         if result != '':
-            errors.append(result)
+            logger.info('Not creating reply for user {}'.format(username))
 
         result = NasPort.add(username, nas_identifier, nas_port_id,
                              calling_station_id,
                              called_station_id)
 
         if result != '':
-            errors.append(result)
-
-        if DeviceOui.exists(username):
             User.user_enable(username)
 
-        if result != '':
-            errors.append(result)
+        if DeviceOui.exists(calling_station_id):
+            User.user_enable(username)
 
         if errors != []:
             logger.info('Error: {}'.format(errors))
