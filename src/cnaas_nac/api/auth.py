@@ -38,12 +38,19 @@ class AuthApi(Resource):
 
     @jwt_required
     def get(self):
+        result = {}
         users = User.get()
         for user in users:
-            reply = User.reply_get(user['username'])
+            username = user['username']
+            reply = User.reply_get(username)
+            nas_port = NasPort.get(username)
             user['reply'] = reply
+            user['nad_identifier'] = nas_port['nas_identifier']
+            user['nas_port_id'] = nas_port['nas_port_id']
+            user['calling_station_id'] = nas_port['calling_station_id']
+            user['called_station_id'] = nas_port['called_station_id']
             user['last_seen'] = str(PostAuth.get_last_seen(user['username']))
-        result = {'users': user}
+            result[user['username']] = user
         return empty_result(status='success', data=result)
 
     @jwt_required
@@ -73,9 +80,11 @@ class AuthApi(Resource):
                 logger.info('User {} already exists'.format(user))
                 nas_port = NasPort.get(username)
                 if nas_port['nas_identifier'] != nas_identifier:
-                    return self.error('Invalid NAS identifier')
+                    return self.error('User already exist on {}'.format(
+                        nas_port['nas_identifier']))
                 if nas_port['nas_port'] != nas_port:
-                    return self.error('Invalid NAS port')
+                    return self.error('User already exist on port {}'.format(
+                        nas_port['nas_port']))
                 return empty_result(status='success')
 
         if 'password' not in json_data:
