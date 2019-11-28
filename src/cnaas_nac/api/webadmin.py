@@ -31,8 +31,8 @@ class WebAdmin(Resource):
         form = UserForm()
 
         for user in users:
-            reply = User.reply_get(_['username'])
-            nas_port = NasPort.get(_['username'])
+            reply = User.reply_get(user['username'])
+            nas_port = NasPort.get(user['username'])
 
             if nas_port is None:
                 nas_port['nas_identifier'] = None
