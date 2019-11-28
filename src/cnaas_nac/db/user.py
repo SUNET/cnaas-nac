@@ -53,49 +53,6 @@ class PostAuth(Base):
         return last_seen
 
 
-class NasPort(Base):
-    __tablename__ = 'nas_port'
-    __table_args__ = (
-        None,
-        UniqueConstraint('id'),
-    )
-    id = Column(Integer, autoincrement=True, primary_key=True)
-    username = Column(Unicode(64), nullable=False)
-    nas_port = Column(Unicode(64), nullable=False)
-
-    def as_dict(self):
-        """Return JSON serializable dict."""
-        d = {}
-        for col in self.__table__.columns:
-            value = getattr(self, col.name)
-            if issubclass(value.__class__, enum.Enum):
-                value = value.value
-            elif issubclass(value.__class__, Base):
-                continue
-            elif issubclass(value.__class__, ipaddress.IPv4Address):
-                value = str(value)
-            elif issubclass(value.__class__, datetime.datetime):
-                value = str(value)
-            d[col.name] = value
-        return d
-
-    @classmethod
-    def user_get(cls, username=''):
-        result = []
-        with sqla_session() as session:
-            result = []
-            query = session.query(NasPort)
-            for _ in query:
-                user = _.as_dict()
-                user_dict = dict()
-                user_dict['id'] = user['id']
-                user_dict['nas_port'] = user['nas_port']
-                if username != '' and username != user['nas_port']:
-                    continue
-                result.append(user_dict)
-        return result
-
-
 class Reply(Base):
     __tablename__ = 'radreply'
     __table_args__ = (
@@ -154,7 +111,7 @@ class User(Base):
         return d
 
     @classmethod
-    def user_get(cls, username=''):
+    def get(cls, username=''):
         result = []
         with sqla_session() as session:
             result = []
@@ -182,8 +139,8 @@ class User(Base):
         return result
 
     @classmethod
-    def user_add(cls, username, password):
-        if cls.user_get(username) != []:
+    def add(cls, username, password):
+        if cls.get(username) != []:
             return 'User already exists'
         with sqla_session() as session:
             new_user = User()
@@ -195,7 +152,7 @@ class User(Base):
         return ''
 
     @classmethod
-    def user_enable(cls, username):
+    def enable(cls, username):
         with sqla_session() as session:
             user: User = session.query(User).filter(User.username ==
                                               username).one_or_none()
@@ -205,7 +162,7 @@ class User(Base):
         return ''
 
     @classmethod
-    def user_disable(cls, username):
+    def disable(cls, username):
         with sqla_session() as session:
             user: User = session.query(User).filter(User.username ==
                                                     username).one_or_none()
@@ -216,7 +173,7 @@ class User(Base):
         return ''
 
     @classmethod
-    def user_is_enabled(cls, username):
+    def is_enabled(cls, username):
         enabled = False
         with sqla_session() as session:
             user: User = session.query(User).filter(User.username ==
@@ -253,7 +210,7 @@ class User(Base):
         return ''
 
     @classmethod
-    def reply_del(cls, username):
+    def reply_delete(cls, username):
         with sqla_session() as session:
             instance = session.query(Reply).filter(Reply.username ==
                                                    username).all()
@@ -265,7 +222,7 @@ class User(Base):
         return ''
 
     @classmethod
-    def user_del(cls, username):
+    def delete(cls, username):
         with sqla_session() as session:
             instance = session.query(User).filter(User.username ==
                                                   username).all()

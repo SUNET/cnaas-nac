@@ -9,7 +9,8 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired
 
-from cnaas_nac.db.user import User, NasPort, PostAuth
+from cnaas_nac.db.user import User, PostAuth
+from cnaas_nac.db.nas import NasPort
 
 
 class UserForm(FlaskForm):
@@ -26,16 +27,23 @@ class UserForm(FlaskForm):
 class WebAdmin(Resource):
     @classmethod
     def index(cls):
-        users = User.user_get()
+        users = User.get()
         form = UserForm()
 
-        for _ in users:
-            reply = User.reply_get(_['username'])
-            nas_port = ' '.join(NasPort.user_get(_['username']))
-            _['reply'] = reply
-            _['nas_port'] = nas_port
-            _['active'] = User.user_is_enabled(_['username'])
-            _['last_seen'] = PostAuth.get_last_seen(_['username'])
+        for user in users:
+            reply = User.reply_get(user['username'])
+            nas_port = NasPort.get(user['username'])
+
+            if nas_port is None:
+                nas_port['nas_identifier'] = None
+                nas_port['nas_port_id'] = None
+
+            user['reply'] = reply
+            user['calling_station_id'] = nas_port['calling_station_id']
+            user['nas_identifier'] = nas_port['nas_identifier']
+            user['nas_port'] = nas_port['nas_port_id']
+            user['active'] = User.is_enabled(user['username'])
+            user['last_seen'] = PostAuth.get_last_seen(user['username'])
 
         if request.method == 'POST':
             result = request.form
@@ -45,19 +53,19 @@ class WebAdmin(Resource):
             selected = request.form.getlist('selected')
 
             if 'submit' in result:
-                User.user_add(username, password)
+                User.add(username, password)
                 User.reply_add(username, vlan)
-                User.user_disable(username)
+                User.disable(username)
             elif 'delete' in result:
                 for user in selected:
-                    User.user_del(user)
-                    User.reply_del(user)
+                    User.delete(user)
+                    User.reply_delete(user)
             elif 'enable' in result:
                 for user in selected:
-                    User.user_enable(user)
+                    User.enable(user)
             elif 'disable' in result:
                 for user in selected:
-                    User.user_disable(user)
+                    User.disable(user)
             return redirect('/admin')
 
         return render_template('index.html', users=users, form=form)

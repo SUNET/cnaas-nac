@@ -6,6 +6,7 @@ from cnaas_nac.api.generic import empty_result
 from cnaas_nac.tools.log import get_logger
 from cnaas_nac.db.user import User, PostAuth
 from cnaas_nac.db.oui import DeviceOui
+from cnaas_nac.db.nas import NasPort
 from cnaas_nac.version import __api_version__
 
 
@@ -16,10 +17,14 @@ api = Namespace('auth', description='Authentication API',
                 prefix='/api/{}'.format(__api_version__))
 
 user_add = api.model('auth', {
-    'EAP-Message': fields.String(required=False),
-    'username': fields.String(required=False),
-    'password': fields.String(required=False),
-    'vlan': fields.Integer(required=False)
+    'eap_message': fields.String(required=True),
+    'username': fields.String(required=True),
+    'password': fields.String(required=True),
+    'vlan': fields.Integer(required=True),
+    'nas_identifier': fields.String(required=True),
+    'nas_port_id': fields.String(required=True),
+    'calling_station_id': fields.String(required=True),
+    'called_station_id': fields.String(required=True)
 })
 
 user_enable = api.model('auth_enable', {
@@ -33,12 +38,19 @@ class AuthApi(Resource):
 
     @jwt_required
     def get(self):
-        user = User.user_get()
-        for _ in user:
-            reply = User.reply_get(_['username'])
-            _['reply'] = reply
-            _['last_seen'] = str(PostAuth.get_last_seen(_['username']))
-        result = {'users': user}
+        result = {}
+        users = User.get()
+        for user in users:
+            username = user['username']
+            reply = User.reply_get(username)
+            nas_port = NasPort.get(username)
+            user['reply'] = reply
+            user['nad_identifier'] = nas_port['nas_identifier']
+            user['nas_port_id'] = nas_port['nas_port_id']
+            user['calling_station_id'] = nas_port['calling_station_id']
+            user['called_station_id'] = nas_port['called_station_id']
+            user['last_seen'] = str(PostAuth.get_last_seen(user['username']))
+            result[user['username']] = user
         return empty_result(status='success', data=result)
 
     @jwt_required
@@ -50,41 +62,71 @@ class AuthApi(Resource):
         # We should only handle clients using MAB. If the user authenticates
         # with 802.1X we will get an EAP message, just return a 202 and don't
         # create that user in the database.
-        if 'EAP-Message' in json_data:
+        if 'eap_message' in json_data and json_data['eap_message'] != '':
             logger.info('EAP-message, ignoring')
             return empty_result(status='success')
 
-        users = User.user_get(json_data['username'])
-        for _ in users:
-            if _ == json_data['username']:
-                logger.info('User {} already exists'.format(_))
-                return empty_result(status='success')
-
         if 'username' not in json_data:
             return self.error('Username not found')
+
+        username = json_data['username']
+        nas_identifier = json_data['nas_identifier']
+        nas_port_id = json_data['nas_port_id']
+        calling_station_id = json_data['calling_station_id']
+        called_station_id = json_data['called_station_id']
+
+        for user in User.get(username):
+            if user == username:
+                logger.info('User {} already exists'.format(user))
+                nas_port = NasPort.get(username)
+                if nas_port['nas_identifier'] != nas_identifier:
+                    return self.error('User already exist on {}'.format(
+                        nas_port['nas_identifier']))
+                if nas_port['nas_port'] != nas_port:
+                    return self.error('User already exist on port {}'.format(
+                        nas_port['nas_port']))
+                return empty_result(status='success')
+
         if 'password' not in json_data:
-            json_data['password'] = json_data['username']
+            password = username
+        else:
+            password = json_data['password']
+
         if 'vlan' in json_data:
             try:
                 vlan = int(json_data['vlan'])
             except Exception:
                 return self.error('Invalid VLAN')
         else:
-            json_data['vlan'] = 100
-        result = User.user_add(json_data['username'], json_data['password'])
+            vlan = 100
+
+        result = User.add(username, password)
+
         if result != '':
-            errors.append(result)
-        if json_data['vlan'] != 0:
-            result = User.reply_add(json_data['username'], json_data['vlan'])
-        if DeviceOui.exists(json_data['username']):
-            User.user_enable(json_data['username'])
+            logger.info('Not creating user {} again'.format(username))
+
+        result = User.reply_add(username, vlan)
+
         if result != '':
-            errors.append(result)
+            logger.info('Not creating reply for user {}'.format(username))
+
+        result = NasPort.add(username, nas_identifier, nas_port_id,
+                             calling_station_id,
+                             called_station_id)
+
+        if result != '':
+            User.enable(username)
+
+        if DeviceOui.exists(calling_station_id):
+            User.enable(username)
+
         if errors != []:
             logger.info('Error: {}'.format(errors))
             return self.error(errors)
-        user = User.user_get(json_data['username'])
+
+        user = User.get(username)
         logger.info('User: {}'.format(user))
+
         return empty_result(status='success', data=user)
 
 
@@ -94,7 +136,7 @@ class AuthApiByName(Resource):
 
     @jwt_required
     def get(self, username):
-        user = User.user_get(username)
+        user = User.get(username)
         for _ in user:
             reply = User.reply_get(_['username'])
             _['reply'] = reply
@@ -109,9 +151,9 @@ class AuthApiByName(Resource):
         if 'enabled' not in json_data:
             return self.error('Missing argument enabled in JSON string')
         if json_data['enabled'] is True:
-            result = User.user_enable(username)
+            result = User.enable(username)
         else:
-            result = User.user_disable(username)
+            result = User.disable(username)
         if result != '':
             return self.error(result)
         return empty_result(status='success')
@@ -119,10 +161,10 @@ class AuthApiByName(Resource):
     @jwt_required
     def delete(self, username):
         errors = []
-        result = User.user_del(username)
+        result = User.delete(username)
         if result != '':
             errors.append(result)
-        result = User.reply_del(username)
+        result = User.reply_delete(username)
         if result != '':
             errors.append(result)
         if errors != []:
