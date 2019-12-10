@@ -28,7 +28,7 @@ def upgrade():
                               nullable=True),
                     sa.PrimaryKeyConstraint('id', name='device_oui_pkey'))
     op.alter_column('device_oui', 'id', nullable=False,
-                    server_default=sa.text("nextval('device_port_id_seq'::regclass)"))
+                    server_default=sa.text("nextval('device_oui_id_seq'::regclass)"))
     # ### end Alembic commands ###
 
 
