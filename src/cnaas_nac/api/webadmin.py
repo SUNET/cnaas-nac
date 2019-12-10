@@ -35,13 +35,20 @@ class WebAdmin(Resource):
             nas_port = NasPort.get(user['username'])
 
             if nas_port is None:
+                nas_port = dict()
                 nas_port['nas_identifier'] = None
                 nas_port['nas_port_id'] = None
 
             user['reply'] = reply
-            user['calling_station_id'] = nas_port['calling_station_id']
-            user['nas_identifier'] = nas_port['nas_identifier']
-            user['nas_port'] = nas_port['nas_port_id']
+
+            if nas_port is not None:
+                if 'calling_station_id' in nas_port:
+                    user['calling_station_id'] = nas_port['calling_station_id']
+                if 'nas_identifier' in nas_port:
+                    user['nas_identifier'] = nas_port['nas_identifier']
+                if 'nas_port' in nas_port:
+                    user['nas_port'] = nas_port['nas_port_id']
+                user['active'] = User.is_enabled(user['username'])
             user['active'] = User.is_enabled(user['username'])
             user['last_seen'] = PostAuth.get_last_seen(user['username'])
 
