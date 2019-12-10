@@ -53,7 +53,7 @@ class AuthApi(Resource):
             result[user['username']] = user
         return empty_result(status='success', data=result)
 
-    @jwt_required
+#    @jwt_required
     @api.expect(user_add)
     def post(self):
         errors = []
