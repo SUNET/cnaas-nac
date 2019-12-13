@@ -158,6 +158,7 @@ class User(Base):
                                               username).one_or_none()
             if not user:
                 return 'Username not found'
+            user.attribute = 'Cleartext-Password'
             user.op = ':='
         return ''
 
@@ -168,7 +169,7 @@ class User(Base):
                                                     username).one_or_none()
             if not user:
                 return 'Username not found'
-            user.attribute = 'Auth-Type'
+            user.attribute = 'Cleartext-Password'
             user.op = ''
         return ''
 
