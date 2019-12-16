@@ -6,6 +6,7 @@ services:
       - 1443:443
     networks:
       - cnaas
+
   nac_radius:
     build: ./radius
     ports:
@@ -13,5 +14,13 @@ services:
       - 1813:1813/udp
     networks:
       - cnaas
+    environment:
+      - EDUROAM_R1_SECRET
+      - EDUROAM_R2_SECRET
+      - RADIUS_SERVER_SECRET
+      - GITREPO_ETC
+    depends_on:
+      - nac_api
+      
 networks:
   cnaas:
