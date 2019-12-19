@@ -18,6 +18,7 @@ RUN sh ./bin/activate
 # Fetch the code
 RUN git clone https://github.com/SUNET/cnaas-nac.git
 WORKDIR /opt/cnaas/venv/cnaas-nac/
+RUN git checkout -b feature.port_locking origin/feature.port_locking
 RUN python3 -m pip install -r requirements.txt
 
 COPY config/db_config.yml /etc/cnaas-nac/db_config.yml

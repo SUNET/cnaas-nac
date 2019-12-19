@@ -23,6 +23,13 @@ fi
 
 # Clone settings from repository
 git clone $GITREPO_ETC /tmp/gitrepo_etc
+
+# Move the sites-default file if it exists
+if [ -f "/tmp/gitrepo_etc/site-default" ]; then
+    mv /tmp/gitrepo_etc/radius/site-default /etc/freeradius/3.0/sites-available/default
+fi
+
+# Copy the rest of the files
 cp /tmp/gitrepo_etc/radius/* /etc/freeradius/3.0/
 
 # Replace PSKs when needed
