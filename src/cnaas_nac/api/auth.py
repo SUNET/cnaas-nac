@@ -75,6 +75,9 @@ class AuthApi(Resource):
         calling_station_id = json_data['calling_station_id']
         called_station_id = json_data['called_station_id']
 
+        if nas_identifier == "" or nas_identifier is None:
+            nas_identifier = username
+
         for user in User.get(username):
             if user == username:
                 logger.info('User {} already exists'.format(user))
