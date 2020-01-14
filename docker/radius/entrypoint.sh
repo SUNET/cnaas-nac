@@ -25,8 +25,8 @@ fi
 git clone $GITREPO_ETC /tmp/gitrepo_etc
 
 # Move the sites-default file if it exists
-if [ -f "/tmp/gitrepo_etc/site-default" ]; then
-    mv /tmp/gitrepo_etc/radius/site-default /etc/freeradius/3.0/sites-available/default
+if [ -f "/tmp/gitrepo_etc/radius/site-default" ]; then
+    cp /tmp/gitrepo_etc/radius/site-default /etc/freeradius/3.0/sites-available/default
 fi
 
 # Copy the rest of the files
