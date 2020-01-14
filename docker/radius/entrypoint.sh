@@ -10,6 +10,16 @@ while ! nc -z cnaas_postgres 5432; do
       fi
 done
 
+WAIT=0
+while ! nc -z nac_api 443; do
+    sleep 1
+    WAIT=$(($WAIT + 1))
+      if [ "$WAIT" -gt 15 ]; then
+          echo "Error: Timeout wating for API to start"
+          exit 1
+      fi
+done
+
 # Create the NAC database
 createdb -h cnaas_postgres -U cnaas nac
 
