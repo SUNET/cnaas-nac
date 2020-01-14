@@ -4,14 +4,14 @@ FROM debian:buster
 RUN mkdir -p /opt/cnaas
 RUN mkdir /etc/cnaas-nac
 
+# Setup script
+COPY cnaas-setup.sh /opt/cnaas/cnaas-setup.sh
+RUN /opt/cnaas/cnaas-setup.sh
+
 # Start venv
 RUN python3 -m venv /opt/cnaas/venv
 WORKDIR /opt/cnaas/venv/
 RUN sh ./bin/activate
-
-# Setup script
-COPY cnaas-setup.sh /opt/cnaas/cnaas-setup.sh
-RUN /opt/cnaas/cnaas-setup.sh
 
 COPY config/db_config.yml /etc/cnaas-nac/db_config.yml
 COPY config/uwsgi.ini /opt/cnaas/venv/cnaas-nac/
