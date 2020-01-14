@@ -43,8 +43,8 @@ sed -e "s/RADIUS_SERVER_SECRET/$RADIUS_SERVER_SECRET/" \
   < /etc/freeradius/3.0/clients.conf > /tmp/clients.conf.new \
   && cat /tmp/clients.conf.new > /etc/freeradius/3.0/clients.conf
 sed -e "s/MDH_ISE_SECRET/$MDH_ISE_SECRET/" \
-  < /etc/freeradius/3.0/clients.conf > /tmp/clients.conf.new \
-  && cat /tmp/clients.conf.new > /etc/freeradius/3.0/clients.conf
+  < /etc/freeradius/3.0/proxy.conf > /tmp/proxy.conf.new \
+  && cat /tmp/proxy.conf.new > /etc/freeradius/3.0/proxy.conf
 
 # Create symlinks
 ln -s /etc/freeradius/3.0/mods-available/sql /etc/freeradius/3.0/mods-enabled
