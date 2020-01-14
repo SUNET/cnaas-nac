@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 services:
   nac_api:
     build: ./api/
@@ -24,3 +24,10 @@ services:
       
 networks:
   cnaas:
+    driver: bridge
+    name: cnaas
+    ipam:
+      config:
+      - subnet: 172.30.0.0/24
+    driver_opts:
+      com.docker.network.bridge.name: br-cnaas    
