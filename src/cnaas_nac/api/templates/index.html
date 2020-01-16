@@ -41,8 +41,8 @@
 	  <th>Attribute</th>
 	  <th>Type</th>
 	  <th>Value</th>
-	  <th>MAC address</th>
-	  <th>Switch</th>
+	  <th>Calling Station ID</th>
+	  <th>Called Station ID</th>
 	  <th>Port</th>
 	  <th>Status</th>
 	  <th>Last seen</td>
@@ -61,10 +61,10 @@
 	    {{ user.calling_station_id }}
 	  </td>
 	  <td>
-	    {{ user.nas_identifier }}
+	    {{ user.called_station_id }}
 	  </td>
 	  <td>
-	    {{ user.nas_port }}
+	    {{ user.nas_port_id }}
 	  </td>
 	  {% if user.active %}
 	  <td bgcolor="lightgreen">
