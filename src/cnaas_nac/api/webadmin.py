@@ -58,29 +58,32 @@ class WebAdmin(Resource):
 
         if request.method == 'POST':
             result = request.form
-            username = result['username']
-            password = result['password']
-            vlan = result['vlan']
-            selected = request.form.getlist('selected')
-            set_vlan_btn = result['set_vlan_btn']
-            set_vlan = result['set_vlan']
 
             if 'submit' in result:
+                username = result['username']
+                password = result['password']
+                vlan = result['vlan']
+
                 User.add(username, password)
                 User.reply_add(username, vlan)
                 User.disable(username)
             elif 'delete' in result:
+                selected = request.form.getlist('selected')
                 for user in selected:
                     User.delete(user)
                     User.reply_delete(user)
             elif 'enable' in result:
+                selected = request.form.getlist('selected')
                 for user in selected:
                     User.enable(user)
             elif 'disable' in result:
+                selected = request.form.getlist('selected')
                 for user in selected:
                     User.disable(user)
             elif 'set_vlan_btn' in result:
+                set_vlan = result['set_vlan']
                 if set_vlan != "" and set_vlan:
+                    selected = request.form.getlist('selected')
                     for user in selected:
                         User.reply_vlan(user, set_vlan)
             return redirect('/admin')
