@@ -74,16 +74,16 @@
       {{ form.hidden_tag() }}
       <table id="users">
 	<tr>
-	  <th onclick="sortTable(0)">Select</th>
-	  <th onclick="sortTable(1)">Username</th>
-	  <th onclick="sortTable(2)">Attribute</th>
-	  <th onclick="sortTable(3)">Type</th>
-	  <th onclick="sortTable(4)">Value</th>
-	  <th onclick="sortTable(5)">Calling Station ID</th>
-	  <th onclick="sortTable(6)">Called Station ID</th>
-	  <th onclick="sortTable(7)">Port</th>
-	  <th onclick="sortTable(8)">Status</th>
-	  <th onclick="sortTable(9)">Last seen</th>
+	  <th onclick="sortTable(0)">Select &#8595;</th>
+	  <th onclick="sortTable(1)">Username &#8595;</th>
+	  <th onclick="sortTable(2)">Attribute &#8595;</th>
+	  <th onclick="sortTable(3)">Type &#8595;</th>
+	  <th onclick="sortTable(4)">Value &#8595;</th>
+	  <th onclick="sortTable(5)">Calling Station ID &#8595;</th>
+	  <th onclick="sortTable(6)">Called Station ID &#8595;</th>
+	  <th onclick="sortTable(7)">Port &#8595;</th>
+	  <th onclick="sortTable(8)">Status &#8595;</th>
+	  <th onclick="sortTable(9)">Last seen &#8595;</th>
 	</tr>
 
 	{% for user in users %}
@@ -119,7 +119,8 @@
 	</tr>
 	{% endfor %}
       </table>
-      <p>{{ form.delete() }} {{ form.enable }} {{ form.disable }}</p>
+      <span class="right">{{ form.set_vlan_btn }} {{ form.set_vlan }}</span>
+      <span class="left">{{ form.delete() }} {{ form.enable }} {{ form.disable }}</span>
       <hr>
       <p>
 	Username: {{ form.username(size=32) }}

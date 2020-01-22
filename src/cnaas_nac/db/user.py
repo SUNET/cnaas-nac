@@ -233,3 +233,11 @@ class User(Base):
                 session.delete(_)
                 session.commit()
         return ''
+
+    @classmethod
+    def reply_vlan(cls, username, vlan):
+        with sqla_session() as session:
+            instance = session.query(Reply).filter(Reply.username == username).filter(Reply.attribute == 'Tunnel-Private-Group-Id').one_or_none()
+            if not instance:
+                return 'Reply not found'
+            instance.value = vlan

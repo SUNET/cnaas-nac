@@ -22,6 +22,8 @@ class UserForm(FlaskForm):
     delete = SubmitField('Delete user(s)')
     enable = SubmitField('Enable user(s)')
     disable = SubmitField('Disable user(s)')
+    set_vlan_btn = SubmitField('Set VLAN')
+    set_vlan = StringField()
 
 
 class WebAdmin(Resource):
@@ -60,6 +62,8 @@ class WebAdmin(Resource):
             password = result['password']
             vlan = result['vlan']
             selected = request.form.getlist('selected')
+            set_vlan_btn = result['set_vlan_btn']
+            set_vlan = result['set_vlan']
 
             if 'submit' in result:
                 User.add(username, password)
@@ -75,6 +79,10 @@ class WebAdmin(Resource):
             elif 'disable' in result:
                 for user in selected:
                     User.disable(user)
+            elif 'set_vlan_btn' in result:
+                if set_vlan != "" and set_vlan:
+                    for user in selected:
+                        User.reply_vlan(user, set_vlan)
             return redirect('/admin')
 
         return render_template('index.html', users=users, form=form)
