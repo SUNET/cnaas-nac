@@ -24,6 +24,8 @@ def upgrade():
                               nullable=True),
                     sa.Column('oui', sa.TEXT(), autoincrement=False,
                               nullable=False),
+                    sa.Column('vlan', sa.TEXT(), autoincrement=False,
+                              nullable=True),
                     sa.Column('description', sa.TEXT(), autoincrement=False,
                               nullable=True),
                     sa.PrimaryKeyConstraint('id', name='device_oui_pkey'))
