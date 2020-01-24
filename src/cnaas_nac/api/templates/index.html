@@ -70,6 +70,28 @@
   </style>
 
   <body style="background-color:#d0d0d0;text-align:left">
+    <table id="oui">
+      <tr>
+       <th>OUI</th>
+       <th>VLAN</th>
+       <th>Description</th>
+      </tr>
+
+      {% for oui in ouis %}
+      <tr>
+       <td>
+	 {{ oui.oui }}
+       </td>
+       <td>
+	 {{ oui.vlan }}
+       </td>
+       <td>
+	 {{ oui.description }}
+       </td>
+      </tr>
+      {% endfor %}
+    </table>
+    <br/><br/>
     <form action="" method="post" novalidate>
       {{ form.hidden_tag() }}
       <table id="users">

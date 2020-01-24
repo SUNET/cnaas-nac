@@ -11,6 +11,7 @@ from wtforms.validators import DataRequired
 
 from cnaas_nac.db.user import User, PostAuth
 from cnaas_nac.db.nas import NasPort
+from cnaas_nac.db.oui import DeviceOui
 
 
 class UserForm(FlaskForm):
@@ -31,6 +32,7 @@ class WebAdmin(Resource):
     def index(cls):
         users = User.get()
         form = UserForm()
+        ouis = DeviceOui.get()
 
         for user in users:
             reply = User.reply_get(user['username'])
@@ -88,4 +90,4 @@ class WebAdmin(Resource):
                         User.reply_vlan(user, set_vlan)
             return redirect('/admin')
 
-        return render_template('index.html', users=users, form=form)
+        return render_template('index.html', users=users, ouis=ouis, form=form)

@@ -66,6 +66,15 @@ class DeviceOui(Base):
         oui = oui.lower()
         return oui
 
+    @classmethod
+    def get(cls):
+        oui_list = []
+        with sqla_session() as session:
+            ouis: DeviceOui = session.query(DeviceOui).all()
+            for oui in ouis:
+                oui_list.append(oui.as_dict())
+        return oui_list
+
 
 if __name__ == '__main__':
     print(DeviceOui.normalize('aa:bb:CC'))
