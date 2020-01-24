@@ -235,6 +235,17 @@ class User(Base):
         return ''
 
     @classmethod
+    def is_enabled(cls, username):
+        with sqla_session() as session:
+            instance = session.query(User).filter(User.username ==
+                                                  username).one_or_none()
+            if not instance:
+                return None
+            if instance.op != ':=':
+                return False
+        return True
+
+    @classmethod
     def reply_vlan(cls, username, vlan):
         with sqla_session() as session:
             instance = session.query(Reply).filter(Reply.username == username).filter(Reply.attribute == 'Tunnel-Private-Group-Id').one_or_none()

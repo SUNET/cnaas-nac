@@ -19,6 +19,7 @@ class DeviceOui(Base):
 
     id = Column(Integer, autoincrement=True, primary_key=True)
     oui = Column(Unicode(64), nullable=False)
+    vlan = Column(Unicode(64), nullable=False)
     description = Column(Unicode(64), nullable=False)
 
     def as_dict(self):
@@ -49,10 +50,20 @@ class DeviceOui(Base):
         return exists
 
     @classmethod
+    def get_vlan(cls, username):
+        oui = cls.normalize(username)
+        with sqla_session() as session:
+            oui: DeviceOui = session.query(DeviceOui).filter(DeviceOui.oui ==
+                                                             oui).one_or_none()
+            if oui:
+                return oui.vlan
+        return None
+
+    @classmethod
     def normalize(cls, oui):
         oui = oui.replace(':', '')
         oui = ':'.join(oui[i:i+2] for i in range(0, 6, 2))
-        oui = oui.upper()
+        oui = oui.lower()
         return oui
 
 

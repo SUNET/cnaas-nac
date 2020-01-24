@@ -101,27 +101,24 @@ class AuthApi(Resource):
             except Exception:
                 return self.error('Invalid VLAN')
         else:
-            vlan = 100
+            vlan = 13
 
-        result = User.add(username, password)
-
-        if result != '':
+        if User.add(username, password) != '':
             logger.info('Not creating user {} again'.format(username))
 
-        result = User.reply_add(username, vlan)
-
-        if result != '':
+        if User.reply_add(username, vlan) != '':
             logger.info('Not creating reply for user {}'.format(username))
+        else:
+            if DeviceOui.exists(username):
+                logger.info('Setting user VLAN to OUI VLAN.')
+                oui_vlan = DeviceOui.get_vlan(username)
+                User.enable(username)
+                User.reply_vlan(username, oui_vlan)
 
-        result = NasPort.add(username, nas_identifier, nas_port_id,
-                             calling_station_id,
-                             called_station_id)
-
-        if result != '':
-            User.enable(username)
-
-        if DeviceOui.exists(calling_station_id):
-            User.enable(username)
+        if NasPort.add(username, nas_identifier, nas_port_id,
+                       calling_station_id,
+                       called_station_id) != '':
+            logger.info('Not adding NAS port again.')
 
         if errors != []:
             logger.info('Error: {}'.format(errors))
