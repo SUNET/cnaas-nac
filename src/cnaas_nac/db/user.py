@@ -131,7 +131,7 @@ class User(Base):
         result = []
         with sqla_session() as session:
             replymsg: Reply = session.query(Reply).filter(Reply.username ==
-                                                          username).all()
+                                                          username).order_by(Reply.id).all()
             if replymsg is None:
                 return result
             for _ in replymsg:
@@ -155,7 +155,7 @@ class User(Base):
     def enable(cls, username):
         with sqla_session() as session:
             user: User = session.query(User).filter(User.username ==
-                                              username).one_or_none()
+                                              username)..order_by(User.id).one_or_none()
             if not user:
                 return 'Username not found'
             user.attribute = 'Cleartext-Password'
@@ -166,7 +166,7 @@ class User(Base):
     def disable(cls, username):
         with sqla_session() as session:
             user: User = session.query(User).filter(User.username ==
-                                                    username).one_or_none()
+                                                    username)..order_by(User.id).one_or_none()
             if not user:
                 return 'Username not found'
             user.attribute = 'Cleartext-Password'
@@ -178,7 +178,7 @@ class User(Base):
         enabled = False
         with sqla_session() as session:
             user: User = session.query(User).filter(User.username ==
-                                                    username).one_or_none()
+                                                    username).order_by(User.id).one_or_none()
             if not user:
                 return None
             if user.op == ':=':
