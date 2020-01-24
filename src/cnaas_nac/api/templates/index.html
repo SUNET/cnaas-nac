@@ -41,26 +41,26 @@
     </script>
   </head>
   <style>
-    #users {
+    #default-table {
 	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
 	border-collapse: collapse;
 	width: 100%;
     }
 
-    #users td, #users th {
+    #default-table td, #default-table th {
 	border: 1px solid #ddd;
 	padding: 8px;
     }
 
-    #users tr:nth-child(even){
+    #default-table tr:nth-child(even){
 	background-color: #f2f2f2;
     }
 
-    #users tr:hover {
+    #default-table tr:hover {
 	background-color: #ddd;
     }
 
-    #users th {
+    #default-table th {
 	padding-top: 12px;
 	padding-bottom: 12px;
 	text-align: left;
@@ -70,7 +70,7 @@
   </style>
 
   <body style="background-color:#d0d0d0;text-align:left">
-    <table id="oui">
+    <table id="default-table">
       <tr>
        <th>OUI</th>
        <th>VLAN</th>
@@ -94,7 +94,7 @@
     <br/><br/>
     <form action="" method="post" novalidate>
       {{ form.hidden_tag() }}
-      <table id="users">
+      <table id="default-table">
 	<tr>
 	  <th onclick="sortTable(0)">Select &#8595;</th>
 	  <th onclick="sortTable(1)">Username &#8595;</th>
