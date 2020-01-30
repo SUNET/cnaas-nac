@@ -48,7 +48,6 @@ class CnaasApi(Api):
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(128)
-app.config['JWT_PRIVATE_KEY'] = open('certs/private.pem').read()
 app.config['JWT_PUBLIC_KEY'] = open('certs/public.pem').read()
 app.config['JWT_IDENTITY_CLAIM'] = 'sub'
 app.config['JWT_ALGORITHM'] = 'ES256'
