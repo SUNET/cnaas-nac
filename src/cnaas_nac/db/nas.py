@@ -46,7 +46,7 @@ class NasPort(Base):
         with sqla_session() as session:
             if username:
                 nas: NasPort = session.query(NasPort).filter(NasPort.username ==
-                                                             username).one_or_none()
+                                                             username).all()
             else:
                 nas: NasPort = session.query(NasPort).all()
             if nas is None:
