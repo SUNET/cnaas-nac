@@ -29,21 +29,61 @@ class UserForm(FlaskForm):
 
 class WebAdmin(Resource):
     @classmethod
+    def get_user_reply(cls, username, replies):
+        reply = []
+        for user_reply in replies:
+            if user_reply['username'] == username:
+                reply.append(user_reply)
+        return reply
+
+    @classmethod
+    def user_get_port(cls, username, nas_ports):
+        nas_port = None
+        for port in nas_ports:
+            if port['username'] == username:
+                nas_port = port
+        return nas_port
+
+    @classmethod
+    def user_is_active(cls, username, users):
+        for user in users:
+            if 'username' not in user:
+                continue
+            if user['username'] != username:
+                continue
+            if user['op'] == ':=':
+                return True
+        return False
+
+    @classmethod
+    def user_last_seen(cls, username, last_seen):
+        for user in last_seen:
+            if 'username' not in user:
+                continue
+            if user['username'] != username:
+                continue
+            return user['authdate']
+        return None
+
+    @classmethod
     def index(cls):
         users = User.get()
         form = UserForm()
         ouis = DeviceOui.get()
+        replies = User.reply_get()
+        nas_ports = NasPort.get()
+        last_seen = PostAuth.get_last_seen()
 
         for user in users:
-            reply = User.reply_get(user['username'])
-            nas_port = NasPort.get(user['username'])
+            user['reply'] = cls.get_user_reply(user['username'], replies)
+            nas_port = cls.user_get_port(user['username'], nas_ports)
 
             if nas_port is None:
                 nas_port = dict()
                 nas_port['nas_identifier'] = None
                 nas_port['nas_port_id'] = None
-
-            user['reply'] = reply
+                nas_port['called_station_id'] = None
+                nas_port['calling_station_id'] = None
 
             if nas_port is not None:
                 if 'calling_station_id' in nas_port:
@@ -54,9 +94,9 @@ class WebAdmin(Resource):
                     user['nas_identifier'] = nas_port['nas_identifier']
                 if 'nas_port_id' in nas_port:
                     user['nas_port_id'] = nas_port['nas_port_id']
-                user['active'] = User.is_enabled(user['username'])
-            user['active'] = User.is_enabled(user['username'])
-            user['last_seen'] = PostAuth.get_last_seen(user['username'])
+                user['active'] = cls.user_is_active(user['username'], users)
+            user['active'] = cls.user_is_active(user['username'], users)
+            user['last_seen'] = cls.user_last_seen(user['username'], last_seen)
 
         if request.method == 'POST':
             result = request.form

@@ -43,14 +43,20 @@ class PostAuth(Base):
         return d
 
     @classmethod
-    def get_last_seen(cls, username):
-        last_seen = ''
+    def get_last_seen(cls, username=None):
+        res = []
         with sqla_session() as session:
-            postauth: PostAuth = session.query(PostAuth).filter(PostAuth.username ==
-                                                                username).all()
+            if username is not None:
+                postauth: PostAuth = session.query(PostAuth).filter(PostAuth.username ==
+                                                                    username).all()
+            else:
+                postauth: PostAuth = session.query(PostAuth).all()
             for auth in postauth:
-                last_seen = auth.authdate
-        return last_seen
+                last_seen = dict()
+                last_seen['username'] = auth.username
+                last_seen['authdate'] = auth.authdate
+                res.append(last_seen)
+        return res
 
 
 class Reply(Base):
@@ -121,17 +127,22 @@ class User(Base):
                 user_dict = dict()
                 user_dict['id'] = user['id']
                 user_dict['username'] = user['username']
+                user_dict['op'] = user['op']
+                user_dict['attribute'] = user['attribute']
                 if username != '' and username != user['username']:
                     continue
                 result.append(user_dict)
         return result
 
     @classmethod
-    def reply_get(cls, username):
+    def reply_get(cls, username=None):
         result = []
         with sqla_session() as session:
-            replymsg: Reply = session.query(Reply).filter(Reply.username ==
-                                                          username).order_by(Reply.id).all()
+            if username:
+                replymsg: Reply = session.query(Reply).filter(Reply.username ==
+                                                              username).order_by(Reply.id).all()
+            else:
+                replymsg: Reply = session.query(Reply).order_by(Reply.id).all()
             if replymsg is None:
                 return result
             for _ in replymsg:
