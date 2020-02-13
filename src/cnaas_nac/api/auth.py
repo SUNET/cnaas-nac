@@ -7,6 +7,9 @@ from cnaas_nac.tools.log import get_logger
 from cnaas_nac.db.user import User, PostAuth
 from cnaas_nac.db.oui import DeviceOui
 from cnaas_nac.db.nas import NasPort
+from cnaas_nac.tools.helpers import get_user_replies, get_user_port, \
+    get_is_active, get_last_seen
+
 from cnaas_nac.version import __api_version__
 
 
@@ -17,7 +20,6 @@ api = Namespace('auth', description='Authentication API',
                 prefix='/api/{}'.format(__api_version__))
 
 user_add = api.model('auth', {
-    'eap_message': fields.String(required=True),
     'username': fields.String(required=True),
     'password': fields.String(required=True),
     'vlan': fields.Integer(required=True),
@@ -32,28 +34,44 @@ user_enable = api.model('auth_enable', {
 })
 
 
+def get_user_data(username=''):
+    result = dict()
+
+    users = User.get(username)
+    replies = User.reply_get()
+    nas_ports = NasPort.get()
+    last_seen = PostAuth.get_last_seen()
+
+    for user in users:
+        username = user['username']
+        result[username] = dict()
+
+        nas_port = get_user_port(username, nas_ports)
+
+        if nas_port is None:
+            nas_port = dict()
+            nas_port['nas_identifier'] = None
+            nas_port['nas_port_id'] = None
+            nas_port['called_station_id'] = None
+            nas_port['calling_station_id'] = None
+
+        for key in nas_port:
+            result[username][key] = nas_port[key]
+
+        result[username]['active'] = get_is_active(username, users)
+        result[username]['last_seen'] = get_last_seen(username, last_seen)
+        result[username]['replies'] = get_user_replies(username, replies)
+    return result
+
+
 class AuthApi(Resource):
     def error(self, errstr):
         return empty_result(status='error', data=errstr), 404
 
     @jwt_required
     def get(self):
-        result = {}
-        users = User.get()
-        for user in users:
-            username = user['username']
-            reply = User.reply_get(username)
-            nas_port = NasPort.get(username)
-            user['reply'] = reply
-            user['nad_identifier'] = nas_port['nas_identifier']
-            user['nas_port_id'] = nas_port['nas_port_id']
-            user['calling_station_id'] = nas_port['calling_station_id']
-            user['called_station_id'] = nas_port['called_station_id']
-            user['last_seen'] = str(PostAuth.get_last_seen(user['username']))
-            result[user['username']] = user
-        return empty_result(status='success', data=result)
+        return empty_result(status='success', data=get_user_data())
 
-#    @jwt_required
     @api.expect(user_add)
     def post(self):
         errors = []
@@ -136,12 +154,7 @@ class AuthApiByName(Resource):
 
     @jwt_required
     def get(self, username):
-        user = User.get(username)
-        for _ in user:
-            reply = User.reply_get(_['username'])
-            _['reply'] = reply
-        result = {'users': user}
-        return empty_result(status='success', data=result)
+        return empty_result(status='success', data=get_user_data(username))
 
     @jwt_required
     @api.expect(user_enable)
