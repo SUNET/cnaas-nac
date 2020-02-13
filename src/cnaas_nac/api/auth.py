@@ -45,7 +45,6 @@ def get_user_data(username=''):
     for user in users:
         username = user['username']
         result[username] = dict()
-
         nas_port = get_user_port(username, nas_ports)
 
         if nas_port is None:
@@ -88,10 +87,26 @@ class AuthApi(Resource):
             return self.error('Username not found')
 
         username = json_data['username']
-        nas_identifier = json_data['nas_identifier']
-        nas_port_id = json_data['nas_port_id']
-        calling_station_id = json_data['calling_station_id']
-        called_station_id = json_data['called_station_id']
+
+        if 'nas_identifier' not in json_data:
+            nas_identifier = None
+        else:
+            nas_identifier = json_data['nas_identifier']
+
+        if 'nas_port_id' not in json_data:
+            nas_port_id = None
+        else:
+            nas_port_id = json_data['nas_port_id']
+
+        if 'calling_station_id' not in json_data:
+            calling_station_id = None
+        else:
+            calling_station_id = json_data['calling_station_id']
+
+        if 'called_station_id' not in json_data:
+            called_station_id = None
+        else:
+            called_station_id = json_data['called_station_id']
 
         if nas_identifier == "" or nas_identifier is None:
             nas_identifier = username
@@ -161,12 +176,15 @@ class AuthApiByName(Resource):
     def put(self, username):
         json_data = request.get_json()
         result = ''
-        if 'enabled' not in json_data:
-            return self.error('Missing argument enabled in JSON string')
-        if json_data['enabled'] is True:
-            result = User.enable(username)
-        else:
-            result = User.disable(username)
+
+        if 'enabled' in json_data:
+            if json_data['enabled'] is True:
+                result = User.enable(username)
+            else:
+                result = User.disable(username)
+        if 'vlan' in json_data:
+            print('Setting VLAN')
+            result = User.reply_vlan(username, json_data['vlan'])
         if result != '':
             return self.error(result)
         return empty_result(status='success')
