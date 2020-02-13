@@ -88,23 +88,23 @@
 
 	{% for user in users %}
 	<tr>
-	  <td>{{ form.selected(value=user.username) }}</td>
-	  <td>{{ user.username }}</td>
-	  {% for attr in user.reply %}
+	  <td>{{ form.selected(value=user) }}</td>
+	  <td>{{ user }}</td>
+	  {% for attr in users[user].replies %}
 	  <td>
 	    {{ attr.value }}
 	  </td>
 	  {% endfor %}
 	  <td>
-	    {{ user.calling_station_id }}
+	    {{ users[user].calling_station_id }}
 	  </td>
 	  <td>
-	    {{ user.called_station_id }}
+	    {{ users[user].called_station_id }}
 	  </td>
 	  <td>
-	    {{ user.nas_port_id }}
+	    {{ users[user].nas_port_id }}
 	  </td>
-	  {% if user.active %}
+	  {% if users[user].active %}
 	  <td bgcolor="lightgreen">
 	    Enabled
 	  </td>
@@ -114,7 +114,7 @@
 	  </td>
 	  {% endif %}
 	  <td>
-	    {{ user.last_seen }}
+	    {{ users[user].last_seen }}
 	  </td>
 	</tr>
 	{% endfor %}

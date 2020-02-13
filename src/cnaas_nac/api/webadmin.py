@@ -1,17 +1,20 @@
+#
+# Fugly UI, should at some point be replaced with a proper UI written
+# in React and some other facy JS techniques.
+#
+#
+
+import os
+import requests
+
 from flask import request
 from flask import redirect
 from flask import render_template
-
 from flask_restful import Resource
 
 from flask_wtf import FlaskForm
-
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired
-
-from cnaas_nac.db.user import User, PostAuth
-from cnaas_nac.db.nas import NasPort
-from cnaas_nac.db.oui import DeviceOui
 
 
 class UserForm(FlaskForm):
@@ -27,76 +30,128 @@ class UserForm(FlaskForm):
     set_vlan = StringField()
 
 
+def get_users(api_url, token):
+    try:
+        res = requests.get(api_url,
+                           headers={'Authorization': 'Bearer ' + token},
+                           verify=False)
+        json = res.json()
+    except Exception as e:
+        print(str(e))
+        return {}
+
+    if 'data' in json:
+        return json['data']
+    return {}
+
+
+def add_user(api_url, token, username, password, vlan):
+    try:
+        user = {
+            'username': username,
+            'password': password,
+            'vlan': vlan
+        }
+
+        res = requests.post(api_url, json=user,
+                            headers={'Authorization': 'Bearer ' + token},
+                            verify=False)
+        json = res.json()
+    except Exception as e:
+        print(str(e))
+        return {}
+
+    if 'data' in json:
+        return json['data']
+    return {}
+
+
+def delete_user(api_url, token, username):
+    try:
+        res = requests.delete('{}/{}'.format(api_url, username),
+                              headers={'Authorization': 'Bearer ' + token},
+                              verify=False)
+        json = res.json()
+    except Exception as e:
+        print(str(e))
+        return {}
+
+    if 'data' in json:
+        return json['data']
+    return {}
+
+
+def enable_user(api_url, token, username):
+    try:
+        user = {'enabled': True}
+        res = requests.put('{}/{}'.format(api_url, username), json=user,
+                           headers={'Authorization': 'Bearer ' + token},
+                           verify=False)
+        json = res.json()
+    except Exception as e:
+        print(str(e))
+        return {}
+
+    if 'data' in json:
+        return json['data']
+    return {}
+
+
+def disable_user(api_url, token, username):
+    try:
+        user = {'enabled': False}
+        res = requests.put('{}/{}'.format(api_url, username), json=user,
+                           headers={'Authorization': 'Bearer ' + token},
+                           verify=False)
+        json = res.json()
+    except Exception as e:
+        print(str(e))
+        return {}
+
+    if 'data' in json:
+        return json['data']
+    return {}
+
+
+def vlan_user(api_url, token, username, vlan):
+    try:
+        user = {'vlan': vlan}
+        res = requests.put('{}/{}'.format(api_url, username), json=user,
+                           headers={'Authorization': 'Bearer ' + token},
+                           verify=False)
+        json = res.json()
+    except Exception as e:
+        print(str(e))
+        return {}
+
+    if 'data' in json:
+        return json['data']
+    return {}
+
+
+def get_jwt_token():
+    try:
+        token = os.environ['JWT_AUTH_TOKEN']
+    except Exception:
+        raise ValueError('Could not find JWT token')
+    return token
+
+
+def get_api_url():
+    try:
+        token = os.environ['AUTH_API_URL']
+    except Exception:
+        raise ValueError('Could not find API URL')
+    return token
+
+
 class WebAdmin(Resource):
     @classmethod
-    def get_user_reply(cls, username, replies):
-        reply = []
-        for user_reply in replies:
-            if user_reply['username'] == username:
-                reply.append(user_reply)
-        return reply
-
-    @classmethod
-    def user_get_port(cls, username, nas_ports):
-        nas_port = None
-        for port in nas_ports:
-            if port['username'] == username:
-                nas_port = port
-        return nas_port
-
-    @classmethod
-    def user_is_active(cls, username, users):
-        for user in users:
-            if 'username' not in user:
-                continue
-            if user['username'] != username:
-                continue
-            if user['op'] == ':=':
-                return True
-        return False
-
-    @classmethod
-    def user_last_seen(cls, username, last_seen):
-        for user in last_seen:
-            if 'username' not in user:
-                continue
-            if user['username'] != username:
-                continue
-            return user['authdate']
-        return None
-
-    @classmethod
     def index(cls):
-        users = User.get()
+        api_url = get_api_url()
+        token = get_jwt_token()
+        users = get_users(api_url, token)
         form = UserForm()
-        ouis = DeviceOui.get()
-        replies = User.reply_get()
-        nas_ports = NasPort.get()
-        last_seen = PostAuth.get_last_seen()
-
-        for user in users:
-            user['reply'] = cls.get_user_reply(user['username'], replies)
-            nas_port = cls.user_get_port(user['username'], nas_ports)
-
-            if nas_port is None:
-                nas_port = dict()
-                nas_port['nas_identifier'] = None
-                nas_port['nas_port_id'] = None
-                nas_port['called_station_id'] = None
-                nas_port['calling_station_id'] = None
-
-            if nas_port is not None:
-                if 'calling_station_id' in nas_port:
-                    user['calling_station_id'] = nas_port['calling_station_id']
-                if 'calling_station_id' in nas_port:
-                    user['called_station_id'] = nas_port['called_station_id']
-                if 'nas_identifier' in nas_port:
-                    user['nas_identifier'] = nas_port['nas_identifier']
-                if 'nas_port_id' in nas_port:
-                    user['nas_port_id'] = nas_port['nas_port_id']
-                user['active'] = cls.user_is_active(user['username'], users)
-            user['active'] = cls.user_is_active(user['username'], users)
-            user['last_seen'] = cls.user_last_seen(user['username'], last_seen)
 
         if request.method == 'POST':
             result = request.form
@@ -106,28 +161,26 @@ class WebAdmin(Resource):
                 password = result['password']
                 vlan = result['vlan']
 
-                User.add(username, password)
-                User.reply_add(username, vlan)
-                User.disable(username)
+                add_user(api_url, token, username, password, vlan)
             elif 'delete' in result:
                 selected = request.form.getlist('selected')
                 for user in selected:
-                    User.delete(user)
-                    User.reply_delete(user)
+                    delete_user(api_url, token, user)
             elif 'enable' in result:
                 selected = request.form.getlist('selected')
                 for user in selected:
-                    User.enable(user)
+                    enable_user(api_url, token, user)
             elif 'disable' in result:
                 selected = request.form.getlist('selected')
                 for user in selected:
-                    User.disable(user)
+                    disable_user(api_url, token, user)
             elif 'set_vlan_btn' in result:
                 set_vlan = result['set_vlan']
                 if set_vlan != "" and set_vlan:
                     selected = request.form.getlist('selected')
                     for user in selected:
-                        User.reply_vlan(user, set_vlan)
+                        vlan_user(api_url, token, user, set_vlan)
             return redirect('/admin')
 
-        return render_template('index.html', users=users, ouis=ouis, form=form)
+        return render_template('index.html', users=users,
+                               form=form)
