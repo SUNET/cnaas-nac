@@ -121,7 +121,11 @@ class User(Base):
         result = []
         with sqla_session() as session:
             result = []
-            query = session.query(User).order_by('username')
+            if username == '':
+                query = session.query(User).order_by('username')
+            else:
+                query = session.query(User).filter(User.username ==
+                                                   username).all()
             for _ in query:
                 user = _.as_dict()
                 user_dict = dict()
@@ -129,8 +133,6 @@ class User(Base):
                 user_dict['username'] = user['username']
                 user_dict['op'] = user['op']
                 user_dict['attribute'] = user['attribute']
-                if username != '' and username != user['username']:
-                    continue
                 result.append(user_dict)
         return result
 
