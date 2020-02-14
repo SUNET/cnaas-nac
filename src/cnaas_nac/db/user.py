@@ -43,7 +43,7 @@ class PostAuth(Base):
         return d
 
     @classmethod
-    def get_last_seen(cls, username=None):
+    def get_last_seen(cls, username=None, last=True):
         res = []
         with sqla_session() as session:
             if username is not None:
@@ -51,6 +51,10 @@ class PostAuth(Base):
                                                                     username).all()
             else:
                 postauth: PostAuth = session.query(PostAuth).all()
+            if not postauth:
+                return res
+            elif last:
+                postauth = [postauth[0]]
             for auth in postauth:
                 last_seen = dict()
                 last_seen['username'] = auth.username
