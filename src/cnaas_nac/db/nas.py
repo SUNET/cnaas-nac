@@ -69,3 +69,15 @@ class NasPort(Base):
             nas.calling_station_id = calling_station_id
             nas.called_station_id = called_station_id
             session.add(nas)
+
+    @classmethod
+    def delete(cls, username):
+        if not cls.get(username):
+            return ''
+        with sqla_session() as session:
+            nas_ports: NasPort = session.query(NasPort).filter(NasPort.username ==
+                                                               username).all()
+            for port in nas_ports:
+                session.delete(port)
+                session.commit()
+        return ''
