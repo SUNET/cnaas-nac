@@ -60,6 +60,7 @@ def get_user_data(username=''):
         result[username]['active'] = get_is_active(username, users)
         result[username]['last_seen'] = get_last_seen(username, last_seen)
         result[username]['replies'] = get_user_replies(username, replies)
+
     return result
 
 
@@ -67,26 +68,21 @@ class AuthApi(Resource):
     def error(self, errstr):
         return empty_result(status='error', data=errstr), 404
 
-    @jwt_required
-    def get(self):
-        return empty_result(status='success', data=get_user_data())
-
-    @api.expect(user_add)
-    def post(self):
-        errors = []
-        json_data = request.get_json()
-
-        # We should only handle clients using MAB. If the user authenticates
-        # with 802.1X we will get an EAP message, just return a 202 and don't
-        # create that user in the database.
-        if 'eap_message' in json_data and json_data['eap_message'] != '':
-            logger.info('EAP-message, ignoring')
-            return empty_result(status='success')
-
+    def validate(self, json_data):
         if 'username' not in json_data:
-            return self.error('Username not found')
+            raise ValueError('Username not found')
+        else:
+            username = json_data['username']
 
-        username = json_data['username']
+        if 'password' in json_data:
+            password = json_data['password']
+        else:
+            password = username
+
+        if 'vlan' in json_data:
+            vlan = json_data['vlan']
+        else:
+            vlan = 13
 
         if 'nas_identifier' not in json_data:
             nas_identifier = None
@@ -111,30 +107,41 @@ class AuthApi(Resource):
         if nas_identifier == "" or nas_identifier is None:
             nas_identifier = username
 
+        return username, password, vlan, nas_identifier, nas_port_id, \
+            calling_station_id, called_station_id, nas_identifier
+
+    @jwt_required
+    def get(self):
+        return empty_result(status='success', data=get_user_data())
+
+    @api.expect(user_add)
+    def post(self):
+        errors = []
+        json_data = request.get_json()
+
+        try:
+            username, password, vlan, nas_identifier, nas_port_id, calling_station_id, called_station_id, nas_identifier = self.validate(json_data)
+        except Exception as e:
+            return self.error(str(e))
+
         for user in User.get(username):
-            if user == username:
-                logger.info('User {} already exists'.format(user))
-                nas_port = NasPort.get(username)
-                if nas_port['nas_identifier'] != nas_identifier:
-                    return self.error('User already exist on {}'.format(
-                        nas_port['nas_identifier']))
-                if nas_port['nas_port'] != nas_port:
-                    return self.error('User already exist on port {}'.format(
-                        nas_port['nas_port']))
-                return empty_result(status='success')
+            if user['username'] != username:
+                logger.info('Not the same user')
+                logger.info('{} != {}'.format(user, username))
+                continue
 
-        if 'password' not in json_data:
-            password = username
-        else:
-            password = json_data['password']
+            logger.info('User {} already exists'.format(user))
 
-        if 'vlan' in json_data:
-            try:
-                vlan = int(json_data['vlan'])
-            except Exception:
-                return self.error('Invalid VLAN')
-        else:
-            vlan = 13
+            nas_ports = NasPort.get(username)
+
+            for port in nas_ports:
+                if port['nas_port_id'] == nas_port_id and port['called_station_id'] == called_station_id:
+                    logger.info('Valid NAS port {} on {} for user {}'.format(
+                        nas_port_id, called_station_id, username))
+                    return empty_result(status='success')
+                else:
+                    return self.error('Invalid NAS port {} on {} for user {}'.format(
+                        nas_port_id, called_station_id, username))
 
         if User.add(username, password) != '':
             logger.info('Not creating user {} again'.format(username))
@@ -144,9 +151,11 @@ class AuthApi(Resource):
         else:
             if DeviceOui.exists(username):
                 logger.info('Setting user VLAN to OUI VLAN.')
+
                 oui_vlan = DeviceOui.get_vlan(username)
-                User.enable(username)
+
                 User.reply_vlan(username, oui_vlan)
+                User.enable(username)
 
         if NasPort.add(username, nas_identifier, nas_port_id,
                        calling_station_id,
@@ -157,10 +166,7 @@ class AuthApi(Resource):
             logger.info('Error: {}'.format(errors))
             return self.error(errors)
 
-        user = User.get(username)
-        logger.info('User: {}'.format(user))
-
-        return empty_result(status='success', data=user)
+        return empty_result(status='success')
 
 
 class AuthApiByName(Resource):
