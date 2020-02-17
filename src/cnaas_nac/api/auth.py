@@ -138,7 +138,9 @@ class AuthApi(Resource):
                 if port['nas_port_id'] == nas_port_id and port['called_station_id'] == called_station_id:
                     logger.info('Valid NAS port {} on {} for user {}'.format(
                         nas_port_id, called_station_id, username))
-                    return empty_result(status='success')
+
+                    if User.is_enabled(username):
+                        return empty_result(status='success')
                 else:
                     return self.error('Invalid NAS port {} on {} for user {}'.format(
                         nas_port_id, called_station_id, username))
@@ -162,11 +164,14 @@ class AuthApi(Resource):
                        called_station_id) != '':
             logger.info('Not adding NAS port again.')
 
+        if User.is_enabled(username):
+            return empty_result(status='success')
+
         if errors != []:
             logger.info('Error: {}'.format(errors))
             return self.error(errors)
 
-        return empty_result(status='success')
+        return self.error('Not authenticated')
 
 
 class AuthApiByName(Resource):
