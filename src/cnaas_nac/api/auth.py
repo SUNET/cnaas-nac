@@ -1,3 +1,5 @@
+import os
+
 from flask import request
 from flask_restplus import Resource, Namespace, fields
 from flask_jwt_extended import jwt_required
@@ -56,6 +58,11 @@ class AuthApi(Resource):
 #    @jwt_required
     @api.expect(user_add)
     def post(self):
+
+        # If we are running in slave mode, silently exit.
+        if 'RADIUS_SLAVE' in os.environ:
+            return empty_result(status='success')
+
         errors = []
         json_data = request.get_json()
 
