@@ -120,11 +120,6 @@ class AuthApi(Resource):
 
     @api.expect(user_add)
     def post(self):
-
-        # If we are running in slave mode, silently exit.
-        if 'RADIUS_SLAVE' in os.environ:
-            return empty_result(status='success')
-
         errors = []
         json_data = request.get_json()
 
@@ -143,16 +138,21 @@ class AuthApi(Resource):
 
             nas_ports = NasPort.get(username)
 
-            for port in nas_ports:
-                if port['nas_port_id'] == nas_port_id and port['called_station_id'] == called_station_id:
-                    logger.info('Valid NAS port {} on {} for user {}'.format(
-                        nas_port_id, called_station_id, username))
+            if nas_ports is not None:
+                for port in nas_ports:
+                    if port['nas_port_id'] == nas_port_id and port['called_station_id'] == called_station_id:
+                        logger.info('Valid NAS port {} on {} for user {}'.format(
+                            nas_port_id, called_station_id, username))
 
-                    if User.is_enabled(username):
-                        return empty_result(status='success')
-                else:
-                    return self.error('Invalid NAS port {} on {} for user {}'.format(
-                        nas_port_id, called_station_id, username))
+                        if User.is_enabled(username):
+                            return empty_result(status='success')
+                    else:
+                        return self.error('Invalid NAS port {} on {} for user {}'.format(
+                            nas_port_id, called_station_id, username))
+
+        # If we are running in slave mode, silently exit.
+        if 'RADIUS_SLAVE' in os.environ:
+            return empty_result(status='success')
 
         if User.add(username, password) != '':
             logger.info('Not creating user {} again'.format(username))
