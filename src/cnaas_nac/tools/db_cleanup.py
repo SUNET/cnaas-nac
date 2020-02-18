@@ -1,3 +1,4 @@
+import os
 import time
 
 from cnaas_nac.tools.log import get_logger
@@ -12,6 +13,10 @@ ONE_MONTH = 2629800
 
 
 def db_cleanup():
+    if 'NO_CLEANUP' in os.environ:
+        logger.info('Aborting cleanup.')
+        return ''
+
     users = User.get()
     pattern = '%Y-%m-%d %H:%M:%S.%f%z'
 
@@ -24,10 +29,9 @@ def db_cleanup():
             logger.info('User {} active, skipping'.format(user['username']))
             continue
 
-        post_auth = PostAuth.get_last_seen(username=user['username'])
-        last_seen = str(post_auth[-1]['authdate'])
-
+        last_seen = PostAuth.get_last_seen(username=user['username'], last=True)
         last_seen_epoch = int(time.mktime(time.strptime(last_seen, pattern)))
+
         current_epoch = int(time.time())
 
         if current_epoch - last_seen_epoch >= ONE_MONTH:
