@@ -42,7 +42,6 @@ def get_user_data(username=''):
     users = User.get(username)
     replies = User.reply_get()
     nas_ports = NasPort.get()
-    last_seen = PostAuth.get_last_seen()
 
     for user in users:
         username = user['username']
@@ -58,6 +57,8 @@ def get_user_data(username=''):
 
         for key in nas_port:
             result[username][key] = nas_port[key]
+
+        last_seen = PostAuth.get_last_seen(username=username, last=False)
 
         result[username]['active'] = get_is_active(username, users)
         result[username]['last_seen'] = get_last_seen(username, last_seen)
