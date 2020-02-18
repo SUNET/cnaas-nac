@@ -1,0 +1,1 @@
+* * * * * (cd /opt/cnaas/venv/cnaas-nac/src; source ../../bin/activate; python3 -m cnaas_nac.tools.db_cleanup) >> /var/log/cron.log
