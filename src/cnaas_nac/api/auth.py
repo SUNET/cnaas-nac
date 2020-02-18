@@ -213,9 +213,15 @@ class AuthApiByName(Resource):
         result = User.delete(username)
         if result != '':
             errors.append(result)
+
         result = User.reply_delete(username)
         if result != '':
             errors.append(result)
+
+        result = NasPort.delete(username)
+        if result != '':
+            errors.append(result)
+
         if errors != []:
             return self.error(errors)
         return empty_result(status='success')
