@@ -59,6 +59,7 @@ class PostAuth(Base):
                 last_seen = dict()
                 last_seen['username'] = auth.username
                 last_seen['authdate'] = auth.authdate
+                last_seen['reply'] = auth.reply
                 res.append(last_seen)
         return res
 

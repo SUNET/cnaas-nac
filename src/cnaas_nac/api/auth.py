@@ -10,7 +10,7 @@ from cnaas_nac.db.user import User, PostAuth
 from cnaas_nac.db.oui import DeviceOui
 from cnaas_nac.db.nas import NasPort
 from cnaas_nac.tools.helpers import get_user_replies, get_user_port, \
-    get_is_active, get_last_seen
+    get_is_active, get_last_seen, get_last_reply
 
 from cnaas_nac.version import __api_version__
 
@@ -62,6 +62,7 @@ def get_user_data(username=''):
 
         result[username]['active'] = get_is_active(username, users)
         result[username]['last_seen'] = get_last_seen(username, last_seen)
+        result[username]['last_reply'] = get_last_reply(username, last_seen)
         result[username]['replies'] = get_user_replies(username, replies)
 
     return result

@@ -39,3 +39,13 @@ def get_last_seen(username, last_seen):
             continue
         return str(user['authdate'])
     return None
+
+
+def get_last_reply(username, last_seen):
+    for user in last_seen:
+        if 'username' not in user:
+            continue
+        if user['username'] != username:
+            continue
+        return user['reply']
+    return None
