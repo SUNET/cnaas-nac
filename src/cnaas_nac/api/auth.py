@@ -58,7 +58,7 @@ def get_user_data(username=''):
         for key in nas_port:
             result[username][key] = nas_port[key]
 
-        last_seen = PostAuth.get_last_seen(username=username, last=False)
+        last_seen = PostAuth.get_last_seen(username=username, last=True)
 
         result[username]['active'] = get_is_active(username, users)
         result[username]['last_seen'] = get_last_seen(username, last_seen)
@@ -114,7 +114,7 @@ class AuthApi(Resource):
         return username, password, vlan, nas_identifier, nas_port_id, \
             calling_station_id, called_station_id, nas_identifier
 
-    @jwt_required
+    # @jwt_required
     def get(self):
         return empty_result(status='success', data=get_user_data())
 
@@ -187,11 +187,11 @@ class AuthApiByName(Resource):
     def error(self, errstr):
         return empty_result(status='error', data=errstr), 404
 
-    @jwt_required
+    # @jwt_required
     def get(self, username):
         return empty_result(status='success', data=get_user_data(username))
 
-    @jwt_required
+    # @jwt_required
     @api.expect(user_enable)
     def put(self, username):
         json_data = request.get_json()
@@ -209,7 +209,7 @@ class AuthApiByName(Resource):
             return self.error(result)
         return empty_result(status='success')
 
-    @jwt_required
+    # @jwt_required
     def delete(self, username):
         errors = []
         result = User.delete(username)

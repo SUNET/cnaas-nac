@@ -54,7 +54,7 @@ class PostAuth(Base):
             if not postauth:
                 return res
             elif last:
-                return [postauth[0]]
+                return [postauth[-1].as_dict()]
             for auth in postauth:
                 last_seen = dict()
                 last_seen['username'] = auth.username
