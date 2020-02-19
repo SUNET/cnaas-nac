@@ -29,7 +29,14 @@ def db_cleanup():
             logger.info('User {} active, skipping'.format(user['username']))
             continue
 
-        last_seen = PostAuth.get_last_seen(username=user['username'], last=True)
+        postauth = PostAuth.get_last_seen(username=user['username'], last=True)
+
+        if len(postauth) > 1:
+            logger.info('Got more than one timestamp for user {}, bailing out.'.format(
+                user['username']))
+            continue
+
+        last_seen = postauth[0]['authdate']
         last_seen_epoch = int(time.mktime(time.strptime(last_seen, pattern)))
 
         current_epoch = int(time.time())
