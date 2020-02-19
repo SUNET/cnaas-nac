@@ -52,6 +52,7 @@ def get_user_data(username=''):
             nas_port = dict()
             nas_port['nas_identifier'] = None
             nas_port['nas_port_id'] = None
+            nas_port['nas_ip_address'] = None
             nas_port['called_station_id'] = None
             nas_port['calling_station_id'] = None
 
@@ -98,6 +99,11 @@ class AuthApi(Resource):
         else:
             nas_port_id = json_data['nas_port_id']
 
+        if 'nas_ip_address' not in json_data:
+            nas_ip_address = None
+        else:
+            nas_ip_address = json_data['nas_ip_address']
+
         if 'calling_station_id' not in json_data:
             calling_station_id = None
         else:
@@ -112,7 +118,8 @@ class AuthApi(Resource):
             nas_identifier = username
 
         return username, password, vlan, nas_identifier, nas_port_id, \
-            calling_station_id, called_station_id, nas_identifier
+            calling_station_id, called_station_id, nas_identifier, \
+            nas_ip_address
 
     # @jwt_required
     def get(self):
@@ -124,7 +131,7 @@ class AuthApi(Resource):
         json_data = request.get_json()
 
         try:
-            username, password, vlan, nas_identifier, nas_port_id, calling_station_id, called_station_id, nas_identifier = self.validate(json_data)
+            username, password, vlan, nas_identifier, nas_port_id, calling_station_id, called_station_id, nas_identifier, nas_ip_address = self.validate(json_data)
         except Exception as e:
             return self.error(str(e))
 
@@ -168,7 +175,7 @@ class AuthApi(Resource):
                 User.reply_vlan(username, oui_vlan)
                 User.enable(username)
 
-        if NasPort.add(username, nas_identifier, nas_port_id,
+        if NasPort.add(username, nas_ip_address, nas_identifier, nas_port_id,
                        calling_station_id,
                        called_station_id) != '':
             logger.info('Not adding NAS port again.')

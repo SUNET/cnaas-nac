@@ -24,6 +24,8 @@ def upgrade():
                               nullable=False),
                     sa.Column('username', sa.Unicode(length=64),
                               nullable=False),
+                    sa.Column('nas_ip_address', sa.Unicode(length=64),
+                              nullable=True),
                     sa.Column('nas_identifier', sa.Unicode(length=64),
                               nullable=True),
                     sa.Column('nas_port_id', sa.Unicode(length=64),

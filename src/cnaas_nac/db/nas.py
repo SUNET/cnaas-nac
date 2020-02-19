@@ -21,6 +21,7 @@ class NasPort(Base):
     username = Column(Unicode(64), nullable=False)
     nas_identifier = Column(Unicode(64), nullable=False)
     nas_port_id = Column(Unicode(64), nullable=False)
+    nas_ip_address = Column(Unicode(64), nullable=False)
     calling_station_id = Column(Unicode(64), nullable=False)
     called_station_id = Column(Unicode(64), nullable=False)
 
@@ -56,7 +57,7 @@ class NasPort(Base):
             return res
 
     @classmethod
-    def add(cls, username, nas_identifier, nas_port_id,
+    def add(cls, username, nas_ip_address, nas_identifier, nas_port_id,
             calling_station_id,
             called_station_id):
         if cls.get(username):
@@ -64,6 +65,7 @@ class NasPort(Base):
         with sqla_session() as session:
             nas = NasPort()
             nas.username = username
+            nas.nas_ip_address = nas_ip_address
             nas.nas_identifier = nas_identifier
             nas.nas_port_id = nas_port_id
             nas.calling_station_id = calling_station_id
