@@ -26,6 +26,7 @@ user_add = api.model('auth', {
     'password': fields.String(required=True),
     'vlan': fields.Integer(required=True),
     'nas_identifier': fields.String(required=True),
+    'nas_ip_address': fields.String(required=True),
     'nas_port_id': fields.String(required=True),
     'calling_station_id': fields.String(required=True),
     'called_station_id': fields.String(required=True)
