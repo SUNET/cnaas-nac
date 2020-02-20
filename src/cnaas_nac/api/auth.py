@@ -160,7 +160,8 @@ class AuthApi(Resource):
 
         # If we are running in slave mode, silently exit.
         if 'RADIUS_SLAVE' in os.environ:
-            return empty_result(status='success')
+            if os.environ['RADIUS_SLAVE'] == 'yes':
+                return empty_result(status='success')
 
         if User.add(username, password) != '':
             logger.info('Not creating user {} again'.format(username))
