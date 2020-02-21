@@ -12,17 +12,6 @@ while ! nc -z cnaas_postgres 5432; do
       fi
 done
 
-# Create the NAC database
-createdb -h cnaas_postgres -U cnaas nac
-
-# Create tables etc from the stored schema
-psql -h cnaas_postgres -U cnaas nac -f /tmp/schema.sql
-
-if [ $? -ne 0 ]; then
-    echo "Error: Failed to create tables"
-    exit 1
-fi
-
 # Clone settings from repository
 git clone $GITREPO_ETC /tmp/gitrepo_etc
 
