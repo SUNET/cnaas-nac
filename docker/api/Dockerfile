@@ -19,6 +19,13 @@ COPY config/supervisord_app.conf /etc/supervisor/conf.d
 COPY config/nginx_app.conf /etc/nginx/sites-available/
 COPY cert/* /etc/nginx/conf.d/
 COPY exec-pre-app.sh /opt/cnaas/
+COPY config/cleanup.cron /etc/cron.d/
+
+# Install cron job
+RUN chmod 0644 /etc/cron.d/cleanup.cron
+RUN crontab /etc/cron.d/cleanup.cron
+RUN touch /var/log/cron.log
+
 
 # Give nginx some special treatment
 RUN unlink /etc/nginx/sites-enabled/default

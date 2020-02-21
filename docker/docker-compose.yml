@@ -6,6 +6,8 @@ services:
       - 1443:443
     networks:
       - cnaas
+    environment:
+      - RADIUS_SLAVE
 
   nac_radius:
     build: ./radius

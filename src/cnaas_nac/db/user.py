@@ -43,7 +43,7 @@ class PostAuth(Base):
         return d
 
     @classmethod
-    def get_last_seen(cls, username=None):
+    def get_last_seen(cls, username=None, last=True):
         res = []
         with sqla_session() as session:
             if username is not None:
@@ -51,10 +51,15 @@ class PostAuth(Base):
                                                                     username).all()
             else:
                 postauth: PostAuth = session.query(PostAuth).all()
+            if not postauth:
+                return res
+            elif last:
+                return [postauth[-1].as_dict()]
             for auth in postauth:
                 last_seen = dict()
                 last_seen['username'] = auth.username
                 last_seen['authdate'] = auth.authdate
+                last_seen['reply'] = auth.reply
                 res.append(last_seen)
         return res
 
@@ -121,7 +126,11 @@ class User(Base):
         result = []
         with sqla_session() as session:
             result = []
-            query = session.query(User).order_by('username')
+            if username == '':
+                query = session.query(User).order_by('username')
+            else:
+                query = session.query(User).filter(User.username ==
+                                                   username).all()
             for _ in query:
                 user = _.as_dict()
                 user_dict = dict()
@@ -129,8 +138,6 @@ class User(Base):
                 user_dict['username'] = user['username']
                 user_dict['op'] = user['op']
                 user_dict['attribute'] = user['attribute']
-                if username != '' and username != user['username']:
-                    continue
                 result.append(user_dict)
         return result
 

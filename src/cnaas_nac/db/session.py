@@ -13,6 +13,7 @@ def get_dbdata(config='/etc/cnaas-nac/db_config.yml'):
 
 def get_sqlalchemy_conn_str(**kwargs) -> str:
     db_data = get_dbdata(**kwargs)
+
     if 'CNAAS_DB_HOSTNAME' in os.environ:
         db_data['hostname'] = os.environ['CNAAS_DB_HOSTNAME']
     if 'CNAAS_DB_PORT' in os.environ:
@@ -30,15 +31,16 @@ def get_sqlalchemy_conn_str(**kwargs) -> str:
     )
 
 
-conn_str = get_sqlalchemy_conn_str()
-engine = create_engine(conn_str, pool_size=50, max_overflow=0)
-connection = engine.connect()
-Session = sessionmaker(bind=engine)
-
-
 @contextmanager
-def sqla_session(**kwargs):
+def sqla_session(conn_str='', **kwargs):
+    if conn_str == '':
+        conn_str = get_sqlalchemy_conn_str()
+
+    engine = create_engine(conn_str, pool_size=50, max_overflow=0)
+    connection = engine.connect()
+    Session = sessionmaker(bind=engine)
     session = Session()
+
     try:
         yield session
         session.commit()

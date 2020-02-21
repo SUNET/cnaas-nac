@@ -6,7 +6,6 @@ from flask_jwt_extended import JWTManager, decode_token
 from flask_jwt_extended.exceptions import NoAuthorizationError
 
 from cnaas_nac.api.auth import api as auth_api
-from cnaas_nac.api.webadmin import WebAdmin
 from cnaas_nac.version import __api_version__
 from cnaas_nac.tools.log import get_logger
 
@@ -59,11 +58,6 @@ api = CnaasApi(app, prefix='/api/{}'.format(__api_version__),
                security='apikey')
 
 api.add_namespace(auth_api)
-
-@app.route('/admin', methods=['GET', 'POST'])
-def index():
-    return WebAdmin.index()
-
 
 # Log all requests, include username etc
 @app.after_request
