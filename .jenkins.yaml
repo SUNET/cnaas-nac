@@ -31,3 +31,9 @@ extra_jobs:
       - docker
     docker_name: cnaas/radius
     docker_context_dir: docker/radius
+
+  - name: cnaas-nac-postgres
+    builders:
+      - docker
+    docker_name: cnaas/nac-postgres
+    docker_context_dir: docker/postgres
