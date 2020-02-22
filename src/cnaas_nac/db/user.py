@@ -12,6 +12,69 @@ from cnaas_nac.db.nas import NasPort
 Base = declarative_base()
 
 
+class UserInfo(Base):
+    __tablename__ = 'raduserinfo'
+    __table_args__ = (
+        None,
+        UniqueConstraint('id'),
+    )
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    username = Column(Unicode(64), nullable=False)
+    comment = Column(Unicode(256), nullable=False)
+    reason = Column(Unicode(256), nullable=False)
+
+    @classmethod
+    def add(cls, username, comment='', reason=''):
+        with sqla_session() as session:
+            res = session.query(UserInfo).filter(UserInfo.username == username).one_or_none()
+
+            if res is not None:
+                if comment != '':
+                    res.comment = comment
+                if reason != '':
+                    res.reason = reason
+            else:
+                user = UserInfo()
+                user.username = username
+                user.reason = reason
+                user.comment = comment
+                session.add(user)
+
+    @classmethod
+    def get(cls, usernames=[]):
+        res = []
+        users = dict()
+        with sqla_session() as session:
+            for username in usernames:
+                userinfo = session.query(UserInfo).filter(UserInfo.username ==
+                                                          username).one_or_none()
+                user_info = dict()
+                if not userinfo:
+                    user_info['comment'] = ''
+                    user_info['reason'] = ''
+                else:
+                    user_info['comment'] = userinfo.comment
+                    user_info['reason'] = userinfo.reason
+                users[username] = user_info
+        return users
+
+    def as_dict(self):
+        """Return JSON serializable dict."""
+        d = {}
+        for col in self.__table__.columns:
+            value = getattr(self, col.name)
+            if issubclass(value.__class__, enum.Enum):
+                value = value.value
+            elif issubclass(value.__class__, Base):
+                continue
+            elif issubclass(value.__class__, ipaddress.IPv4Address):
+                value = str(value)
+            elif issubclass(value.__class__, datetime.datetime):
+                value = str(value)
+            d[col.name] = value
+        return d
+
+
 class PostAuth(Base):
     __tablename__ = 'radpostauth'
     __table_args__ = (
@@ -50,11 +113,13 @@ class PostAuth(Base):
             for username in usernames:
                 postauth = session.query(PostAuth).filter(PostAuth.username ==
                                                           username).order_by(desc((PostAuth.id))).limit(1).one_or_none()
-                if not postauth:
-                    return res
                 last_seen = dict()
-                last_seen['authdate'] = postauth.authdate
-                last_seen['reply'] = postauth.reply
+                if not postauth:
+                    last_seen['authdate'] = ''
+                    last_seen['reply'] = ''
+                else:
+                    last_seen['authdate'] = postauth.authdate
+                    last_seen['reply'] = postauth.reply
                 users[username] = last_seen
         return users
 
@@ -278,6 +343,7 @@ def get_users(username=''):
         for user, reply, nas_port in res:
             usernames.append(user.username)
         radpostauths = PostAuth.get_last_seen(usernames=usernames)
+        userinfos = UserInfo.get(usernames=usernames)
         for user, reply, nas_port in res:
             res_dict = dict()
             res_dict['username'] = user.username
@@ -295,6 +361,8 @@ def get_users(username=''):
             res_dict['nas_ip_address'] = nas_port.nas_ip_address
             res_dict['calling_station_id'] = nas_port.calling_station_id
             res_dict['called_station_id'] = nas_port.called_station_id
+            res_dict['comment'] = userinfos[user.username]['comment']
+            res_dict['reason'] = userinfos[user.username]['reason']
             result.append(res_dict)
 
     return result
