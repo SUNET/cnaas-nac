@@ -1,6 +1,7 @@
 from cnaas_nac.db.session import sqla_session
 from cnaas_nac.db.user import User, Reply
 from cnaas_nac.db.nas import NasPort
+from cnaas_nac.db.accounting import Accounting
 
 
 def get_connstrs(source: str, target: str, username: str,
@@ -8,18 +9,21 @@ def get_connstrs(source: str, target: str, username: str,
 
     connstr_source = 'postgresql://{}:{}@{}:5432/nac'.format(
         username, password, source)
-    connstr_target = 'postgresql://{}:{}@{}:5432/nac'.format(
+    connstr_target = 'postgresql://{}:{}@{}:5433/nac'.format(
         username, password, target)
 
     return (connstr_source, connstr_target)
 
 
-def get_rows(connstr: str, table: User) -> list:
+def get_rows(connstr: str, table: object) -> list:
 
     with sqla_session(connstr) as session:
         rows_list = []
 
-        rows = session.query(table).order_by(table.id).all()
+        if table == Accounting:
+            rows = session.query(table).order_by(table.radacctid).all()
+        else:
+            rows = session.query(table).order_by(table.id).all()
         for row in rows:
             rows_list.append(row.as_dict())
     return rows_list
@@ -132,4 +136,74 @@ def edit_nas(nas_diff, connstr, table=NasPort, remove=False):
                     nas.nas_ip_address = nas_ip_address
                     nas.calling_station_id = calling_station_id
                     nas.called_station_id = called_station_id
+            session.commit()
+
+
+def copy_accounting(diffs, connstr, table=Accounting):
+
+    if diffs is None or diffs == []:
+        return
+
+    with sqla_session(connstr) as session:
+        for diff in diffs:
+            if diff is None:
+                continue
+            radacctid = diff['radacctid']
+            acctsessionid = diff['acctsessionid']
+            acctuniqueid = diff['acctuniqueid']
+            username = diff['username']
+            groupname = diff['groupname']
+            realm = diff['realm']
+            nasipaddress = diff['nasipaddress']
+            nasportid = diff['nasportid']
+            nasporttype = diff['nasporttype']
+            acctstarttime = diff['acctstarttime']
+            acctupdatetime = diff['acctupdatetime']
+            acctstoptime = diff['acctstoptime']
+            acctinterval = diff['acctinterval']
+            acctsessiontime = diff['acctsessiontime']
+            acctauthentic = diff['acctauthentic']
+            connectinfo_start = diff['connectinfo_start']
+            connectinfo_stop = diff['connectinfo_stop']
+            acctinputoctets = diff['acctinputoctets']
+            acctoutputoctets = diff['acctoutputoctets']
+            calledstationid = diff['calledstationid']
+            callingstationid = diff['callingstationid']
+            acctterminatecause = diff['acctterminatecause']
+            servicetype = diff['servicetype']
+            framedprotocol = diff['framedprotocol']
+            framedipaddress = diff['framedipaddress']
+
+            acct = session.query(table).filter(Accounting.acctuniqueid ==
+                                               acctuniqueid).one_or_none()
+
+            if acct is None:
+                print('Adding accounting session {}'.format(acctsessionid))
+                new_acct = table()
+                new_acct.radacctid = radacctid
+                new_acct.acctsessionid = acctsessionid
+                new_acct.acctuniqueid = acctuniqueid
+                new_acct.username = username
+                new_acct.groupname = groupname
+                new_acct.realm = realm
+                new_acct.nasipaddress = nasipaddress
+                new_acct.nasportid = nasportid
+                new_acct.nasporttype = nasporttype
+                new_acct.acctstarttime = acctstarttime
+                new_acct.acctupdatetime = acctupdatetime
+                new_acct.acctstoptime = acctstoptime
+                new_acct.acctinterval = acctinterval
+                new_acct.acctsessiontime = acctsessiontime
+                new_acct.acctauthentic = acctauthentic
+                new_acct.connectinfo_start = connectinfo_start
+                new_acct.connectinfo_stop = connectinfo_stop
+                new_acct.acctinputoctets = acctinputoctets
+                new_acct.acctoutputoctets = acctoutputoctets
+                new_acct.calledstationid = calledstationid
+                new_acct.callingstationid = callingstationid
+                new_acct.acctterminatecause = acctterminatecause
+                new_acct.servicetype = servicetype
+                new_acct.framedprotocol = framedprotocol
+                new_acct.framedipaddress = framedipaddress
+                session.add(new_acct)
             session.commit()
