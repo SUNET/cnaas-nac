@@ -6,7 +6,7 @@ from flask_jwt_extended import jwt_required
 
 from cnaas_nac.api.generic import empty_result
 from cnaas_nac.tools.log import get_logger
-from cnaas_nac.db.user import User, get_all_users
+from cnaas_nac.db.user import User, get_users
 from cnaas_nac.db.oui import DeviceOui
 from cnaas_nac.db.nas import NasPort
 
@@ -89,7 +89,7 @@ class AuthApi(Resource):
 
     # @jwt_required
     def get(self):
-        return empty_result(status='success', data=get_all_users())
+        return empty_result(status='success', data=get_users())
 
     @api.expect(user_add)
     def post(self):
@@ -166,7 +166,7 @@ class AuthApiByName(Resource):
 
     # @jwt_required
     def get(self, username):
-        return empty_result(status='success', data=get_user_data(username))
+        return empty_result(status='success', data=get_users(username))
 
     # @jwt_required
     @api.expect(user_enable)

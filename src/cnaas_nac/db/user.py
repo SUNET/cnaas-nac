@@ -267,10 +267,13 @@ class User(Base):
             instance.value = vlan
 
 
-def get_all_users():
+def get_users(username=''):
     result = []
     with sqla_session() as session:
-        res = session.query(User, Reply, NasPort).filter(User.username == NasPort.username).filter(Reply.username == User.username).filter(Reply.attribute == 'Tunnel-Private-Group-Id').order_by(User.username).all()
+        if username == '':
+            res = session.query(User, Reply, NasPort).filter(User.username == NasPort.username).filter(Reply.username == User.username).filter(Reply.attribute == 'Tunnel-Private-Group-Id').order_by(User.username).all()
+        else:
+            res = session.query(User, Reply, NasPort).filter(User.username == username).filter(User.username == NasPort.username).filter(Reply.username == User.username).filter(Reply.attribute == 'Tunnel-Private-Group-Id').order_by(User.username).all()
         usernames = []
         for user, reply, nas_port in res:
             usernames.append(user.username)
