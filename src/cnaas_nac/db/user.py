@@ -58,6 +58,16 @@ class UserInfo(Base):
                 users[username] = user_info
         return users
 
+    @classmethod
+    def delete(cls, username):
+        with sqla_session() as session:
+            res = session.query(UserInfo).filter(UserInfo.username == username).one_or_none()
+            if res is None:
+                return 'Could not find user'
+            session.delete(res)
+
+        return ''
+
     def as_dict(self):
         """Return JSON serializable dict."""
         d = {}

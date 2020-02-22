@@ -209,6 +209,10 @@ class AuthApiByName(Resource):
         if result != '':
             errors.append(result)
 
+        result = UserInfo.delete(username)
+        if result != '':
+            errors.append(result)
+
         if errors != []:
             return self.error(errors)
         return empty_result(status='success')
