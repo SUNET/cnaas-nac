@@ -122,12 +122,12 @@ class AuthApi(Resource):
                             logger.info('Valid NAS port and active, accepting.')
                             return empty_result(status='success')
                     else:
-                        logger.info('Rejecting, invalid NAS port. Is on port {} on {} but expected port {} on {}.'.format(nas_port_id, called_station_id, port['nas_port_id'], port['called_station_id']))
+                        logger.info('{} on {}, expected {} on {}.'.format(nas_port_id, called_station_id, port['nas_port_id'], port['called_station_id']))
                         return self.error(username,
-                                          'Port is {} on {}, expected {} on {}'.format(
-                                              nas_port_id, called_station_id,
-                                              port['nas_port_id'],
-                                              port['called_station_id']))
+                                          '{}/{}, expected {}/{}'.format(
+                                              called_station_id, nas_port_id,
+                                              port['called_station_id'],
+                                              port['nas_port_id']))
 
         # If we are running in slave mode, silently exit.
         if 'RADIUS_SLAVE' in os.environ:
@@ -165,7 +165,7 @@ class AuthApi(Resource):
             return self.error(username, errors)
 
         logger.info('User did not match any rules, rejeecting.')
-        return self.error(username, 'User did not match any rules')
+        return self.error(username, 'User disabled.')
 
 
 class AuthApiByName(Resource):
