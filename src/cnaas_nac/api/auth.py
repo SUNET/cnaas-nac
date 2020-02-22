@@ -103,23 +103,25 @@ class AuthApi(Resource):
 
         for user in User.get(username):
             if user['username'] != username:
-                logger.info('Not the same user')
+                logger.info('Not the same user.')
                 logger.info('{} != {}'.format(user, username))
                 continue
 
-            logger.info('User {} already exists'.format(user))
+            logger.info('User {} already exists.'.format(user['username']))
 
             nas_ports = NasPort.get(username)
 
             if nas_ports is not None:
                 for port in nas_ports:
                     if port['nas_port_id'] == nas_port_id and port['called_station_id'] == called_station_id:
-                        logger.info('Valid NAS port {} on {} for user {}'.format(
+                        logger.info('Valid NAS port {} on {} for user {}.'.format(
                             nas_port_id, called_station_id, username))
 
                         if User.is_enabled(username):
+                            logger.info('Valid NAS port and active, accepting.')
                             return empty_result(status='success')
                     else:
+                        logger.info('Rejecting, invalid NAS port. Is on port {} on {} but expected port {} on {}.'.format(nas_port_id, called_station_id, port['nas_port_id'], port['called_station_id']))
                         return self.error('Invalid NAS port {} on {} for user {}'.format(
                             nas_port_id, called_station_id, username))
 
@@ -129,13 +131,14 @@ class AuthApi(Resource):
                 if User.is_enabled(username):
                     return empty_result(status='success')
                 else:
+                    logger.info('Slave mode, user disabled. Rejecting.')
                     return self.error('User disabled')
 
         if User.add(username, password) != '':
-            logger.info('Not creating user {} again'.format(username))
+            logger.info('Not creating user {} again.'.format(username))
 
         if User.reply_add(username, vlan) != '':
-            logger.info('Not creating reply for user {}'.format(username))
+            logger.info('Not creating reply for user {}.'.format(username))
         else:
             if DeviceOui.exists(username):
                 logger.info('Setting user VLAN to OUI VLAN.')
@@ -157,6 +160,7 @@ class AuthApi(Resource):
             logger.info('Error: {}'.format(errors))
             return self.error(errors)
 
+        logger.info('User did not match any rules, rejeecting.')
         return self.error('Not authenticated')
 
 
