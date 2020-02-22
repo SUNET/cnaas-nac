@@ -5,9 +5,9 @@ import datetime
 from typing import Optional
 from sqlalchemy import Column, Integer, Unicode, UniqueConstraint, DateTime
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Boolean
+from sqlalchemy import Boolean, desc
 from cnaas_nac.db.session import sqla_session
-
+from cnaas_nac.db.nas import NasPort
 
 Base = declarative_base()
 
@@ -43,25 +43,20 @@ class PostAuth(Base):
         return d
 
     @classmethod
-    def get_last_seen(cls, username=None, last=True):
+    def get_last_seen(cls, usernames=[], last=True):
         res = []
+        users = dict()
         with sqla_session() as session:
-            if username is not None:
-                postauth: PostAuth = session.query(PostAuth).filter(PostAuth.username ==
-                                                                    username).all()
-            else:
-                postauth: PostAuth = session.query(PostAuth).all()
-            if not postauth:
-                return res
-            elif last:
-                return [postauth[-1].as_dict()]
-            for auth in postauth:
+            for username in usernames:
+                postauth = session.query(PostAuth).filter(PostAuth.username ==
+                                                          username).order_by(desc((PostAuth.id))).limit(1).one_or_none()
+                if not postauth:
+                    return res
                 last_seen = dict()
-                last_seen['username'] = auth.username
-                last_seen['authdate'] = auth.authdate
-                last_seen['reply'] = auth.reply
-                res.append(last_seen)
-        return res
+                last_seen['authdate'] = postauth.authdate
+                last_seen['reply'] = postauth.reply
+                users[username] = last_seen
+        return users
 
 
 class Reply(Base):
@@ -270,3 +265,33 @@ class User(Base):
             if not instance:
                 return 'Reply not found'
             instance.value = vlan
+
+
+def get_all_users():
+    result = []
+    with sqla_session() as session:
+        res = session.query(User, Reply, NasPort).filter(User.username == NasPort.username).filter(Reply.username == User.username).filter(Reply.attribute == 'Tunnel-Private-Group-Id').order_by(User.username).all()
+        usernames = []
+        for user, reply, nas_port in res:
+            usernames.append(user.username)
+        radpostauths = PostAuth.get_last_seen(usernames=usernames)
+        for user, reply, nas_port in res:
+            res_dict = dict()
+            res_dict['username'] = user.username
+
+            if user.op == ':=':
+                res_dict['active'] = True
+            else:
+                res_dict['active'] = False
+
+            res_dict['vlan'] = reply.value
+            res_dict['last_seen'] = str(radpostauths[user.username]['authdate'])
+            res_dict['last_reply'] = radpostauths[user.username]['reply']
+            res_dict['nas_identifier'] = nas_port.nas_identifier
+            res_dict['nas_port_id'] = nas_port.nas_port_id
+            res_dict['nas_ip_address'] = nas_port.nas_ip_address
+            res_dict['calling_station_id'] = nas_port.calling_station_id
+            res_dict['called_station_id'] = nas_port.called_station_id
+            result.append(res_dict)
+
+    return result
