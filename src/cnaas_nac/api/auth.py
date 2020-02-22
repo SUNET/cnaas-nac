@@ -6,7 +6,7 @@ from flask_jwt_extended import jwt_required
 
 from cnaas_nac.api.generic import empty_result
 from cnaas_nac.tools.log import get_logger
-from cnaas_nac.db.user import User, get_users
+from cnaas_nac.db.user import User, get_users, UserInfo
 from cnaas_nac.db.oui import DeviceOui
 from cnaas_nac.db.nas import NasPort
 
@@ -36,7 +36,8 @@ user_enable = api.model('auth_enable', {
 
 
 class AuthApi(Resource):
-    def error(self, errstr):
+    def error(self, username, errstr):
+        UserInfo.add(username, reason=errstr)
         return empty_result(status='error', data=errstr), 404
 
     def validate(self, json_data):
@@ -99,7 +100,7 @@ class AuthApi(Resource):
         try:
             username, password, vlan, nas_identifier, nas_port_id, calling_station_id, called_station_id, nas_identifier, nas_ip_address = self.validate(json_data)
         except Exception as e:
-            return self.error(str(e))
+            return self.error(username, str(e))
 
         for user in User.get(username):
             if user['username'] != username:
@@ -122,8 +123,11 @@ class AuthApi(Resource):
                             return empty_result(status='success')
                     else:
                         logger.info('Rejecting, invalid NAS port. Is on port {} on {} but expected port {} on {}.'.format(nas_port_id, called_station_id, port['nas_port_id'], port['called_station_id']))
-                        return self.error('Invalid NAS port {} on {} for user {}'.format(
-                            nas_port_id, called_station_id, username))
+                        return self.error(username,
+                                          'Port is {} on {}, expected {} on {}'.format(
+                                              nas_port_id, called_station_id,
+                                              port['nas_port_id'],
+                                              port['called_station_id']))
 
         # If we are running in slave mode, silently exit.
         if 'RADIUS_SLAVE' in os.environ:
@@ -132,7 +136,7 @@ class AuthApi(Resource):
                     return empty_result(status='success')
                 else:
                     logger.info('Slave mode, user disabled. Rejecting.')
-                    return self.error('User disabled')
+                    return self.error(username, 'User disabled')
 
         if User.add(username, password) != '':
             logger.info('Not creating user {} again.'.format(username))
@@ -158,10 +162,10 @@ class AuthApi(Resource):
 
         if errors != []:
             logger.info('Error: {}'.format(errors))
-            return self.error(errors)
+            return self.error(username, errors)
 
         logger.info('User did not match any rules, rejeecting.')
-        return self.error('Not authenticated')
+        return self.error(username, 'User did not match any rules')
 
 
 class AuthApiByName(Resource):
