@@ -20,8 +20,8 @@ class UserInfo(Base):
     )
     id = Column(Integer, autoincrement=True, primary_key=True)
     username = Column(Unicode(64), nullable=False)
-    comment = Column(Unicode(256), nullable=False)
-    reason = Column(Unicode(256), nullable=False)
+    comment = Column(Unicode(256))
+    reason = Column(Unicode(256))
 
     @classmethod
     def add(cls, username, comment='', reason=''):
@@ -31,14 +31,15 @@ class UserInfo(Base):
             if res is not None:
                 if comment != '':
                     res.comment = comment
-                if reason != '':
-                    res.reason = reason
+                res.reason = reason
             else:
                 user = UserInfo()
                 user.username = username
                 user.reason = reason
                 user.comment = comment
                 session.add(user)
+
+        return ''
 
     @classmethod
     def get(cls, usernames=[]):
@@ -340,6 +341,7 @@ class User(Base):
             if not instance:
                 return 'Reply not found'
             instance.value = vlan
+        return ''
 
 
 def get_users(username=''):
