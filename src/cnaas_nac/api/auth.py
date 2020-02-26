@@ -35,11 +35,17 @@ user_enable = api.model('auth_enable', {
 })
 
 
-class AuthApi(Resource):
-    def error(self, username, errstr):
-        UserInfo.add(username, reason=errstr)
-        return empty_result(status='error', data=errstr), 404
+def accept(username, data={}):
+    UserInfo.add(username, reason='')
+    return empty_result(status='success', data=data)
 
+
+def reject(username, errstr=''):
+    UserInfo.add(username, reason=errstr)
+    return empty_result(status='error', data=errstr), 404
+
+
+class AuthApi(Resource):
     def validate(self, json_data):
         if 'username' not in json_data:
             raise ValueError('Username not found')
@@ -100,44 +106,59 @@ class AuthApi(Resource):
         try:
             username, password, vlan, nas_identifier, nas_port_id, calling_station_id, called_station_id, nas_identifier, nas_ip_address = self.validate(json_data)
         except Exception as e:
-            return self.error(username, str(e))
+            return reject(username, str(e))
 
         for user in User.get(username):
+            # Find the current user.
             if user['username'] != username:
-                logger.info('Not the same user.')
-                logger.info('{} != {}'.format(user, username))
                 continue
 
-            logger.info('User {} already exists.'.format(user['username']))
+            logger.info('User {} exists.'.format(user['username']))
 
+            # Find out all configured ports for the current user.
             nas_ports = NasPort.get(username)
 
             if nas_ports is not None:
+                # Iterate the configured ports and compare it with the port
+                # and called_station_id we get from FreeRADIUS. If they
+                # differ, reject the user.
                 for port in nas_ports:
                     if port['nas_port_id'] == nas_port_id and port['called_station_id'] == called_station_id:
                         logger.info('Valid NAS port {} on {} for user {}.'.format(
                             nas_port_id, called_station_id, username))
 
+                        # Only accept the user it is enabled.
                         if User.is_enabled(username):
                             logger.info('Valid NAS port and active, accepting.')
-                            return empty_result(status='success')
+                            return accept(username)
                     else:
-                        logger.info('{} on {}, expected {} on {}.'.format(nas_port_id, called_station_id, port['nas_port_id'], port['called_station_id']))
-                        return self.error(username,
-                                          '{}/{}, expected {}/{}'.format(
-                                              called_station_id, nas_port_id,
-                                              port['called_station_id'],
-                                              port['nas_port_id']))
+                        # If the user is on the wrong port and wrong
+                        # called_station_id, send a reject back to FreeRADIUS.
+                        logger.info('{} on {}, expected {} on {}.'.format(
+                            nas_port_id,
+                            called_station_id,
+                            port['nas_port_id'],
+                            port['called_station_id']))
 
-        # If we are running in slave mode, silently exit.
+                        return reject(username,
+                                      '{}/{}, expected {}/{}'.format(
+                                          called_station_id, nas_port_id,
+                                          port['called_station_id'],
+                                          port['nas_port_id']))
+
+        # If we are running in slave mode we don't want to create
+        # any new users. Check existing users and accept if they exist
+        # and are enabled.
         if 'RADIUS_SLAVE' in os.environ:
             if os.environ['RADIUS_SLAVE'] == 'yes':
                 if User.is_enabled(username):
-                    return empty_result(status='success')
+                    return accept(username)
                 else:
                     logger.info('Slave mode, user disabled. Rejecting.')
-                    return self.error(username, 'User disabled')
+                    return reject(username, 'User disabled')
 
+        # If we don't run in slave mode and the user don't exist,
+        # create it and set the default reply (VLAN 13).
         if User.add(username, password) != '':
             logger.info('Not creating user {} again.'.format(username))
 
@@ -152,20 +173,22 @@ class AuthApi(Resource):
                 User.reply_vlan(username, oui_vlan)
                 User.enable(username)
 
-        if NasPort.add(username, nas_ip_address, nas_identifier, nas_port_id,
-                       calling_station_id,
-                       called_station_id) != '':
-            logger.info('Not adding NAS port again.')
+        res = NasPort.add(username, nas_ip_address, nas_identifier,
+                          nas_port_id,
+                          calling_station_id,
+                          called_station_id)
+        if res != '':
+            logger.info(res)
 
         if User.is_enabled(username):
-            return empty_result(status='success')
+            return accept(username)
 
         if errors != []:
             logger.info('Error: {}'.format(errors))
-            return self.error(username, errors)
+            return reject(username, errors)
 
         logger.info('User did not match any rules, rejeecting.')
-        return self.error(username, 'User disabled.')
+        return reject(username, 'User disabled.')
 
 
 class AuthApiByName(Resource):
@@ -188,10 +211,9 @@ class AuthApiByName(Resource):
             else:
                 result = User.disable(username)
         if 'vlan' in json_data:
-            print('Setting VLAN')
             result = User.reply_vlan(username, json_data['vlan'])
         if result != '':
-            return self.error(result)
+            return empty_result(status='error', data=result), 404
         return empty_result(status='success')
 
     # @jwt_required
@@ -214,7 +236,7 @@ class AuthApiByName(Resource):
             errors.append(result)
 
         if errors != []:
-            return self.error(errors)
+            return reject(errors)
         return empty_result(status='success')
 
 
