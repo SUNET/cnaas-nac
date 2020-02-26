@@ -71,6 +71,7 @@ class NasPort(Base):
             nas.calling_station_id = calling_station_id
             nas.called_station_id = called_station_id
             session.add(nas)
+        return ''
 
     @classmethod
     def delete(cls, username):
