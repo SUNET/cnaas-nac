@@ -40,7 +40,7 @@ def accept(username, data={}):
     UserInfo.add(username, reason='')
 
     json_reply = dict()
-    replies = User.reply_get()
+    replies = User.reply_get(username=username)
 
     for reply in replies:
         json_reply[reply['attribute']] = {
