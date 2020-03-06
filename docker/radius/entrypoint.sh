@@ -39,4 +39,4 @@ sed -e "s/MDH_ISE_SECRET/$MDH_ISE_SECRET/" \
 ln -s /etc/freeradius/3.0/mods-available/sql /etc/freeradius/3.0/mods-enabled
 
 # Start freeradius in the foreground with debug enabled
-freeradius -x -f -l stdout
+freeradius -X -f
