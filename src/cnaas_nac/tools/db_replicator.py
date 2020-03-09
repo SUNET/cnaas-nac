@@ -103,15 +103,21 @@ def main(argv):
     if source is None or target is None or username is None or password is None:
         usage()
 
-    logger.info('Replicating users...')
-    rad_replicate(source, target, username, password, User)
-    logger.info('Replicating replies...')
-    rad_replicate(source, target, username, password, Reply)
-    logger.info('Replicating ports...')
-    rad_replicate(source, target, username, password, NasPort)
-    logger.info('Replicating accounting...')
-    rad_replicate(source, target, username, password, Accounting)
-    logger.info('Done.')
+    try:
+        logger.info('Starting DB replication from {} to {}'.format(source, target))
+
+        logger.info('Replicating users...')
+        rad_replicate(source, target, username, password, User)
+        logger.info('Replicating replies...')
+        rad_replicate(source, target, username, password, Reply)
+        logger.info('Replicating ports...')
+        rad_replicate(source, target, username, password, NasPort)
+        logger.info('Replicating accounting...')
+        rad_replicate(source, target, username, password, Accounting)
+
+        logger.info('Replication finished successfully')
+    except Exception as e:
+        logger.warning('Replication failed with exception: ' + str(e))
 
 
 if __name__ == '__main__':

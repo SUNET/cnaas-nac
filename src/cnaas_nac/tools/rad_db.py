@@ -9,7 +9,7 @@ def get_connstrs(source: str, target: str, username: str,
 
     connstr_source = 'postgresql://{}:{}@{}:5432/nac'.format(
         username, password, source)
-    connstr_target = 'postgresql://{}:{}@{}:5433/nac'.format(
+    connstr_target = 'postgresql://{}:{}@{}:5432/nac'.format(
         username, password, target)
 
     return (connstr_source, connstr_target)
