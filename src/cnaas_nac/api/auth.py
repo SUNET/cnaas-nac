@@ -155,7 +155,7 @@ class AuthApi(Resource):
                     return accept(username)
                 else:
                     logger.info('Slave mode, user disabled. Rejecting.')
-                    return reject(username, 'User disabled')
+                    return reject(username, 'User is disabled')
 
         # If we don't run in slave mode and the user don't exist,
         # create it and set the default reply (VLAN 13).
@@ -188,7 +188,7 @@ class AuthApi(Resource):
             return reject(username, errors)
 
         logger.info('User did not match any rules, rejeecting.')
-        return reject(username, 'User disabled.')
+        return reject(username, 'User is disabled')
 
 
 class AuthApiByName(Resource):

@@ -354,7 +354,6 @@ def get_users(username=''):
         usernames = []
         for user, reply, nas_port in res:
             usernames.append(user.username)
-        radpostauths = PostAuth.get_last_seen(usernames=usernames)
         userinfos = UserInfo.get(usernames=usernames)
         for user, reply, nas_port in res:
             res_dict = dict()
@@ -366,8 +365,6 @@ def get_users(username=''):
                 res_dict['active'] = False
 
             res_dict['vlan'] = reply.value
-            res_dict['last_seen'] = str(radpostauths[user.username]['authdate'])
-            res_dict['last_reply'] = radpostauths[user.username]['reply']
             res_dict['nas_identifier'] = nas_port.nas_identifier
             res_dict['nas_port_id'] = nas_port.nas_port_id
             res_dict['nas_ip_address'] = nas_port.nas_ip_address
