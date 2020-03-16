@@ -22,6 +22,8 @@ class UserInfo(Base):
     username = Column(Unicode(64), nullable=False)
     comment = Column(Unicode(256))
     reason = Column(Unicode(256))
+    authdate = Column(DateTime, default=datetime.datetime.utcnow,
+                      onupdate=datetime.datetime.utcnow)
 
     @classmethod
     def add(cls, username, comment='', reason=''):
@@ -53,9 +55,11 @@ class UserInfo(Base):
                 if not userinfo:
                     user_info['comment'] = ''
                     user_info['reason'] = ''
+                    user_info['authdate'] = ''
                 else:
                     user_info['comment'] = userinfo.comment
                     user_info['reason'] = userinfo.reason
+                    user_info['authdate'] = userinfo.authdate
                 users[username] = user_info
         return users
 
@@ -363,7 +367,6 @@ def get_users(username=''):
                 res_dict['active'] = True
             else:
                 res_dict['active'] = False
-
             res_dict['vlan'] = reply.value
             res_dict['nas_identifier'] = nas_port.nas_identifier
             res_dict['nas_port_id'] = nas_port.nas_port_id
@@ -372,6 +375,7 @@ def get_users(username=''):
             res_dict['called_station_id'] = nas_port.called_station_id
             res_dict['comment'] = userinfos[user.username]['comment']
             res_dict['reason'] = userinfos[user.username]['reason']
+            res_dict['authdate'] = str(userinfos[user.username]['authdate'])
             result.append(res_dict)
 
     return result
