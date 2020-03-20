@@ -2,13 +2,13 @@ import sys
 import getopt
 
 from cnaas_nac.db.session import sqla_session
-from cnaas_nac.db.user import User, Reply
+from cnaas_nac.db.user import User, Reply, UserInfo
 from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.accounting import Accounting
 from cnaas_nac.tools.log import get_logger
 
 from cnaas_nac.tools.rad_db import edit_nas, edit_replies, edit_users, \
-    get_connstrs, get_rows, copy_accounting
+    get_connstrs, get_rows, copy_accounting, edit_userinfo
 
 
 logger = get_logger()
@@ -55,6 +55,9 @@ def rad_replicate(db_source: str, db_target: str, username: str, password: str,
     elif table == Accounting:
         logger.info('Copying accounting data...')
         copy_accounting(source, connstr_target)
+    elif table == UserInfo:
+        logger.info('Copying userinfo data...')
+        edit_userinfo(source, connstr_target)
 
     # Remove all users that lives on the target but not on the source. We will
     # not remove any accounting data, only copy it.
@@ -70,6 +73,9 @@ def rad_replicate(db_source: str, db_target: str, username: str, password: str,
     elif table == NasPort:
         logger.info('Revmoing ports from target that not exist on source...')
         edit_nas(diff, connstr_target, remove=True)
+    elif table == UserInfo:
+        logger.info('Removing userinfo from target that not exist on source...')
+        edit_userinfo(diff, connstr_target, remove=True)
 
 
 def usage() -> None:
@@ -112,8 +118,12 @@ def main(argv):
         rad_replicate(source, target, username, password, Reply)
         logger.info('Replicating ports...')
         rad_replicate(source, target, username, password, NasPort)
-        logger.info('Replicating accounting...')
-        rad_replicate(source, target, username, password, Accounting)
+        logger.info('Replicating userinfo...')
+        rad_replicate(source, target, username, password, UserInfo)
+
+        # Do not replicate accounting data now, it takes too long time.
+        # logger.info('Replicating accounting...')
+        # rad_replicate(source, target, username, password, Accounting)
 
         logger.info('Replication finished successfully')
     except Exception as e:
