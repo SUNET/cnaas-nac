@@ -1,5 +1,5 @@
 from cnaas_nac.db.session import sqla_session
-from cnaas_nac.db.user import User, Reply
+from cnaas_nac.db.user import User, Reply, UserInfo
 from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.accounting import Accounting
 
@@ -206,4 +206,36 @@ def copy_accounting(diffs, connstr, table=Accounting):
                 new_acct.framedprotocol = framedprotocol
                 new_acct.framedipaddress = framedipaddress
                 session.add(new_acct)
+            session.commit()
+
+
+def edit_userinfo(userinfo_diff, connstr, table=UserInfo, remove=False):
+
+    if userinfo_diff is None:
+        return
+
+    with sqla_session(connstr) as session:
+        for diff_user in userinfo_diff:
+            username = diff_user['username']
+            comment = diff_user['comment']
+            reason = diff_user['reason']
+
+            userinfo = session.query(table).filter(UserInfo.username ==
+                                                   username).one_or_none()
+
+            if remove and nas is not None:
+                print('Removing user {}'.format(username))
+                session.delete(userinfo)
+            elif userinfo is None and not remove:
+                print('Adding user {}'.format(username))
+                new_userinfo = table()
+                new_userinfo.username = username
+                new_userinfo.comment = comment
+                new_userinfo.reason = reason
+                session.add(new_userinfo)
+            elif userinfo is not None:
+                if comment != userinfo.comment or reason != userinfo.reason:
+                    print('Changing nas {}'.format(username))
+                    userinfo.comment = comment
+                    userinfo.reason = reason
             session.commit()
