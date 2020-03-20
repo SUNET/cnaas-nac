@@ -43,8 +43,12 @@ class ApiTests(unittest.TestCase):
 
         res = self.client.post('/api/v1.0/auth', json=json)
         self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json['Tunnel-Type']['value'], 'VLAN')
+        self.assertEqual(res.json['Tunnel-Medium-Type']['value'], 'IEEE-802')
+        self.assertEqual(res.json['Tunnel-Private-Group-Id']['value'], '13')
+
         res = self.client.get('/api/v1.0/auth/unittest')
-        self.assertEqual(res.json['data'][0]['reason'], '')
+        self.assertEqual(res.json['data'][0]['reason'], 'User accepted')
 
     def test_04_set_vlan(self):
         json = {
@@ -116,7 +120,58 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(res.json['data'][0]['nas_ip_address'], 'unittest')
         self.assertEqual(res.json['data'][0]['calling_station_id'], 'unittest')
         self.assertEqual(res.json['data'][0]['comment'], '')
-        self.assertEqual(res.json['data'][0]['reason'], 'User disabled.')
+        self.assertEqual(res.json['data'][0]['reason'], 'User is disabled')
+
+    def test_10_move_port(self):
+        json = {
+            "enabled": False
+        }
+
+        res = self.client.put('/api/v1.0/auth/unittest', json=json)
+        self.assertEqual(res.status_code, 200)
+
+        json = {
+            "username": "unittest",
+            "nas_identifier": "unittest",
+            "nas_port_id": "unittest_new_port",
+            "nas_ip_address": "unittest",
+            "calling_station_id": "unittest",
+            "called_station_id": "unittest_new_station"
+        }
+
+        res = self.client.post('/api/v1.0/auth', json=json)
+        self.assertEqual(res.status_code, 404)
+
+        json = {
+            "enabled": True
+        }
+
+        res = self.client.put('/api/v1.0/auth/unittest', json=json)
+        self.assertEqual(res.status_code, 200)
+
+        json = {
+            "username": "unittest",
+            "nas_identifier": "unittest",
+            "nas_port_id": "unittest_new_port",
+            "nas_ip_address": "unittest",
+            "calling_station_id": "unittest",
+            "called_station_id": "unittest_new_station"
+        }
+
+        res = self.client.post('/api/v1.0/auth', json=json)
+        self.assertEqual(res.status_code, 200)
+
+        json = {
+            "username": "unittest",
+            "nas_identifier": "unittest",
+            "nas_port_id": "unittest",
+            "nas_ip_address": "unittest",
+            "calling_station_id": "unittest",
+            "called_station_id": "unittest"
+        }
+
+        res = self.client.post('/api/v1.0/auth', json=json)
+        self.assertEqual(res.status_code, 404)
 
     def test_99_delete_user(self):
         res = self.client.delete('/api/v1.0/auth/unittest')
