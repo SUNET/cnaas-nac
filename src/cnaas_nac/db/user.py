@@ -8,164 +8,11 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Boolean, desc
 from cnaas_nac.db.session import sqla_session
 from cnaas_nac.db.nas import NasPort
+from cnaas_nac.db.reply import Reply
+from cnaas_nac.db.userinfo import UserInfo
+
 
 Base = declarative_base()
-
-
-class UserInfo(Base):
-    __tablename__ = 'raduserinfo'
-    __table_args__ = (
-        None,
-        UniqueConstraint('id'),
-    )
-    id = Column(Integer, autoincrement=True, primary_key=True)
-    username = Column(Unicode(64), nullable=False)
-    comment = Column(Unicode(256))
-    reason = Column(Unicode(256))
-    authdate = Column(DateTime, default=datetime.datetime.utcnow,
-                      onupdate=datetime.datetime.utcnow)
-
-    @classmethod
-    def add(cls, username, comment='', reason=''):
-        with sqla_session() as session:
-            res = session.query(UserInfo).filter(UserInfo.username == username).one_or_none()
-
-            if res is not None:
-                if comment != '':
-                    res.comment = comment
-                res.reason = reason
-            else:
-                user = UserInfo()
-                user.username = username
-                user.reason = reason
-                user.comment = comment
-                session.add(user)
-
-        return ''
-
-    @classmethod
-    def get(cls, usernames=[]):
-        res = []
-        users = dict()
-        with sqla_session() as session:
-            for username in usernames:
-                userinfo = session.query(UserInfo).filter(UserInfo.username ==
-                                                          username).one_or_none()
-                user_info = dict()
-                if not userinfo:
-                    user_info['comment'] = ''
-                    user_info['reason'] = ''
-                    user_info['authdate'] = ''
-                else:
-                    user_info['comment'] = userinfo.comment
-                    user_info['reason'] = userinfo.reason
-                    user_info['authdate'] = userinfo.authdate
-                users[username] = user_info
-        return users
-
-    @classmethod
-    def delete(cls, username):
-        with sqla_session() as session:
-            res = session.query(UserInfo).filter(UserInfo.username == username).one_or_none()
-            if res is None:
-                return 'Could not find user'
-            session.delete(res)
-
-        return ''
-
-    def as_dict(self):
-        """Return JSON serializable dict."""
-        d = {}
-        for col in self.__table__.columns:
-            value = getattr(self, col.name)
-            if issubclass(value.__class__, enum.Enum):
-                value = value.value
-            elif issubclass(value.__class__, Base):
-                continue
-            elif issubclass(value.__class__, ipaddress.IPv4Address):
-                value = str(value)
-            elif issubclass(value.__class__, datetime.datetime):
-                value = str(value)
-            d[col.name] = value
-        return d
-
-
-class PostAuth(Base):
-    __tablename__ = 'radpostauth'
-    __table_args__ = (
-        None,
-        UniqueConstraint('id'),
-    )
-    id = Column(Integer, autoincrement=True, primary_key=True)
-    username = Column(Unicode(64), nullable=False)
-#    pass = Column(Unicode(64), nullable=False)
-    reply = Column(Unicode(64), nullable=False)
-#    CalledStationId = Column(Unicode(64), nullable=False)
-#    CallingStationId = Column(Unicode(64), nullable=False)
-    authdate = Column(DateTime, default=datetime.datetime.now)
-
-    def as_dict(self):
-        """Return JSON serializable dict."""
-        d = {}
-        for col in self.__table__.columns:
-            value = getattr(self, col.name)
-            if issubclass(value.__class__, enum.Enum):
-                value = value.value
-            elif issubclass(value.__class__, Base):
-                continue
-            elif issubclass(value.__class__, ipaddress.IPv4Address):
-                value = str(value)
-            elif issubclass(value.__class__, datetime.datetime):
-                value = str(value)
-            d[col.name] = value
-        return d
-
-    @classmethod
-    def get_last_seen(cls, usernames=[], last=True):
-        res = []
-        users = dict()
-        with sqla_session() as session:
-            for username in usernames:
-                postauth = session.query(PostAuth).filter(PostAuth.username ==
-                                                          username).order_by(desc((PostAuth.id))).limit(1).one_or_none()
-                last_seen = dict()
-                if not postauth:
-                    last_seen['authdate'] = ''
-                    last_seen['reply'] = ''
-                else:
-                    last_seen['authdate'] = postauth.authdate
-                    last_seen['reply'] = postauth.reply
-                users[username] = last_seen
-        return users
-
-
-class Reply(Base):
-    __tablename__ = 'radreply'
-    __table_args__ = (
-        None,
-        UniqueConstraint('id'),
-    )
-    id = Column(Integer, autoincrement=True, primary_key=True)
-    username = Column(Unicode(64), nullable=False)
-    attribute = Column(Unicode(64), nullable=False)
-    op = Column(Unicode(2), nullable=False)
-    value = Column(Unicode(253), nullable=False)
-
-    def as_dict(self):
-        """Return JSON serializable dict."""
-        d = {}
-        for col in self.__table__.columns:
-            value = getattr(self, col.name)
-            if issubclass(value.__class__, enum.Enum):
-                value = value.value
-            elif issubclass(value.__class__, Base):
-                continue
-            elif issubclass(value.__class__, ipaddress.IPv4Address):
-                value = str(value)
-            elif issubclass(value.__class__, datetime.datetime):
-                value = str(value)
-            d[col.name] = value
-        return d
 
 
 class User(Base):
@@ -375,7 +222,13 @@ def get_users(username=''):
             res_dict['called_station_id'] = nas_port.called_station_id
             res_dict['comment'] = userinfos[user.username]['comment']
             res_dict['reason'] = userinfos[user.username]['reason']
-            res_dict['authdate'] = str(userinfos[user.username]['authdate'])
+
+            if 'authdate' not in userinfos[user.username]:
+                authdate = ''
+            else:
+                authdate = str(userinfos[user.username]['authdate'])
+
+            res_dict['authdate'] = authdate
             result.append(res_dict)
 
     return result
