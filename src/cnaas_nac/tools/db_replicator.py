@@ -2,7 +2,9 @@ import sys
 import getopt
 
 from cnaas_nac.db.session import sqla_session
-from cnaas_nac.db.user import User, Reply, UserInfo
+from cnaas_nac.db.user import User
+from cnaas_nac.db.reply import Reply
+from cnaas_nac.db.userinfo import UserInfo
 from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.accounting import Accounting
 from cnaas_nac.tools.log import get_logger
@@ -21,9 +23,13 @@ def diff_rows(list_a: list, list_b: list) -> list:
     for x in list_a:
         if 'id' in x:
             del x['id']
+        if 'authdate' in x:
+            del x['authdate']
     for x in list_b:
         if 'id' in x:
             del x['id']
+        if 'authdate' in x:
+            del x['authdate']
 
     for item in list_a:
         if item not in list_b:
