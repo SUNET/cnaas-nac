@@ -3,7 +3,7 @@ WAIT=0
 
 sleep 5
 
-while ! nc -z cnaas_postgres 5432; do
+while ! nc -z nac_postgres 5432; do
     sleep 1
     WAIT=$(($WAIT + 1))
       if [ "$WAIT" -gt 15 ]; then
