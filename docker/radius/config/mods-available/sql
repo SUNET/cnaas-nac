@@ -88,7 +88,7 @@ sql {
 
 	# Connection info:
 	#
-	server = "cnaas_postgres"
+	server = "nac_postgres"
 	port = 5432
 	login = "cnaas"
 	password = "cnaas"
