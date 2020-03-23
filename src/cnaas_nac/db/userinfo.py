@@ -52,9 +52,11 @@ class UserInfo(Base):
                 if not userinfo:
                     user_info['comment'] = ''
                     user_info['reason'] = ''
+                    user_info['authdate'] = ''
                 else:
                     user_info['comment'] = userinfo.comment
                     user_info['reason'] = userinfo.reason
+                    user_info['authdate'] = userinfo.authdate
                 users[username] = user_info
         return users
 
