@@ -58,6 +58,21 @@ class ApiTests(unittest.TestCase):
         res = self.client.put('/api/v1.0/auth/unittest', json=json)
         self.assertEqual(res.status_code, 200)
 
+        json = {
+            "username": "unittest",
+            "nas_identifier": "unittest",
+            "nas_port_id": "unittest",
+            "nas_ip_address": "unittest",
+            "calling_station_id": "unittest",
+            "called_station_id": "unittest"
+        }
+
+        res = self.client.post('/api/v1.0/auth', json=json)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json['Tunnel-Type']['value'], 'VLAN')
+        self.assertEqual(res.json['Tunnel-Medium-Type']['value'], 'IEEE-802')
+        self.assertEqual(res.json['Tunnel-Private-Group-Id']['value'], 'UNITTEST')
+
     def test_05_authenticate_user_new_vlan(self):
         res = self.client.get('/api/v1.0/auth/unittest')
         self.assertEqual(res.status_code, 200)
