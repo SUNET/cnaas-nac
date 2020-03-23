@@ -188,6 +188,20 @@ class ApiTests(unittest.TestCase):
         res = self.client.post('/api/v1.0/auth', json=json)
         self.assertEqual(res.status_code, 404)
 
+    def test_11_repeated_auth(self):
+        json = {
+            "username": "unittest",
+            "nas_identifier": "unittest",
+            "nas_port_id": "unittest_new_port",
+            "nas_ip_address": "unittest",
+            "calling_station_id": "unittest",
+            "called_station_id": "unittest_new_station"
+        }
+
+        for i in range(20):
+            res = self.client.post('/api/v1.0/auth', json=json)
+            self.assertEqual(res.status_code, 200)
+
     def test_99_delete_user(self):
         res = self.client.delete('/api/v1.0/auth/unittest')
         self.assertEqual(res.status_code, 200)
