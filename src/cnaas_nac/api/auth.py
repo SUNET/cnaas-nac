@@ -8,6 +8,7 @@ from cnaas_nac.tools.log import get_logger
 from cnaas_nac.db.user import User, get_users, UserInfo
 from cnaas_nac.db.oui import DeviceOui
 from cnaas_nac.db.nas import NasPort
+from cnaas_nac.db.reply import Reply
 
 from cnaas_nac.version import __api_version__
 
@@ -58,7 +59,7 @@ def accept(username):
     """
     json_reply = {}
 
-    for reply in User.reply_get(username):
+    for reply in Reply.get(username):
         json_reply[reply['attribute']] = {
             'op': reply['op'],
             'value': reply['value']
@@ -237,7 +238,7 @@ class AuthApi(Resource):
         if User.add(username, password) != '':
             logger.info('[{}] Not creating user again'.format(username))
 
-        if User.reply_add(username, vlan) != '':
+        if Reply.add(username, vlan) != '':
             logger.info('[{}] Not creating reply for user'.format(username))
         else:
             if DeviceOui.exists(username):
@@ -245,7 +246,7 @@ class AuthApi(Resource):
 
                 oui_vlan = DeviceOui.get_vlan(username)
 
-                User.reply_vlan(username, oui_vlan)
+                Reply.vlan(username, oui_vlan)
                 User.enable(username)
 
         res = NasPort.add(username, nas_ip_address, nas_identifier,
@@ -290,7 +291,7 @@ class AuthApiByName(Resource):
                 result = User.disable(username)
             UserInfo.add(username, reason='')
         if 'vlan' in json_data:
-            result = User.reply_vlan(username, json_data['vlan'])
+            result = Reply.vlan(username, json_data['vlan'])
         if result != '':
             return empty_result(status='error', data=result), 404
         return empty_result(status='success')
@@ -304,7 +305,7 @@ class AuthApiByName(Resource):
         if result != '':
             errors.append(result)
 
-        result = User.reply_delete(username)
+        result = Reply.delete(username)
         if result != '':
             errors.append(result)
 
