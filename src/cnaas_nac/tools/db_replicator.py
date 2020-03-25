@@ -1,3 +1,4 @@
+import os
 import sys
 import getopt
 
@@ -85,9 +86,22 @@ def rad_replicate(db_source: str, db_target: str, username: str, password: str,
 
 
 def usage() -> None:
-
-    print('Usage: -s <source addr> -t <target addr> -u <user> -p <passwd>')
+    print('Usage: -s <source addr> -t <target addr> -u <user> -p <passwd>\n')
+    print('Or set the environment variables NAC_REPLICATE_PASSWORD')
+    print('NAC_REPLICATE_SOURCE, NAC_REPLICATE_TARGET, NAC_REPLICATE_USERNAME')
+    print('and use the flag -e.')
     sys.exit(0)
+
+
+def env_vars() -> tuple:
+    try:
+        source = os.environ['NAC_REPLICATE_SOURCE']
+        target = os.environ['NAC_REPLICATE_TARGET']
+        username = os.environ['NAC_REPLICATE_USERNAME']
+        password = os.environ['NAC_REPLICATE_PASSWORD']
+    except Exception:
+        return None, None, None, None
+    return source, target, username, password
 
 
 def main(argv):
@@ -96,9 +110,10 @@ def main(argv):
     target = None
     username = None
     password = None
+    envvar = False
 
     try:
-        opts, args = getopt.getopt(argv, 's:t:u:p:')
+        opts, args = getopt.getopt(argv, 's:t:u:p:e')
     except getopt.GetoptError as e:
         print(str(e))
         usage(argv)
@@ -111,9 +126,16 @@ def main(argv):
             username = arg
         if opt == '-p':
             password = arg
+        if opt == '-e':
+            envvar = True
+        if opt == '-h':
+            usage()
 
-    if source is None or target is None or username is None or password is None:
-        usage()
+    if envvar:
+        source, target, username, password = env_vars()
+
+    if None in (source, target, username, password):
+        sys.exit(-1)
 
     try:
         logger.info('Starting DB replication from {} to {}'.format(source, target))
