@@ -20,10 +20,15 @@ COPY config/nginx_app.conf /etc/nginx/sites-available/
 COPY cert/* /etc/nginx/conf.d/
 COPY exec-pre-app.sh /opt/cnaas/
 COPY config/cleanup.cron /etc/cron.d/
+COPY config/replicate.cron /etc/cron.d/
 
-# Install cron job
+# Install cron jobs
 RUN chmod 0644 /etc/cron.d/cleanup.cron
+RUN chmod 0644 /etc/cron.d/replicate.cron
+
 RUN crontab /etc/cron.d/cleanup.cron
+RUN crontab /etc/cron.d/replicate.cron
+
 RUN touch /var/log/cron.log
 
 
