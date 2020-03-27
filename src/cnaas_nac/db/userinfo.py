@@ -30,7 +30,8 @@ class UserInfo(Base):
             if res is not None:
                 if comment != '':
                     res.comment = comment
-                res.reason = reason
+                if reason != '':
+                    res.reason = reason
             else:
                 user = UserInfo()
                 user.username = username
@@ -42,7 +43,6 @@ class UserInfo(Base):
 
     @classmethod
     def get(cls, usernames=[]):
-        res = []
         users = dict()
         with sqla_session() as session:
             for username in usernames:
@@ -65,7 +65,7 @@ class UserInfo(Base):
         with sqla_session() as session:
             res = session.query(UserInfo).filter(UserInfo.username == username).one_or_none()
             if res is None:
-                return 'Could not find user'
+                return 'User information not found'
             session.delete(res)
 
         return ''

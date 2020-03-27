@@ -73,12 +73,24 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(res.json['Tunnel-Medium-Type']['value'], 'IEEE-802')
         self.assertEqual(res.json['Tunnel-Private-Group-Id']['value'], 'UNITTEST')
 
-    def test_05_authenticate_user_new_vlan(self):
+    def test_05_set_description(self):
+        json = {
+            "comment": "UNITTEST"
+        }
+
+        res = self.client.put('/api/v1.0/auth/unittest', json=json)
+        self.assertEqual(res.status_code, 200)
+
+        res = self.client.get('/api/v1.0/auth/unittest')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json['data'][0]['comment'], 'UNITTEST')
+
+    def test_06_authenticate_user_new_vlan(self):
         res = self.client.get('/api/v1.0/auth/unittest')
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json['data'][0]['vlan'], 'UNITTEST')
 
-    def test_06_wrong_port(self):
+    def test_07_wrong_port(self):
         json = {
             "username": "unittest",
             "nas_identifier": "unittest",
@@ -91,7 +103,7 @@ class ApiTests(unittest.TestCase):
         res = self.client.post('/api/v1.0/auth', json=json)
         self.assertEqual(res.status_code, 404)
 
-    def test_06_wrong_station(self):
+    def test_08_wrong_station(self):
         json = {
             "username": "unittest",
             "nas_identifier": "unittest",
@@ -104,7 +116,7 @@ class ApiTests(unittest.TestCase):
         res = self.client.post('/api/v1.0/auth', json=json)
         self.assertEqual(res.status_code, 404)
 
-    def test_07_disable_user(self):
+    def test_09_disable_user(self):
         json = {
             "enabled": False
         }
@@ -112,7 +124,7 @@ class ApiTests(unittest.TestCase):
         res = self.client.put('/api/v1.0/auth/unittest', json=json)
         self.assertEqual(res.status_code, 200)
 
-    def test_08_authenticate_user(self):
+    def test_10_authenticate_user(self):
         json = {
             "username": "unittest",
             "nas_identifier": "unittest",
@@ -125,7 +137,7 @@ class ApiTests(unittest.TestCase):
         res = self.client.post('/api/v1.0/auth', json=json)
         self.assertEqual(res.status_code, 404)
 
-    def test_09_verify_user_data(self):
+    def test_11_verify_user_data(self):
         res = self.client.get('/api/v1.0/auth/unittest')
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json['data'][0]['vlan'], 'UNITTEST')
@@ -134,10 +146,10 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(res.json['data'][0]['nas_port_id'], 'unittest')
         self.assertEqual(res.json['data'][0]['nas_ip_address'], 'unittest')
         self.assertEqual(res.json['data'][0]['calling_station_id'], 'unittest')
-        self.assertEqual(res.json['data'][0]['comment'], '')
+        self.assertEqual(res.json['data'][0]['comment'], 'UNITTEST')
         self.assertEqual(res.json['data'][0]['reason'], 'User is disabled')
 
-    def test_10_move_port(self):
+    def test_12_move_port(self):
         json = {
             "enabled": False
         }
@@ -188,7 +200,7 @@ class ApiTests(unittest.TestCase):
         res = self.client.post('/api/v1.0/auth', json=json)
         self.assertEqual(res.status_code, 404)
 
-    def test_11_repeated_auth(self):
+    def test_13_repeated_auth(self):
         json = {
             "username": "unittest",
             "nas_identifier": "unittest",

@@ -242,7 +242,8 @@ class AuthApi(Resource):
             logger.info('[{}] Not creating reply for user'.format(username))
         else:
             if DeviceOui.exists(username):
-                logger.info('[{}] Setting user VLAN to OUI VLAN.'.format(username))
+                logger.info('[{}] Setting user VLAN to OUI VLAN.'.format(
+                    username))
 
                 oui_vlan = DeviceOui.get_vlan(username)
 
@@ -292,6 +293,8 @@ class AuthApiByName(Resource):
             UserInfo.add(username, reason='')
         if 'vlan' in json_data:
             result = Reply.vlan(username, json_data['vlan'])
+        if 'comment' in json_data:
+            result = UserInfo.add(username, comment=json_data['comment'])
         if result != '':
             return empty_result(status='error', data=result), 404
         return empty_result(status='success')
