@@ -1,16 +1,5 @@
-# Make sure we have a connection to Postgres
-WAIT=0
-
-sleep 5
-
-while ! nc -z nac_postgres 5432; do
-    sleep 1
-    WAIT=$(($WAIT + 1))
-      if [ "$WAIT" -gt 15 ]; then
-          echo "Error: Timeout wating for Postgres to start"
-          exit 1
-      fi
-done
+# Wait a while for PostgreSQL and API to start
+sleep 15
 
 # Clone settings from repository
 git clone $GITREPO_ETC /tmp/gitrepo_etc
