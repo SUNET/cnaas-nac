@@ -23,20 +23,22 @@ class UserInfo(Base):
                       onupdate=datetime.datetime.utcnow)
 
     @classmethod
-    def add(cls, username, comment='', reason=''):
+    def add(cls, username, comment=None, reason=None):
         with sqla_session() as session:
             res = session.query(UserInfo).filter(UserInfo.username == username).one_or_none()
 
             if res is not None:
-                if comment != '':
+                if comment is not None:
                     res.comment = comment
-                if reason != '':
+                if reason is not None:
                     res.reason = reason
+                res.authdate = datetime.datetime.utcnow()
             else:
                 user = UserInfo()
                 user.username = username
                 user.reason = reason
                 user.comment = comment
+                user.authdate = datetime.datetime.utcnow()
                 session.add(user)
 
         return ''
