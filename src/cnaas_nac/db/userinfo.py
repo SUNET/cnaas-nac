@@ -28,12 +28,15 @@ class UserInfo(Base):
             res = session.query(UserInfo).filter(UserInfo.username == username).one_or_none()
 
             if res is not None:
-                if comment is not None:
-                    res.comment = comment
-                if reason is not None:
-                    res.reason = reason
+                res.comment = comment
+                res.reason = reason
                 res.authdate = datetime.datetime.utcnow()
             else:
+                if comment is None:
+                    comment = 'None'
+                if reason is None:
+                    reason = 'None'
+
                 user = UserInfo()
                 user.username = username
                 user.reason = reason
