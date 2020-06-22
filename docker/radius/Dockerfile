@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND noninteractive
 
 # Install freeradius
 RUN apt update
-RUN apt install -y freeradius freeradius-postgresql freeradius-rest python3 python3-requests postgresql netcat samba winbind emacs-nox krb5-user git
+RUN apt install -y freeradius freeradius-postgresql freeradius-rest python3 python3-requests postgresql netcat samba winbind emacs-nox krb5-user git freeradius-ldap
 
 WORKDIR /etc/freeradius/3.0/
 
@@ -23,6 +23,7 @@ RUN cp /root/config/mods-config/files/authorize mods-config/files/authorize
 WORKDIR /etc/freeradius/3.0/mods-enabled/
 RUN ln -s ../mods-available/rest rest
 RUN ln -s ../mods-available/sql sql
+RUN ln -s ../mods-available/ldap ldap
 
 WORKDIR /etc/freeradius/3.0/
 
