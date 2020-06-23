@@ -23,25 +23,28 @@ sed -e "s/RADIUS_SERVER_SECRET/$RADIUS_SERVER_SECRET/" \
   < /etc/freeradius/3.0/clients.conf > /tmp/clients.conf.new \
   && cat /tmp/clients.conf.new > /etc/freeradius/3.0/clients.conf
 
-sed -e "s/LDAP_SERVER/$LDAP_SERVER/" \
-    -e "s/LDAP_IDENTITY/$LDAP_IDENTITY/" \
-    -e "s/LDAP_PASSWORD/$LDAP_PASSWORD/" \
-    -e "s/LDAP_BASE_DN/$LDAP_BASE_DN/" \
-    -e "s/LDAP_SERVER/$LDAP_SERVER/" \
-  < /etc/freeradius/3.0/mods-available/ldap > /tmp/ldap.conf.new \
-  && cat /tmp/ldap.conf.new > /etc/freeradius/3.0/mods-available/ldap
+sed -e "s/LDAP_SERVER/${LDAP_SERVER}/" \
+    -e "s/LDAP_IDENTITY/${LDAP_IDENTITY}/" \
+    -e "s/LDAP_PASSWORD/${LDAP_PASSWORD}/" \
+    -e "s/LDAP_BASE_DN/${LDAP_BASE_DN}/" \
+  < /etc/freeradius/3.0/mods-available/ldap > /tmp/ldap.new \
+  && cat /tmp/ldap.new > /etc/freeradius/3.0/mods-available/ldap
 
-sed -e "s/NTLM_DOMAIN/$NTLM_DOMAIN/" \
+sed -e "s/NTLM_DOMAIN/${NTLM_DOMAIN}/" \
   < /etc/freeradius/3.0/mods-available/ntlm_auth > /tmp/ntlm_auth.new \
   && cat /tmp/ntlm_auth.new > /etc/freeradius/3.0/mods-available/ntlm_auth
 
 # Configure DNS server
 if [ ${AD_DNS_PRIMARY} ]; then
-    echo ${AD_DNS_PRIMARY} > /etc/resolv.conf
+    echo "nameserver ${AD_DNS_PRIMARY}" >> /etc/resolv.conf
+fi
 
-    if [ ${AD_DNS_SECONDARY} ]; then
-	echo ${AD_DNS_SECONDARY} >> /etc/resolv.conf
-    fi
+if [ ${AD_DNS_SECONDARY} ]; then
+    echo "nameserver ${AD_DNS_SECONDARY}" >> /etc/resolv.conf
+fi
+
+if [ ${LDAP_SERVER} ]; then
+    ping -c5 $LDAP_SERVER
 fi
 
 # Start freeradius in the foreground with debug enabled
