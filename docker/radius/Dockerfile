@@ -24,6 +24,7 @@ WORKDIR /etc/freeradius/3.0/mods-enabled/
 RUN ln -s ../mods-available/rest rest
 RUN ln -s ../mods-available/sql sql
 RUN ln -s ../mods-available/ldap ldap
+RUN ln -s ../mods-available/ntlm_auth ntlm_auth
 
 WORKDIR /etc/freeradius/3.0/
 
