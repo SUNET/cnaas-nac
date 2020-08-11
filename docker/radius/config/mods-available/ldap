@@ -6,7 +6,7 @@
 #  Lightweight Directory Access Protocol (LDAP)
 #
 ldap {
-	server = 'ldap://LDAP_SERVER'
+	server = 'ldap://AD_DOMAIN'
 	port = 389
 	identity = AD_USERNAME@AD_DOMAIN
 	password = AD_PASSWORD
