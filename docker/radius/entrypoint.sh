@@ -4,6 +4,14 @@ sleep 5
 # Clone settings from repository
 git clone $GITREPO_ETC /tmp/gitrepo_etc
 
+if [ -f "/tmp/gitrepo_etc/radius/smb.conf" ]; then
+    cp /tmp/gitrepo_etc/radius/smb.conf /etc/samba/
+fi
+
+if [ -f "/tmp/gitrepo_etc/radius/krb5.conf" ]; then
+    cp /tmp/gitrepo_etc/radius/krb5.conf /etc/
+fi
+
 # Move the sites-default file if it exists
 if [ -f "/tmp/gitrepo_etc/radius/site-default" ]; then
     cp /tmp/gitrepo_etc/radius/site-default /etc/freeradius/3.0/sites-available/default
@@ -23,10 +31,11 @@ sed -e "s/RADIUS_SERVER_SECRET/$RADIUS_SERVER_SECRET/" \
   < /etc/freeradius/3.0/clients.conf > /tmp/clients.conf.new \
   && cat /tmp/clients.conf.new > /etc/freeradius/3.0/clients.conf
 
-sed -e "s/LDAP_SERVER/${LDAP_SERVER}/" \
-    -e "s/LDAP_IDENTITY/${LDAP_IDENTITY}/" \
-    -e "s/LDAP_PASSWORD/${LDAP_PASSWORD}/" \
-    -e "s/LDAP_BASE_DN/${LDAP_BASE_DN}/" \
+sed -e "s/AD_SERVER/${AD_SERVER}/" \
+    -e "s/AD_USERNAME/${AD_USERNAME}/" \
+    -e "s/AD_DOMAIN/${AD_DOMAIN}/" \
+    -e "s/AD_PASSWORD/${AD_PASSWORD}/" \
+    -e "s/AD_BASE_DN/${AD_BASE_DN}/" \
   < /etc/freeradius/3.0/mods-available/ldap > /tmp/ldap.new \
   && cat /tmp/ldap.new > /etc/freeradius/3.0/mods-available/ldap
 
@@ -36,15 +45,37 @@ sed -e "s/NTLM_DOMAIN/${NTLM_DOMAIN}/" \
 
 # Configure DNS server
 if [ ${AD_DNS_PRIMARY} ]; then
-    echo "nameserver ${AD_DNS_PRIMARY}" >> /etc/resolv.conf
+    echo "nameserver ${AD_DNS_PRIMARY}" > /etc/resolv.conf
+    if [ ${AD_DNS_SECONDARY} ]; then
+	echo "nameserver ${AD_DNS_SECONDARY}" >> /etc/resolv.conf
+    fi
+
+    echo "nameserver 127.0.0.11" >> /etc/resolv.conf
+    echo "options ndots:0" >> /etc/resolv.conf
 fi
 
-if [ ${AD_DNS_SECONDARY} ]; then
-    echo "nameserver ${AD_DNS_SECONDARY}" >> /etc/resolv.conf
-fi
+# if [ ${AD_DOMAIN} ]; then
+#    ping -c2 $AD_DOMAIN
+#
+#    if [ $? != 0 ]; then
+#	echo "Failed to reach AD, exiting."
+#	exit
+#    fi
+# fi
 
-if [ ${LDAP_SERVER} ]; then
-    ping -c5 $LDAP_SERVER
+# Fix some winbind permissions
+usermod -a -G winbindd_priv freerad
+chown root:winbindd_priv /var/lib/samba/winbindd_privileged/
+
+if [ ${AD_PASSWORD} ]; then
+    net ads join -U "${AD_USERNAME}"%"${AD_PASSWORD}"
+    winbindd
+    wbinfo -p
+
+    if [ $? != 0 ]; then
+	echo "Failed to join AD domain, exiting."
+	exit
+    fi
 fi
 
 # Start freeradius in the foreground with debug enabled
