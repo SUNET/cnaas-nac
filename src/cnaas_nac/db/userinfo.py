@@ -24,6 +24,11 @@ class UserInfo(Base):
 
     @classmethod
     def add(cls, username, comment=None, reason=None):
+        if comment is None or comment == '':
+            comment = 'None'
+        if reason is None or reason == '':
+            reason = 'None'
+
         with sqla_session() as session:
             res = session.query(UserInfo).filter(UserInfo.username == username).one_or_none()
 
@@ -32,11 +37,6 @@ class UserInfo(Base):
                 res.reason = reason
                 res.authdate = datetime.datetime.utcnow()
             else:
-                if comment is None:
-                    comment = 'None'
-                if reason is None:
-                    reason = 'None'
-
                 user = UserInfo()
                 user.username = username
                 user.reason = reason
