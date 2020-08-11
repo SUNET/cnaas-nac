@@ -8,9 +8,9 @@
 ldap {
 	server = 'ldap://LDAP_SERVER'
 	port = 389
-	identity = LDAP_IDENTITY
-	password = LDAP_PASSWORD
-	base_dn = LDAP_BASE_DN
+	identity = AD_USERNAME@AD_DOMAIN
+	password = AD_PASSWORD
+	base_dn = AD_BASE_DN
 	sasl {
 	}
 
