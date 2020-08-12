@@ -39,7 +39,7 @@ sed -e "s/AD_SERVER/${AD_SERVER}/" \
   < /etc/freeradius/3.0/mods-available/ldap > /tmp/ldap.new \
   && cat /tmp/ldap.new > /etc/freeradius/3.0/mods-available/ldap
 
-sed -e "s/NTLM_DOMAIN/${NTLM_DOMAIN}/" \
+sed -e "s/AD_DOMAIN/${AD_DOMAIN}/" \
   < /etc/freeradius/3.0/mods-available/ntlm_auth > /tmp/ntlm_auth.new \
   && cat /tmp/ntlm_auth.new > /etc/freeradius/3.0/mods-available/ntlm_auth
 
