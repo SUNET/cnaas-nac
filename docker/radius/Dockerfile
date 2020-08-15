@@ -26,6 +26,8 @@ RUN ln -s ../mods-available/sql sql
 RUN ln -s ../mods-available/ldap ldap
 
 # Build eapol_test
+WORKDIR /tmp/
+
 RUN apt install -y make gcc wget pkg-config libssl-dev libdbus-1-dev libnl-3-dev libnl-genl-3-dev
 RUN wget http://w1.fi/releases/wpa_supplicant-2.9.tar.gz -O wpa_supplicant.tar.gz
 RUN tar xzf wpa_supplicant.tar.gz
