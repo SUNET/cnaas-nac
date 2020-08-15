@@ -34,13 +34,14 @@ ldap {
 #	edir_autz = no
 	user {
 		base_dn = "${..base_dn}"
-		filter = "(uid=%{%{Stripped-User-Name}:-%{User-Name}})"
+		filter = "(sAMAccountName=%{%{Stripped-User-Name}:-%{User-Name}})"
 		sasl {
 		}
 	}
 
 	group {
 		base_dn = "${..base_dn}"
+		name_attribute = "CN"
 		filter = '(objectClass=posixGroup)'
 #		membership_filter = "(|(member=%{control:Ldap-UserDn})(memberUid=%{%{Stripped-User-Name}:-%{User-Name}}))"
 		membership_attribute = 'memberOf'
