@@ -25,6 +25,7 @@ apt-get update && \
       supervisor \
       libssl-dev \
       cron \
+      emacs-nox \
     && apt-get clean
 
 pip3 install uwsgi
