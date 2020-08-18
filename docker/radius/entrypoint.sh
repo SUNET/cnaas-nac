@@ -2,7 +2,11 @@
 sleep 5
 
 # Clone settings from repository
-git clone $GITREPO_ETC /tmp/gitrepo_etc
+if [ -d "/tmp/gitrepo_etc" ]; then
+    (cd /tmp/gitreport_etc; git pull)
+else
+    git clone $GITREPO_ETC /tmp/gitrepo_etc
+fi
 
 if [ -f "/tmp/gitrepo_etc/radius/smb.conf" ]; then
     cp /tmp/gitrepo_etc/radius/smb.conf /etc/samba/
@@ -53,15 +57,6 @@ if [ ${AD_DNS_PRIMARY} ]; then
     echo "nameserver 127.0.0.11" >> /etc/resolv.conf
     echo "options ndots:0" >> /etc/resolv.conf
 fi
-
-# if [ ${AD_DOMAIN} ]; then
-#    ping -c2 $AD_DOMAIN
-#
-#    if [ $? != 0 ]; then
-#	echo "Failed to reach AD, exiting."
-#	exit
-#    fi
-# fi
 
 # Fix some winbind permissions
 usermod -a -G winbindd_priv freerad
