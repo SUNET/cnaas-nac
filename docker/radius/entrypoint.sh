@@ -74,4 +74,4 @@ if [ ${AD_PASSWORD} ]; then
 fi
 
 # Start freeradius in the foreground with debug enabled
-freeradius -X
+freeradius -f -x -l stdout
