@@ -73,5 +73,9 @@ if [ ${AD_PASSWORD} ]; then
     fi
 fi
 
+# Create directory for the socket
+mkdir /var/run/freeradius/
+chown freerad:freerad /var/run/freeradius
+
 # Start freeradius in the foreground with debug enabled
 freeradius -f -x -l stdout
