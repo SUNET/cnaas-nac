@@ -8,10 +8,12 @@ else
     git clone $GITREPO_ETC /tmp/gitrepo_etc
 fi
 
+# Copy Samba configuration
 if [ -f "/tmp/gitrepo_etc/radius/smb.conf" ]; then
     cp /tmp/gitrepo_etc/radius/smb.conf /etc/samba/
 fi
 
+# Copy Kerberos 5 configuration
 if [ -f "/tmp/gitrepo_etc/radius/krb5.conf" ]; then
     cp /tmp/gitrepo_etc/radius/krb5.conf /etc/
 fi
@@ -62,6 +64,7 @@ fi
 usermod -a -G winbindd_priv freerad
 chown root:winbindd_priv /var/lib/samba/winbindd_privileged/
 
+# Join the AD domain if we have a AD password configured
 if [ ${AD_PASSWORD} ]; then
     net ads join -U "${AD_USERNAME}"%"${AD_PASSWORD}"
     winbindd
