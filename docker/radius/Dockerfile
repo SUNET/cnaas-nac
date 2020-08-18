@@ -25,6 +25,10 @@ RUN ln -s ../mods-available/rest rest
 RUN ln -s ../mods-available/sql sql
 RUN ln -s ../mods-available/ldap ldap
 
+# Enable control socket
+WORKDIR /etc/freeradius/3.0/sites-enabled/
+RUN ln -s ../sites-available/control-socket control-socket
+
 # Build eapol_test
 WORKDIR /tmp/
 
