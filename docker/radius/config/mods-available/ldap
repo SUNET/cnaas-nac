@@ -31,7 +31,7 @@ ldap {
 	}
 
 	edir = no
-#	edir_autz = no
+
 	user {
 		base_dn = "${..base_dn}"
 		filter = "(sAMAccountName=%{%{Stripped-User-Name}:-%{User-Name}})"
@@ -43,7 +43,6 @@ ldap {
 		base_dn = "${..base_dn}"
 		name_attribute = "CN"
 		filter = '(objectClass=posixGroup)'
-#		membership_filter = "(|(member=%{control:Ldap-UserDn})(memberUid=%{%{Stripped-User-Name}:-%{User-Name}}))"
 		membership_attribute = 'memberOf'
 	}
 
