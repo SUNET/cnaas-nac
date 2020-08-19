@@ -8,6 +8,11 @@ else
     git clone $GITREPO_ETC /tmp/gitrepo_etc
 fi
 
+# Copy radiusd configuration
+if [ -f "/tmp/gitrepo_etc/radius/radiusd.conf" ]; then
+    cp /tmp/gitrepo_etc/radius/radiusd.conf /etc/freeradius/3.0/
+fi
+
 # Copy Samba configuration
 if [ -f "/tmp/gitrepo_etc/radius/smb.conf" ]; then
     cp /tmp/gitrepo_etc/radius/smb.conf /etc/samba/
