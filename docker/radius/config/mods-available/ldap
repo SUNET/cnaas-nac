@@ -8,9 +8,9 @@
 ldap {
 	server = 'ldap://AD_DOMAIN'
 	port = 389
-	identity = AD_USERNAME@AD_DOMAIN
-	password = AD_PASSWORD
-	base_dn = AD_BASE_DN
+	identity = "AD_USERNAME@AD_DOMAIN"
+	password = "AD_PASSWORD"
+	base_dn = "AD_BASE_DN"
 	sasl {
 	}
 
@@ -58,10 +58,6 @@ ldap {
 		attribute {
 			ipaddr				= 'radiusClientIdentifier'
 			secret				= 'radiusClientSecret'
-#			shortname			= 'radiusClientShortname'
-#			nas_type			= 'radiusClientType'
-#			virtual_server			= 'radiusClientVirtualServer'
-#			require_message_authenticator	= 'radiusClientRequireMa'
 		}
 	}
 
