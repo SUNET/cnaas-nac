@@ -6,14 +6,14 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt update
 RUN apt install -y freeradius freeradius-postgresql freeradius-rest python3 python3-requests postgresql netcat samba winbind emacs-nox krb5-user git freeradius-ldap
 
-WORKDIR /etc/freeradius/3.0/
 
 # Copy to container
+WORKDIR /etc/freeradius/3.0/
+
 COPY config/ /root/config/
 COPY schema.sql /tmp/
 COPY entrypoint.sh /usr/local/bin/
 
-# Copy individual files
 RUN cp /root/config/dictionary .
 RUN cp /root/config/mods-available/* mods-available/
 RUN cp /root/config/sites-available/* sites-available/
@@ -21,12 +21,14 @@ RUN cp /root/config/mods-config/files/authorize mods-config/files/authorize
 
 # Make symlinks
 WORKDIR /etc/freeradius/3.0/mods-enabled/
+
 RUN ln -s ../mods-available/rest rest
 RUN ln -s ../mods-available/sql sql
 RUN ln -s ../mods-available/ldap ldap
 
 # Enable control socket
 WORKDIR /etc/freeradius/3.0/sites-enabled/
+
 RUN ln -s ../sites-available/control-socket control-socket
 
 # Build eapol_test
