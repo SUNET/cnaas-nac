@@ -4,32 +4,39 @@ sleep 5
 # Clone settings from repository
 if [ -d "/tmp/gitrepo_etc" ]; then
     (cd /tmp/gitreport_etc; git pull)
+    echo "[entrypoint.sh] Updated existing Git repository"
 else
     git clone $GITREPO_ETC /tmp/gitrepo_etc
+    echo "[entrypoint.sh] Cloned Git repository from $GITREPO_ETC"
 fi
 
 # Copy radiusd configuration
 if [ -f "/tmp/gitrepo_etc/radius/radiusd.conf" ]; then
     cp /tmp/gitrepo_etc/radius/radiusd.conf /etc/freeradius/3.0/
+    echo "[entrypoint.sh] Copied radiusd.conf"
 fi
 
 # Copy Samba configuration
 if [ -f "/tmp/gitrepo_etc/radius/smb.conf" ]; then
     cp /tmp/gitrepo_etc/radius/smb.conf /etc/samba/
+    echo "[entrypoint.sh] Copied smb.conf"
 fi
 
 # Copy Kerberos 5 configuration
 if [ -f "/tmp/gitrepo_etc/radius/krb5.conf" ]; then
     cp /tmp/gitrepo_etc/radius/krb5.conf /etc/
+    echo "[entrypoint.sh] Copied krb5.conf"
 fi
 
 # Move the sites-default file if it exists
 if [ -f "/tmp/gitrepo_etc/radius/site-default" ]; then
     cp /tmp/gitrepo_etc/radius/site-default /etc/freeradius/3.0/sites-available/default
+    echo "[entrypoint.sh] Copied site-default"
 fi
 
 # Copy the rest of the files
 cp /tmp/gitrepo_etc/radius/* /etc/freeradius/3.0/
+echo "[entrypoint.sh] Copied FreeRADIUS files"
 
 # Replace PSKs when needed
 sed -e "s/EDUROAM_R1_SECRET/$EDUROAM_R1_SECRET/" \
@@ -63,6 +70,8 @@ if [ ${AD_DNS_PRIMARY} ]; then
 
     echo "nameserver 127.0.0.11" >> /etc/resolv.conf
     echo "options ndots:0" >> /etc/resolv.conf
+
+    echo "[entrypoint.sh] resolv.conf configured"
 fi
 
 # Fix some winbind permissions
@@ -78,6 +87,8 @@ if [ ${AD_PASSWORD} ]; then
     if [ $? != 0 ]; then
 	echo "Failed to join AD domain, exiting."
 	exit
+    else
+	echo "[entrypoint.sh] Joined AD domain"
     fi
 fi
 
