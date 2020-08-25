@@ -3,7 +3,7 @@ sleep 5
 
 # Clone settings from repository
 if [ -d "/tmp/gitrepo_etc" ]; then
-    (cd /tmp/gitreport_etc; git pull)
+    (cd /tmp/gitrepo_etc; git pull)
     echo "[entrypoint.sh] Updated existing Git repository"
 else
     git clone $GITREPO_ETC /tmp/gitrepo_etc
