@@ -1,3 +1,6 @@
+#!/bin/sh
+
+
 # Wait a while for PostgreSQL and API to start
 sleep 5
 
@@ -71,7 +74,7 @@ if [ ${AD_DNS_PRIMARY} ]; then
     echo "nameserver 127.0.0.11" >> /etc/resolv.conf
     echo "options ndots:0" >> /etc/resolv.conf
 
-    echo "[entrypoint.sh] resolv.conf configured"
+    echo "[entrypoint.sh] Configured resolvers"
 fi
 
 # Fix some winbind permissions

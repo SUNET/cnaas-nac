@@ -31,7 +31,6 @@ RUN crontab /etc/cron.d/replicate.cron
 
 RUN touch /var/log/cron.log
 
-
 # Give nginx some special treatment
 RUN unlink /etc/nginx/sites-enabled/default
 RUN ln -s /etc/nginx/sites-available/nginx_app.conf /etc/nginx/sites-enabled/default
