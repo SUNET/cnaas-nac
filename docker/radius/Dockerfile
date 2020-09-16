@@ -45,6 +45,10 @@ RUN sed -i 's/#CONFIG_EAPOL_TEST=y/CONFIG_EAPOL_TEST=y/' .config
 RUN make eapol_test
 RUN cp eapol_test /usr/local/bin/
 
+WORKDIR /tmp/
+
+RUN rm -rf wpa_supplicant-2.9*
+
 # Clean up packages
 RUN apt clean
 
