@@ -2,6 +2,7 @@
 
 
 # Wait a while for PostgreSQL and API to start
+echo "[entrypoint.sh] Waiting for API and Postgres to start..."
 sleep 5
 
 # Clone settings from repository
@@ -41,28 +42,53 @@ fi
 cp /tmp/gitrepo_etc/radius/* /etc/freeradius/3.0/
 echo "[entrypoint.sh] Copied FreeRADIUS files"
 
-# Replace PSKs when needed
-sed -e "s/EDUROAM_R1_SECRET/$EDUROAM_R1_SECRET/" \
-    -e "s/EDUROAM_R2_SECRET/$EDUROAM_R2_SECRET/" \
-    -e "s/MDH_ISE_SECRET/$MDH_ISE_SECRET/" \
-  < /etc/freeradius/3.0/proxy.conf > /tmp/proxy.conf.new \
-  && cat /tmp/proxy.conf.new > /etc/freeradius/3.0/proxy.conf
+if [ ! -z "$EDUROAM_R1_SECRET" ] && [ ! -z "$EDUROAM_R2_SECRET" ] && \
+       [ ! -z "$MDH_ISE_SECRET" ]; then
+    # Replace PSKs when needed
+    echo "[entrypoint.sh] Setting Eduroam secrets"
 
-sed -e "s/RADIUS_SERVER_SECRET/$RADIUS_SERVER_SECRET/" \
-  < /etc/freeradius/3.0/clients.conf > /tmp/clients.conf.new \
-  && cat /tmp/clients.conf.new > /etc/freeradius/3.0/clients.conf
+    sed -e "s/EDUROAM_R1_SECRET/$EDUROAM_R1_SECRET/" \
+	-e "s/EDUROAM_R2_SECRET/$EDUROAM_R2_SECRET/" \
+	-e "s/MDH_ISE_SECRET/$MDH_ISE_SECRET/" \
+	< /etc/freeradius/3.0/proxy.conf > /tmp/proxy.conf.new \
+	&& cat /tmp/proxy.conf.new > /etc/freeradius/3.0/proxy.conf
+fi
 
-sed -e "s/AD_SERVER/${AD_SERVER}/" \
-    -e "s/AD_USERNAME/${AD_USERNAME}/" \
-    -e "s/AD_DOMAIN/${AD_DOMAIN}/" \
-    -e "s/AD_PASSWORD/${AD_PASSWORD}/" \
-    -e "s/AD_BASE_DN/${AD_BASE_DN}/" \
-  < /etc/freeradius/3.0/mods-available/ldap > /tmp/ldap.new \
-  && cat /tmp/ldap.new > /etc/freeradius/3.0/mods-available/ldap
+if [ ! -z "$RADIUS_SERVER_SECRET" ]; then
+    echo "[entrypoint.sh] Setting RADIUS secret"
 
-sed -e "s/AD_DOMAIN/${AD_DOMAIN}/" \
-  < /etc/freeradius/3.0/mods-available/ntlm_auth > /tmp/ntlm_auth.new \
-  && cat /tmp/ntlm_auth.new > /etc/freeradius/3.0/mods-available/ntlm_auth
+    sed -e "s/RADIUS_SERVER_SECRET/$RADIUS_SERVER_SECRET/" \
+	< /etc/freeradius/3.0/clients.conf > /tmp/clients.conf.new \
+	&& cat /tmp/clients.conf.new > /etc/freeradius/3.0/clients.conf
+fi
+
+if [ ! -z "$AD_USERNAME" ] && [ ! -z "$AD_PASSWORD" ] && \
+       [ ! -z "$AD_DOMAIN" ] && \
+       [ ! -z "$AD_BASE_DN" ]; then
+    echo "[entrypoint.sh] Setting AD server and credentials"
+
+    if [ ! -f "/etc/freeradius/3.0/mods-enabled/ldap" ]; then
+	echo "[entrypoint.sh] Enabling LDAP"
+	ln -s /etc/freeradius/3.0/mods-available/ldap /etc/freeradius/3.0/mods-enabled/ldap
+    fi
+
+    sed -e "s/AD_USERNAME/${AD_USERNAME}/" \
+	-e "s/AD_DOMAIN/${AD_DOMAIN}/" \
+	-e "s/AD_PASSWORD/${AD_PASSWORD}/" \
+	-e "s/AD_BASE_DN/${AD_BASE_DN}/" \
+	< /etc/freeradius/3.0/mods-available/ldap > /tmp/ldap.new \
+	&& cat /tmp/ldap.new > /etc/freeradius/3.0/mods-available/ldap
+
+    sed -e "s/AD_DOMAIN/${AD_DOMAIN}/" \
+	< /etc/freeradius/3.0/mods-available/ntlm_auth > /tmp/ntlm_auth.new \
+	&& cat /tmp/ntlm_auth.new > /etc/freeradius/3.0/mods-available/ntlm_auth
+else
+    if [ -f "/etc/freeradius/3.0/mods-enabled/ldap" ]; then
+	echo "[entrypoint.sh] Disabling LDAP"
+	unlink /etc/freeradius/3.0/mods-enabled/ldap
+    fi
+
+fi
 
 # Configure DNS server
 if [ ${AD_DNS_PRIMARY} ]; then
@@ -77,12 +103,13 @@ if [ ${AD_DNS_PRIMARY} ]; then
     echo "[entrypoint.sh] Configured resolvers"
 fi
 
-# Fix some winbind permissions
-usermod -a -G winbindd_priv freerad
-chown root:winbindd_priv /var/lib/samba/winbindd_privileged/
-
 # Join the AD domain if we have a AD password configured
 if [ ${AD_PASSWORD} ]; then
+    # Fix some winbind permissions
+    usermod -a -G winbindd_priv freerad
+    chown root:winbindd_priv /var/lib/samba/winbindd_privileged/
+
+    # Join the AD domain
     net ads join -U "${AD_USERNAME}"%"${AD_PASSWORD}"
     winbindd
     wbinfo -p
@@ -96,7 +123,10 @@ if [ ${AD_PASSWORD} ]; then
 fi
 
 # Create directory for the socket
-mkdir /var/run/freeradius/
+if [ ! -d /var/run/freeradius/ ]; then
+    mkdir /var/run/freeradius/
+fi
+
 chown freerad:freerad /var/run/freeradius
 
 # Start freeradius in the foreground with debug enabled
