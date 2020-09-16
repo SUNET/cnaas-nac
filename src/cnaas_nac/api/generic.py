@@ -11,7 +11,7 @@ def limit_results() -> int:
         try:
             r_limit = int(args['limit'])
             limit = max(1, min(100, r_limit))
-        except:
+        except Exception:
             pass
 
     return limit
@@ -19,14 +19,14 @@ def limit_results() -> int:
 
 def build_filter(f_class, query):
     args = request.args
-    if not 'filter' in args:
+    if 'filter' not in args:
         return query
     split = args['filter'].split(',')
     if not len(split) == 2:
         # invalid
         return query
     attribute, value = split
-    if not attribute in f_class.__table__._columns.keys():
+    if attribute not in f_class.__table__._columns.keys():
         # invalid
         return query
     kwargs = {attribute: value}

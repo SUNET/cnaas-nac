@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 services:
   nac_api:
     build: ./api/
@@ -6,6 +6,9 @@ services:
       - 1443:443
     networks:
       - cnaas
+    environment:
+      - RADIUS_SLAVE
+
   nac_radius:
     build: ./radius
     ports:
@@ -13,5 +16,20 @@ services:
       - 1813:1813/udp
     networks:
       - cnaas
+    environment:
+      - EDUROAM_R1_SECRET
+      - EDUROAM_R2_SECRET
+      - RADIUS_SERVER_SECRET
+      - GITREPO_ETC
+    depends_on:
+      - nac_api
+      
 networks:
   cnaas:
+    driver: bridge
+    name: cnaas
+    ipam:
+      config:
+      - subnet: 172.30.0.0/24
+    driver_opts:
+      com.docker.network.bridge.name: br-cnaas    

@@ -54,7 +54,14 @@ listen {
 }
 
 authorize {
-	rest
+	if (!&EAP-Message) {
+          rest
+
+	  if (!ok) {
+	      reject
+	  }
+        }
+
 	filter_username
 #	filter_password
 
@@ -666,7 +673,7 @@ post-proxy {
 
 	#  Uncomment the following line if you want to filter replies from
 	#  remote proxies based on the rules defined in the 'attrs' file.
-#	attr_filter.post-proxy
+	attr_filter.post-proxy
 
 	#
 	#  If you are proxying LEAP, you MUST configure the EAP
