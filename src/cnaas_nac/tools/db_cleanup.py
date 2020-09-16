@@ -6,9 +6,6 @@ from cnaas_nac.db.user import User, UserInfo
 from cnaas_nac.db.nas import NasPort
 
 
-import datetime
-
-
 logger = get_logger()
 
 
