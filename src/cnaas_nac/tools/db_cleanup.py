@@ -44,6 +44,8 @@ def db_cleanup():
             User.delete(user['username'])
             User.reply_delete(user['username'])
             NasPort.delete(user['username'])
+        else:
+            logger.info('Keeping user {}'.format(user['username']))
 
     return ''
 
