@@ -65,7 +65,7 @@ def accept(username):
             'value': reply['value']
         }
 
-    UserInfo.add(username, reason='User accepted')
+    UserInfo.add(username, reason='User accepted', auth=True)
 
     return json_reply
 
@@ -74,7 +74,7 @@ def reject(username, errstr=''):
     """
     Reject the user with a 404.
     """
-    UserInfo.add(username, reason=errstr)
+    UserInfo.add(username, reason=errstr, auth=True)
     return empty_result(status='error', data=errstr), 404
 
 
