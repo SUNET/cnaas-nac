@@ -1,4 +1,5 @@
 mschap {
+        with_ntdomain_hack = yes
 	use_mppe = yes
 	require_encryption = no
 	require_strong = no
@@ -17,4 +18,8 @@ mschap {
 	passchange {
 	}
 
+	# ntlm_auth = "/usr/bin/ntlm_auth --request-nt-key --username=%{%{Stripped-User-Name}:-%{%{User-Name}:-None}} --challenge=%{%{mschap:Challenge}:-00} --nt-response=%{%{mschap:NT-Response}:-00}"
+
+	winbind_username = "%{mschap:User-Name}"
+	winbind_domain = "%{mschap:NT-Domain}"
 }

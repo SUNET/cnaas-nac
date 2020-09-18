@@ -43,18 +43,15 @@ class NasPort(Base):
 
     @classmethod
     def get(cls, username=None):
-        res = []
         with sqla_session() as session:
             if username:
                 nas: NasPort = session.query(NasPort).filter(NasPort.username ==
-                                                             username).all()
+                                                             username).one_or_none()
             else:
-                nas: NasPort = session.query(NasPort).all()
+                nas: NasPort = session.query(NasPort).one_or_none()
             if nas is None:
                 return None
-            for port in nas:
-                res.append(port.as_dict())
-            return res
+            return nas.as_dict()
 
     @classmethod
     def add(cls, username, nas_ip_address, nas_identifier, nas_port_id,
@@ -78,9 +75,8 @@ class NasPort(Base):
         if not cls.get(username):
             return ''
         with sqla_session() as session:
-            nas_ports: NasPort = session.query(NasPort).filter(NasPort.username ==
-                                                               username).all()
-            for port in nas_ports:
-                session.delete(port)
-                session.commit()
+            port: NasPort = session.query(NasPort).filter(NasPort.username ==
+                                                          username).one_or_none()
+            session.delete(port)
+            session.commit()
         return ''

@@ -23,7 +23,22 @@ services:
       - GITREPO_ETC
     depends_on:
       - nac_api
-      
+
+  nac_postgres:
+    build: ./postgres
+    volumes:
+      - type: volume
+        source: nac-postgres-data
+        target: /var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=cnaas
+      - POSTGRES_PASSWORD=cnaas
+      - POSTGRES_DB=nac
+    ports:
+      - 5432:5432
+    networks:
+      - cnaas
+
 networks:
   cnaas:
     driver: bridge
@@ -32,4 +47,8 @@ networks:
       config:
       - subnet: 172.30.0.0/24
     driver_opts:
-      com.docker.network.bridge.name: br-cnaas    
+      com.docker.network.bridge.name: br-cnaas
+
+volumes:
+  nac-postgres-data:
+    external: true

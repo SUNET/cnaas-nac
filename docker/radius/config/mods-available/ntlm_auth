@@ -1,0 +1,4 @@
+exec ntlm_auth {
+	wait = yes
+	program = "/usr/bin/ntlm_auth --request-nt-key --domain=AD_DOMAIN --username=%{mschap:User-Name} --password=%{User-Password}"
+}
