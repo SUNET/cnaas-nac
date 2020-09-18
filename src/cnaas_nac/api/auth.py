@@ -290,7 +290,7 @@ class AuthApiByName(Resource):
                 result = User.enable(username)
             else:
                 result = User.disable(username)
-            UserInfo.add(username, reason='')
+            UserInfo.add(username, reason='', auth=True)
         if 'vlan' in json_data:
             result = Reply.vlan(username, json_data['vlan'])
         if 'comment' in json_data:
