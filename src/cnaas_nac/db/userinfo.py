@@ -19,8 +19,7 @@ class UserInfo(Base):
     username = Column(Unicode(64), nullable=False)
     comment = Column(Unicode(256))
     reason = Column(Unicode(256))
-    authdate = Column(DateTime, default=datetime.datetime.utcnow,
-                      onupdate=datetime.datetime.utcnow)
+    authdate = Column(DateTime, default=datetime.datetime.utcnow)
 
     @classmethod
     def add(cls, username, comment=None, reason=None, auth=False):
