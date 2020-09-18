@@ -219,6 +219,7 @@ def edit_userinfo(userinfo_diff, connstr, table=UserInfo, remove=False):
             username = diff_user['username']
             comment = diff_user['comment']
             reason = diff_user['reason']
+            authdate = diff_user['authdate']
 
             userinfo = session.query(table).filter(UserInfo.username ==
                                                    username).one_or_none()
@@ -232,10 +233,12 @@ def edit_userinfo(userinfo_diff, connstr, table=UserInfo, remove=False):
                 new_userinfo.username = username
                 new_userinfo.comment = comment
                 new_userinfo.reason = reason
+                new_userinfo.authdate = authdate
                 session.add(new_userinfo)
             elif userinfo is not None:
                 if comment != userinfo.comment or reason != userinfo.reason:
                     print('Changing userinfo {}'.format(username))
                     userinfo.comment = comment
                     userinfo.reason = reason
+                    userinfo.authdate = authdate
             session.commit()
