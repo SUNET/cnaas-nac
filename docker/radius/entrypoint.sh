@@ -97,28 +97,34 @@ if [ ${AD_DNS_PRIMARY} ]; then
 	echo "nameserver ${AD_DNS_SECONDARY}" >> /etc/resolv.conf
     fi
 
-    echo "nameserver 127.0.0.11" >> /etc/resolv.conf
-    echo "options ndots:0" >> /etc/resolv.conf
-
     echo "[entrypoint.sh] Configured resolvers"
 fi
 
 # Join the AD domain if we have a AD password configured
 if [ ${AD_PASSWORD} ]; then
-    # Fix some winbind permissions
-    usermod -a -G winbindd_priv freerad
-    chown root:winbindd_priv /var/lib/samba/winbindd_privileged/
-
-    # Join the AD domain
-    net ads join -U "${AD_USERNAME}"%"${AD_PASSWORD}"
+    # Test if we already joined the domain
     winbindd
     wbinfo -p
 
     if [ $? != 0 ]; then
-	echo "Failed to join AD domain, exiting."
-	exit
-    else
-	echo "[entrypoint.sh] Joined AD domain"
+	# Not joined, join it
+	killall winbindd
+
+	# Fix some winbind permissions
+	usermod -a -G winbindd_priv freerad
+	chown root:winbindd_priv /var/lib/samba/winbindd_privileged/
+
+	# Join the AD domain
+	net ads join -U "${AD_USERNAME}"%"${AD_PASSWORD}"
+	winbindd
+	wbinfo -p
+
+	if [ $? != 0 ]; then
+            echo "Failed to join AD domain, exiting."
+            exit
+	else
+            echo "[entrypoint.sh] Joined AD domain"
+	fi
     fi
 fi
 
