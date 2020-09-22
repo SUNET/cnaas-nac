@@ -4,7 +4,7 @@ rest {
 		check_cert_cn = no
 	}
 
-	connect_uri = "https://nac_api:443/api/v1.0/auth"
+	connect_uri = "https://172.31.0.10:443/api/v1.0/auth"
 
 	authorize {
 		uri = "${..connect_uri}"

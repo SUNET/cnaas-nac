@@ -5,7 +5,8 @@ services:
     ports:
       - 1443:443
     networks:
-      - cnaas
+      cnaas:
+        ipv4_address: 172.31.0.10
     environment:
       - RADIUS_SLAVE
 
@@ -15,7 +16,8 @@ services:
       - 1812:1812/udp
       - 1813:1813/udp
     networks:
-      - cnaas
+      cnaas:
+        ipv4_address: 172.31.0.20
     environment:
       - EDUROAM_R1_SECRET
       - EDUROAM_R2_SECRET
@@ -51,7 +53,8 @@ services:
     ports:
       - 5432:5432
     networks:
-      - cnaas
+      cnaas:
+        ipv4_address: 172.31.0.30
 
 networks:
   cnaas:
