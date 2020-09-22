@@ -21,15 +21,29 @@ services:
       - EDUROAM_R2_SECRET
       - RADIUS_SERVER_SECRET
       - GITREPO_ETC
+      - AD_DOMAIN
+      - AD_USERNAME
+      - AD_PASSWORD
+      - AD_BASE_DN
+      - NTLM_DOMAIN
+      - AD_DNS_PRIMARY
+      - AD_DNS_SECONDARY
     depends_on:
       - nac_api
+    volumes:
+      - type: volume
+        source: nac-freeradius-data
+        target: /etc/Freeradius/3.0/
+      - type: volume
+        source: nac-var-data
+        target: /var/
 
   nac_postgres:
     build: ./postgres
     volumes:
       - type: volume
         source: nac-postgres-data
-        target: /var/lib/postgresql/data
+        target: /var/lib/postgresql/data/
     environment:
       - POSTGRES_USER=cnaas
       - POSTGRES_PASSWORD=cnaas
@@ -51,4 +65,8 @@ networks:
 
 volumes:
   nac-postgres-data:
+    external: true
+  nac-freeradius-data:
+    external: true
+  nac-var-data:
     external: true
