@@ -113,6 +113,7 @@ if [ ${AD_PASSWORD} ]; then
 	# Fix some winbind permissions
 	usermod -a -G winbindd_priv freerad
 	chown root:winbindd_priv /var/lib/samba/winbindd_privileged/
+	chgrp freerad /var/lib/samba/winbindd_privileged/
 
 	# Join the AD domain
 	net ads join -U "${AD_USERNAME}"%"${AD_PASSWORD}"
@@ -120,10 +121,10 @@ if [ ${AD_PASSWORD} ]; then
 	wbinfo -p
 
 	if [ $? != 0 ]; then
-            echo "Failed to join AD domain, exiting."
-            exit
+	    echo "Failed to join AD domain, exiting."
+	    exit
 	else
-            echo "[entrypoint.sh] Joined AD domain"
+	    echo "[entrypoint.sh] Joined AD domain"
 	fi
     fi
 fi
