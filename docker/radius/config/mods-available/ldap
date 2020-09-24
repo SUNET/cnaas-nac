@@ -104,6 +104,9 @@ ldap {
 	}
 
 	tls {
+                tls_mode = yes
+#		ldap_debug = 9
+                require_cert = "allow"
 	}
 
 	pool {
