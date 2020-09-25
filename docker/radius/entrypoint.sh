@@ -113,7 +113,6 @@ if [ ${AD_PASSWORD} ]; then
 	# Fix some winbind permissions
 	usermod -a -G winbindd_priv freerad
 	chown root:winbindd_priv /var/lib/samba/winbindd_privileged/
-	chgrp freerad /var/lib/samba/winbindd_privileged/
 
 	# Join the AD domain
 	net ads join -U "${AD_USERNAME}"%"${AD_PASSWORD}"
@@ -127,6 +126,8 @@ if [ ${AD_PASSWORD} ]; then
 	    echo "[entrypoint.sh] Joined AD domain"
 	fi
     fi
+
+    chgrp freerad /var/lib/samba/winbindd_privileged/
 fi
 
 # Create directory for the socket
