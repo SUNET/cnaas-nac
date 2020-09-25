@@ -18,6 +18,7 @@ RUN cp /root/config/dictionary .
 RUN cp /root/config/mods-available/* mods-available/
 RUN cp /root/config/sites-available/* sites-available/
 RUN cp /root/config/mods-config/files/authorize mods-config/files/authorize
+RUN cp /root/config/policy.d/* policy.d/
 
 # Make symlinks
 WORKDIR /etc/freeradius/3.0/mods-enabled/
