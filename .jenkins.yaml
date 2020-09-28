@@ -20,6 +20,7 @@ script:
   - "nosetests --with-xunit"
 
 extra_jobs:
+  # Jobs for the develop branch
   - name: cnaas-authapi
     builders:
       - docker
@@ -35,5 +36,36 @@ extra_jobs:
   - name: cnaas-nac-postgres
     builders:
       - docker
+    docker_name: cnaas/nac-postgres
+    docker_context_dir: docker/postgres
+
+  # Jobs for the master branch
+  - name: cnaas-authapi
+    git:
+      branch: master
+    builders:
+      - docker
+    docker_tags:
+      - "v0.1.0"
+    docker_name: cnaas/authapi
+    docker_context_dir: docker/api
+
+  - name: cnaas-radius
+    git:
+      branch: master
+    builders:
+      - docker
+    docker_tags:
+      - "v0.1.0"
+    docker_name: cnaas/radius
+    docker_context_dir: docker/radius
+
+  - name: cnaas-nac-postgres
+    git:
+      branch: master
+    builders:
+      - docker
+    docker_tags:
+      - "v0.1.0"
     docker_name: cnaas/nac-postgres
     docker_context_dir: docker/postgres
