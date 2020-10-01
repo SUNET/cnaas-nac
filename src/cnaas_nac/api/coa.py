@@ -6,7 +6,6 @@ from flask_restplus import Resource, Namespace, fields
 
 from cnaas_nac.api.generic import empty_result
 from cnaas_nac.tools.log import get_logger
-
 from cnaas_nac.version import __api_version__
 
 
@@ -66,7 +65,7 @@ class BounceApi(Resource):
         return empty_result(status='success', data=result)
 
 
-api.add_resource(BounceApi)
+api.add_resource(BounceApi, '')
 
 
 if __name__ == '__main__':
