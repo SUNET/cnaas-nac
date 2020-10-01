@@ -25,7 +25,7 @@ port_bounce = api.model('bounce', {
 class CoA:
     def __init__(self, host, secret):
         self.client = Client(host, coaport=3799, secret=secret,
-                             dict=Dictionary("dictionary"))
+                             dict=Dictionary("../tools/dictionary"))
         self.client.timeout = 30
 
     def send_packet(self, attrs=None):
@@ -53,6 +53,13 @@ class BounceApi(Resource):
         """
 
         json_data = request.get_json()
+
+        if 'vlan' not in json_data:
+            return empty_result(status='error', data='VLAN required')
+        if 'host' not in json_data:
+            return empty_result(status='error', data='Host required')
+        if 'secret' not in json_data:
+            return empty_result(status='error', data='Secret required')
 
         logger.info(json_data)
 

@@ -1,0 +1,6 @@
+ATTRIBUTE       Tunnel-Private-Group-Id                 81      string  has_tag
+
+VENDOR          Arista                          30065
+BEGIN-VENDOR    Arista
+ATTRIBUTE       Arista-PortFlap                 9       integer
+END-VENDOR   Arista
