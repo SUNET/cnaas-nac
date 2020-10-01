@@ -16,7 +16,7 @@ api = Namespace('coa', description='Port bounce API',
                 prefix='/api/{}'.format(__api_version__))
 
 port_bounce = api.model('bounce', {
-    'portname': fields.String(required=True),
+    'vlan': fields.String(required=True),
     'host': fields.String(required=True),
     'secret': fields.String(required=True)
 })
@@ -56,10 +56,17 @@ class BounceApi(Resource):
 
         logger.info(json_data)
 
+        attrs = {
+            'Tunnel-Private-Group-Id': json_data['vlan'],
+            'Arista-PortFlap': '1'
+        }
+
+        secret = str.encode(json_data['secret'])
+        coa_request = CoA(json_data['host'], secret)
+        res = coa_request.send_packet(attrs=attrs)
+
         result = {
-            'portname': json_data['portname'],
-            'host': json_data['host'],
-            'secret': '**********'
+            'coa_result': res
         }
 
         return empty_result(status='success', data=result)
