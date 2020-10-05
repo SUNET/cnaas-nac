@@ -25,7 +25,7 @@ port_bounce = api.model('bounce', {
 class CoA:
     def __init__(self, host, secret):
         self.client = Client(host, coaport=3799, secret=secret,
-                             dict=Dictionary("../tools/dictionary"))
+                             dict=Dictionary("dictionary"))
         self.client.timeout = 30
 
     def send_packet(self, attrs=None):
@@ -79,9 +79,6 @@ class BounceApi(Resource):
         return empty_result(status='success', data=result)
 
 
-api.add_resource(BounceApi, '')
-
-
 if __name__ == '__main__':
     attrs = {
         'Tunnel-Private-Group-Id': '13',
@@ -90,3 +87,5 @@ if __name__ == '__main__':
 
     c = CoA('localhost', b'testing123')
     print(c.send_packet(attrs=attrs))
+else:
+    api.add_resource(BounceApi, '')
