@@ -34,7 +34,7 @@ ldap {
 
 	user {
 		base_dn = "${..base_dn}"
-		filter = "(sAMAccountName=%{%{Stripped-User-Name}:-%{User-Name}})"
+		filter = "(sAMAccountName=%{%{Stripped-User-Name}:-%{mschap:User-Name}})"
 		sasl {
 		}
 	}
