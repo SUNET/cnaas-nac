@@ -16,8 +16,8 @@ api = Namespace('coa', description='Port bounce API',
                 prefix='/api/{}'.format(__api_version__))
 
 port_bounce = api.model('bounce', {
-    'vlan': fields.String(required=True),
-    'host': fields.String(required=True),
+    'nas_ip_address': fields.String(required=True),
+    'nas_port_id': fields.String(required=True),
     'secret': fields.String(required=True)
 })
 
@@ -32,13 +32,11 @@ class CoA:
         try:
             self.coa_attrs = {k.replace("-", "_"): attrs[k] for k in attrs}
             self.coa_pkt = self.client.CreateCoAPacket(**self.coa_attrs)
-            result = self.client.SendPacket(self.coa_pkt)
-        except KeyError as e:
-            return 'Failed to send CoA packet, invalid attribute: %s' % (str(e))
-        else:
-            return 'Failed to send CoA packet: %s (%s)' % (type(e), str(e))
+            self.client.SendPacket(self.coa_pkt)
+        except Exception as e:
+            return 'Failed to send CoA packet: %s' % (str(e))
 
-        return result
+        return 'Port bounced'
 
 
 class BounceApi(Resource):
@@ -73,11 +71,7 @@ class BounceApi(Resource):
         coa_request = CoA(json_data['nas_ip_address'], secret)
         res = coa_request.send_packet(attrs=attrs)
 
-        result = {
-            'coa_result': res
-        }
-
-        return empty_result(status='success', data=result)
+        return empty_result(status='success', data=res)
 
 
 if __name__ == '__main__':
