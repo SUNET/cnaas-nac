@@ -54,22 +54,23 @@ class BounceApi(Resource):
 
         json_data = request.get_json()
 
-        if 'vlan' not in json_data:
-            return empty_result(status='error', data='VLAN required')
-        if 'host' not in json_data:
-            return empty_result(status='error', data='Host required')
+        if 'nas_ip_address' not in json_data:
+            return empty_result(status='error', data='NAS IP address missing')
+        if 'nas_port_id' not in json_data:
+            return empty_result(status='error', data='NAS port ID missing')
         if 'secret' not in json_data:
             return empty_result(status='error', data='Secret required')
 
         logger.info(json_data)
 
         attrs = {
-            'Tunnel-Private-Group-Id': json_data['vlan'],
+            'NAS-IP-Address': json_data['nas_ip_address'],
+            'NAS-Port-Id': json_data['nas_port_id'],
             'Arista-PortFlap': '1'
         }
 
         secret = str.encode(json_data['secret'])
-        coa_request = CoA(json_data['host'], secret)
+        coa_request = CoA(json_data['nas_ip_address'], secret)
         res = coa_request.send_packet(attrs=attrs)
 
         result = {
