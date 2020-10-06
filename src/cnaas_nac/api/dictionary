@@ -1,4 +1,5 @@
-ATTRIBUTE       Tunnel-Private-Group-Id                 81      string  has_tag
+ATTRIBUTE	NAS-Port-Id				87	string
+ATTRIBUTE	NAS-IP-Address				4	ipaddr
 
 VENDOR          Arista                          30065
 BEGIN-VENDOR    Arista
