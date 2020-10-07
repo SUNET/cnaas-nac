@@ -1,0 +1,7 @@
+ATTRIBUTE	NAS-Port-Id				87	string
+ATTRIBUTE	NAS-IP-Address				4	ipaddr
+
+VENDOR          Arista                          30065
+BEGIN-VENDOR    Arista
+ATTRIBUTE       Arista-PortFlap                 9       integer
+END-VENDOR   Arista
