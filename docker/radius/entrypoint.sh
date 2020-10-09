@@ -116,14 +116,21 @@ if [ ${AD_PASSWORD} ]; then
 
 	# Join the AD domain
 	net ads join -U "${AD_USERNAME}"%"${AD_PASSWORD}"
-	winbindd
-	wbinfo -p
-
 	if [ $? != 0 ]; then
 	    echo "Failed to join AD domain, exiting."
 	    exit
 	else
 	    echo "[entrypoint.sh] Joined AD domain"
+	fi
+
+	winbindd
+	wbinfo -p
+
+	if [ $? != 0 ]; then
+	    echo "Could not start windbindd, exiting."
+	    exit
+	else
+	    echo "[entrypoint.sh] Started windbindd"
 	fi
     fi
 
