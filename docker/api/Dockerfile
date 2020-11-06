@@ -14,7 +14,7 @@ WORKDIR /opt/cnaas/venv/
 RUN sh ./bin/activate
 
 COPY config/db_config.yml /etc/cnaas-nac/db_config.yml
-COPY config/uwsgi.ini /opt/cnaas/venv/cnaas-nac/
+COPY config/uwsgi_internal.ini /opt/cnaas/venv/cnaas-nac/
 COPY config/supervisord_app.conf /etc/supervisor/conf.d
 COPY config/nginx_app.conf /etc/nginx/sites-available/
 COPY cert/* /etc/nginx/conf.d/

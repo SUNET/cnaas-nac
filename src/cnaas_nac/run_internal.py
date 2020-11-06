@@ -1,6 +1,6 @@
 import os
 
-from cnaas_nac.api import app
+from cnaas_nac.api.internal import app
 
 
 os.environ['PYTHONPATH'] = os.getcwd()
