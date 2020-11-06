@@ -13,11 +13,15 @@ RUN python3 -m venv /opt/cnaas/venv
 WORKDIR /opt/cnaas/venv/
 RUN sh ./bin/activate
 
+RUN mkdir /opt/cnaas/certs/
+
 COPY config/db_config.yml /etc/cnaas-nac/db_config.yml
 COPY config/uwsgi_internal.ini /opt/cnaas/venv/cnaas-nac/
 COPY config/supervisord_app.conf /etc/supervisor/conf.d
 COPY config/nginx_app.conf /etc/nginx/sites-available/
-COPY cert/* /etc/nginx/conf.d/
+COPY cert/*.key /etc/nginx/conf.d/
+COPY cert/*.crt /etc/nginx/conf.d/
+COPY cert/jwt_pubkey.pem /opt/cnaas/certs/
 COPY exec-pre-app.sh /opt/cnaas/
 COPY config/cleanup.cron /etc/cron.d/
 COPY config/replicate.cron /etc/cron.d/
