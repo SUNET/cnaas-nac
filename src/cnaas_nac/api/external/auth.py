@@ -1,6 +1,8 @@
-from flask import request
+import json
+
+from flask import request, make_response
 from flask_restplus import Resource, Namespace, fields
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required
 
 from cnaas_nac.api.generic import empty_result
 from cnaas_nac.tools.log import get_logger
@@ -30,8 +32,14 @@ class AuthApi(Resource):
         """
         Get a JSON blob with all users, replies and other information.
         """
+        users = get_users()
+        response = make_response(json.dumps(empty_result(status='success',
+                                                         data=users)), 200)
 
-        return empty_result(status='success', data=get_users())
+        response.headers['X-Total-Count'] = len(users)
+        response.headers['Content-Type'] = 'application/json'
+
+        return response
 
 
 class AuthApiByName(Resource):
@@ -40,7 +48,14 @@ class AuthApiByName(Resource):
         """
         Return a JSON blob with all users, VLANs and other information.
         """
-        return empty_result(status='success', data=get_users(username))
+        users = get_users(username)
+        response = make_response(json.dumps(empty_result(status='success',
+                                                         data=users)), 200)
+
+        response.headers['X-Total-Count'] = len(users)
+        response.headers['Content-Type'] = 'application/json'
+
+        return response
 
     @api.expect(user_edit)
     @jwt_required
@@ -94,4 +109,5 @@ class AuthApiByName(Resource):
 
 
 api.add_resource(AuthApi, '')
+api.add_resource(AuthApi, '/')
 api.add_resource(AuthApiByName, '/<string:username>')
