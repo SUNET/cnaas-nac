@@ -75,6 +75,6 @@ def log_request(response):
         user = decode_token(token).get('sub')
     except Exception:
         user = 'unknown'
-    logger.info('User: {}, Method: {}, Status: {}, URL: {}, JSON: {}'.format(
+    logger.info('[External API] User: {}, Method: {}, Status: {}, URL: {}, JSON: {}'.format(
         user, request.method, response.status_code, request.url, request.json))
     return response
