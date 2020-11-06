@@ -25,6 +25,7 @@ user_edit = api.model('auth_enable', {
 
 
 class AuthApi(Resource):
+    @jwt_required
     def get(self):
         """
         Get a JSON blob with all users, replies and other information.
