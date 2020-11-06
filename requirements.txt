@@ -12,3 +12,4 @@ SQLAlchemy-Utils==0.36.8
 pyrad==2.1
 Werkzeug==0.16.1
 cryptography==3.2.1
+flask-cors==3.0.9
