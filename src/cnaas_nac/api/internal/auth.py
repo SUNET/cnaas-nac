@@ -3,7 +3,7 @@ import os
 from flask import request
 from flask_restplus import Resource, Namespace, fields
 
-from cnaas_nac.api.generic import empty_result
+from cnaas_nac.api.internal.generic import empty_result
 from cnaas_nac.tools.log import get_logger
 from cnaas_nac.db.user import User, get_users, UserInfo
 from cnaas_nac.db.oui import DeviceOui

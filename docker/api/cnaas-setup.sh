@@ -40,6 +40,7 @@ source bin/activate
 # Fetch the code and install dependencies
 git clone https://github.com/SUNET/cnaas-nac.git
 cd cnaas-nac/
+git checkout feature.split_apis
 python3 -m pip install -r requirements.txt
 
 # Clean up packages
