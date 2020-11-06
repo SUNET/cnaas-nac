@@ -1,0 +1,75 @@
+version: '3.7'
+services:
+  nac_api:
+    build: ./api/
+    ports:
+      - 1443:443
+    networks:
+      cnaas:
+        ipv4_address: 172.31.0.10
+    environment:
+      - RADIUS_SLAVE
+
+  # nac_radius:
+  #   build: ./radius
+  #   ports:
+  #     - 1812:1812/udp
+  #     - 1813:1813/udp
+  #   networks:
+  #     cnaas:
+  #       ipv4_address: 172.31.0.20
+  #   environment:
+  #     - EDUROAM_R1_SECRET
+  #     - EDUROAM_R2_SECRET
+  #     - RADIUS_SERVER_SECRET
+  #     - GITREPO_ETC
+  #     - AD_DOMAIN
+  #     - AD_USERNAME
+  #     - AD_PASSWORD
+  #     - AD_BASE_DN
+  #     - NTLM_DOMAIN
+  #     - AD_DNS_PRIMARY
+  #     - AD_DNS_SECONDARY
+  #   depends_on:
+  #     - nac_api
+  #   volumes:
+  #     - type: volume
+  #       source: nac-freeradius-data
+  #       target: /etc/Freeradius/3.0/
+  #     - type: volume
+  #       source: nac-var-data
+  #       target: /var/
+
+  nac_postgres:
+    build: ./postgres
+    volumes:
+      - type: volume
+        source: nac-postgres-data
+        target: /var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=cnaas
+      - POSTGRES_PASSWORD=cnaas
+       - POSTGRES_DB=nac
+    ports:
+      - 5432:5432
+    networks:
+      cnaas:
+        ipv4_address: 172.31.0.30
+
+networks:
+  cnaas:
+    driver: bridge
+    name: cnaas
+    ipam:
+      config:
+      - subnet: 172.30.0.0/24
+    driver_opts:
+      com.docker.network.bridge.name: br-cnaas
+
+volumes:
+  nac-postgres-data:
+    external: true
+  nac-freeradius-data:
+    external: true
+  nac-var-data:
+    external: true
