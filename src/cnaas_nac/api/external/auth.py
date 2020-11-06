@@ -24,6 +24,15 @@ user_edit = api.model('auth_enable', {
 })
 
 
+class AuthApi(Resource):
+    def get(self):
+        """
+        Get a JSON blob with all users, replies and other information.
+        """
+
+        return empty_result(status='success', data=get_users())
+
+
 class AuthApiByName(Resource):
     @jwt_required
     def get(self, username):
@@ -83,4 +92,5 @@ class AuthApiByName(Resource):
         return empty_result(status='success')
 
 
+api.add_resource(AuthApi, '')
 api.add_resource(AuthApiByName, '/<string:username>')
