@@ -1,6 +1,7 @@
 import os
 import sys
 
+from flask_cors import CORS
 from flask import Flask, request, jsonify
 from flask_restplus import Api
 from flask_jwt_extended import JWTManager, decode_token
@@ -61,6 +62,10 @@ app.config['JWT_ALGORITHM'] = 'ES256'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
 
 jwt = JWTManager(app)
+cors = CORS(app,
+            resources={r"/api/*": {"origins": "*"}},
+            expose_headers=["Content-Type", "Authorization", "X-Total-Count"])
+
 api = CnaasApi(app, prefix='/api/{}'.format(__api_version__),
                authorizations=authorizations,
                security='apikey')
