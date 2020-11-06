@@ -8,17 +8,12 @@ RUN mkdir /etc/cnaas-nac
 COPY cnaas-setup.sh /opt/cnaas/cnaas-setup.sh
 RUN /opt/cnaas/cnaas-setup.sh
 
-# Start venv
-RUN python3 -m venv /opt/cnaas/venv
-WORKDIR /opt/cnaas/venv/
-RUN sh ./bin/activate
-
 RUN mkdir /opt/cnaas/certs/
 
 COPY config/db_config.yml /etc/cnaas-nac/db_config.yml
 COPY config/uwsgi_internal.ini /opt/cnaas/
 COPY config/uwsgi_external.ini /opt/cnaas/
-COPY config/supervisord_app.conf /etc/supervisor/conf.d
+COPY config/supervisord_app.conf /etc/supervisor/supervisord.conf
 COPY config/nginx_internal.conf /etc/nginx/sites-available/
 COPY config/nginx_external.conf /etc/nginx/sites-available/
 COPY cert/*.key /etc/nginx/conf.d/
@@ -45,4 +40,4 @@ RUN ln -s /etc/nginx/sites-available/nginx_external.conf /etc/nginx/sites-enable
 # Expose 1443
 EXPOSE 1443
 
-ENTRYPOINT "supervisord"
+ENTRYPOINT supervisord -c /etc/supervisor/supervisord.conf
