@@ -26,6 +26,7 @@ apt-get update && \
       libssl-dev \
       cron \
       emacs-nox \
+      uwsgi-plugin-python3 \
     && apt-get clean
 
 pip3 install uwsgi
@@ -41,7 +42,7 @@ source bin/activate
 git clone https://github.com/SUNET/cnaas-nac.git
 cd cnaas-nac/
 git checkout feature.split_apis
-python3 -m pip install -r requirements.txt
+/opt/cnaas/venv/bin/pip3 install -r requirements.txt
 
 # Clean up packages
 apt-get clean
