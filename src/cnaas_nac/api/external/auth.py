@@ -33,7 +33,7 @@ class AuthApi(Resource):
         Get a JSON blob with all users, replies and other information.
         """
         field = None
-        condition = None
+        condition = ''
 
         for arg in request.args:
             if 'filter' in arg:
