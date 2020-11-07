@@ -134,18 +134,41 @@ class User(Base):
         return True
 
 
-def get_users(username=''):
+def get_users(username='', field=None, condition=''):
     result = []
+
+    db_field = User.username
+    db_condition = '%{}%'.format(condition)
+
+    if field is not None:
+        if field == 'username':
+            db_field = User.username
+        elif field == 'vlan':
+            db_field = Reply.value
+        elif field == 'nasip':
+            db_field = NasPort.nas_ip_address
+        elif field == 'nasport':
+            db_field = NasPort.nas_port_id
+        elif field == 'reason':
+            db_field = UserInfo.reason
+        elif field == 'comment':
+            db_field = UserInfo.comment
+        else:
+            return []
+
     with sqla_session() as session:
         if username == '':
-            res = session.query(User, Reply, NasPort).filter(User.username == NasPort.username).filter(Reply.username == User.username).filter(Reply.attribute == 'Tunnel-Private-Group-Id').order_by(User.username).all()
+            res = session.query(User, Reply, NasPort, UserInfo).filter(User.username == NasPort.username).filter(Reply.username == User.username).filter(Reply.attribute == 'Tunnel-Private-Group-Id').filter(UserInfo.username == User.username).filter(db_field.like(db_condition)).order_by(User.username).all()
         else:
-            res = session.query(User, Reply, NasPort).filter(User.username == username).filter(User.username == NasPort.username).filter(Reply.username == User.username).filter(Reply.attribute == 'Tunnel-Private-Group-Id').order_by(User.username).all()
+            res = session.query(User, Reply, NasPort, UserInfo).filter(User.username == username).filter(User.username == NasPort.username).filter(Reply.username == User.username).filter(Reply.attribute == 'Tunnel-Private-Group-Id').order_by(User.username).all()
         usernames = []
-        for user, reply, nas_port in res:
+        for user, reply, nas_port, userinfo in res:
             usernames.append(user.username)
         userinfos = UserInfo.get(usernames=usernames)
-        for user, reply, nas_port in res:
+        for user, reply, nas_port, userinfo in res:
+            if usernames != []:
+                if user.username not in usernames:
+                    continue
             res_dict = dict()
             res_dict['username'] = user.username
 

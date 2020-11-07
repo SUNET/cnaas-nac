@@ -32,7 +32,15 @@ class AuthApi(Resource):
         """
         Get a JSON blob with all users, replies and other information.
         """
-        users = get_users()
+        field = None
+        condition = None
+
+        for arg in request.args:
+            if 'filter' in arg:
+                field = arg[arg.find('[')+1: arg.find(']')]
+                condition = request.args[arg]
+
+        users = get_users(username='', field=field, condition=condition)
         response = make_response(json.dumps(empty_result(status='success',
                                                          data=users)), 200)
 
