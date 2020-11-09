@@ -137,7 +137,7 @@ class User(Base):
 def get_users(field=None, condition='', order=''):
     result = []
 
-    db_order = desc(User.username)
+    db_order = asc(User.username)
     db_field = User.username
     db_condition = '%{}%'.format(condition)
 
