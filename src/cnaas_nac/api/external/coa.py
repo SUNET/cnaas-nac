@@ -7,6 +7,7 @@ from flask_restplus import Resource, Namespace, fields
 from cnaas_nac.api.generic import empty_result
 from cnaas_nac.tools.log import get_logger
 from cnaas_nac.version import __api_version__
+from cnaas_nac.db.user import get_users
 
 
 logger = get_logger()
@@ -16,8 +17,7 @@ api = Namespace('coa', description='Port bounce API',
                 prefix='/api/{}'.format(__api_version__))
 
 port_bounce = api.model('bounce', {
-    'nas_ip_address': fields.String(required=True),
-    'nas_port_id': fields.String(required=True),
+    'username': fields.String(required=True),
     'secret': fields.String(required=True)
 })
 
@@ -26,7 +26,7 @@ class CoA:
     def __init__(self, host, secret):
         self.client = Client(host, coaport=3799, secret=secret,
                              dict=Dictionary("dictionary"))
-        self.client.timeout = 30
+        self.client.timeout = 10
 
     def send_packet(self, attrs=None):
         try:
@@ -34,7 +34,7 @@ class CoA:
             self.coa_pkt = self.client.CreateCoAPacket(**self.coa_attrs)
             self.client.SendPacket(self.coa_pkt)
         except Exception as e:
-            return 'Failed to send CoA packet: %s' % (str(e))
+            raise Exception('Failed to send CoA packet, is NAS reachable?')
 
         return 'Port bounced'
 
@@ -52,24 +52,32 @@ class BounceApi(Resource):
 
         json_data = request.get_json()
 
-        if 'nas_ip_address' not in json_data:
-            return empty_result(status='error', data='NAS IP address missing')
-        if 'nas_port_id' not in json_data:
-            return empty_result(status='error', data='NAS port ID missing')
+        if 'username' not in json_data:
+            return empty_result(status='error', data='Username')
         if 'secret' not in json_data:
             return empty_result(status='error', data='Secret required')
 
-        logger.info(json_data)
+        userdata = get_users(field='username', condition=json_data['username'])
+
+        if userdata is []:
+            return empty_result(status='error', data='User not found')
+
+        nas_ip_address = userdata[0]['nas_ip_address']
+        nas_port_id = userdata[0]['nas_port_id']
 
         attrs = {
-            'NAS-IP-Address': json_data['nas_ip_address'],
-            'NAS-Port-Id': json_data['nas_port_id'],
+            'NAS-IP-Address': nas_ip_address,
+            'NAS-Port-Id': nas_port_id,
             'Arista-PortFlap': '1'
         }
 
         secret = str.encode(json_data['secret'])
-        coa_request = CoA(json_data['nas_ip_address'], secret)
-        res = coa_request.send_packet(attrs=attrs)
+
+        try:
+            coa_request = CoA(nas_ip_address, secret)
+            res = coa_request.send_packet(attrs=attrs)
+        except Exception as e:
+            return empty_result(status='error', data=str(e))
 
         return empty_result(status='success', data=res)
 
