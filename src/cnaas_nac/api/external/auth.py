@@ -34,7 +34,7 @@ class AuthApi(Resource):
         """
         field = None
         condition = ''
-        direction = ''
+        direction = 'username'
 
         for arg in request.args:
             if 'filter' in arg:
