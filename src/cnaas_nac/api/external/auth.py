@@ -34,13 +34,16 @@ class AuthApi(Resource):
         """
         field = None
         condition = ''
+        direction = ''
 
         for arg in request.args:
             if 'filter' in arg:
                 field = arg[arg.find('[')+1: arg.find(']')]
                 condition = request.args[arg]
+            if 'sort' in arg:
+                direction = request.args[arg]
 
-        users = get_users(field=field, condition=condition)
+        users = get_users(field=field, condition=condition, order=direction)
         response = make_response(json.dumps(empty_result(status='success',
                                                          data=users)), 200)
 

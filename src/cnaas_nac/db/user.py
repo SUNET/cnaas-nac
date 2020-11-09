@@ -5,7 +5,7 @@ import datetime
 from typing import Optional
 from sqlalchemy import Column, Integer, Unicode, UniqueConstraint, DateTime
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Boolean, desc
+from sqlalchemy import Boolean, desc, asc
 from cnaas_nac.db.session import sqla_session
 from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.reply import Reply
@@ -134,9 +134,10 @@ class User(Base):
         return True
 
 
-def get_users(field=None, condition=''):
+def get_users(field=None, condition='', order=''):
     result = []
 
+    db_order = asc(User.username)
     db_field = User.username
     db_condition = '%{}%'.format(condition)
 
@@ -156,8 +157,20 @@ def get_users(field=None, condition=''):
         else:
             return []
 
+        if order != '':
+            if 'username' in order:
+                db_order = asc(User.username) if order.startswith('-') else desc(User.username)
+            elif 'vlan' in order:
+                db_order = asc(Reply.value) if order.startswith('-') else desc(Reply.value)
+            elif 'reason' in order:
+                db_order = asc(UserInfo.reason) if order.startswith('-') else desc(UserInfo.reason)
+            elif 'comment' in order:
+                db_order = asc(UserInfo.authdate) if order.startswith('-') else desc(UserInfo.authdate)
+            else:
+                db_order = asc(User.username)
+
     with sqla_session() as session:
-        res = session.query(User, Reply, NasPort, UserInfo).filter(User.username == NasPort.username).filter(Reply.username == User.username).filter(Reply.attribute == 'Tunnel-Private-Group-Id').filter(UserInfo.username == User.username).filter(db_field.like(db_condition)).order_by(User.username).all()
+        res = session.query(User, Reply, NasPort, UserInfo).filter(User.username == NasPort.username).filter(Reply.username == User.username).filter(Reply.attribute == 'Tunnel-Private-Group-Id').filter(UserInfo.username == User.username).filter(db_field.like(db_condition)).order_by(db_order).all()
 
         usernames = []
         for user, reply, nas_port, userinfo in res:
