@@ -52,6 +52,8 @@ class BounceApi(Resource):
 
         json_data = request.get_json()
 
+        if json_data is None:
+            return empty_result(status='error', data='Missing JSON data')
         if 'username' not in json_data:
             return empty_result(status='error', data='Username')
         if 'secret' not in json_data:
