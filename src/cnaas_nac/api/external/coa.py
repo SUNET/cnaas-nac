@@ -3,6 +3,7 @@ from pyrad.dictionary import Dictionary
 
 from flask import request
 from flask_restplus import Resource, Namespace, fields
+from flask_jwt_extended import jwt_required
 
 from cnaas_nac.api.generic import empty_result
 from cnaas_nac.tools.log import get_logger
@@ -41,6 +42,7 @@ class CoA:
 
 class BounceApi(Resource):
     @api.expect(port_bounce)
+    @jwt_required
     def post(self):
         """
         Send a CoA-Request to the NAS and tell it to flap the selected
