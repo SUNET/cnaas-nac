@@ -40,7 +40,7 @@ class AuthApi(Resource):
                 field = arg[arg.find('[')+1: arg.find(']')]
                 condition = request.args[arg]
 
-        users = get_users(username='', field=field, condition=condition)
+        users = get_users(field=field, condition=condition)
         response = make_response(json.dumps(empty_result(status='success',
                                                          data=users)), 200)
 
@@ -56,7 +56,7 @@ class AuthApiByName(Resource):
         """
         Return a JSON blob with all users, VLANs and other information.
         """
-        users = get_users(username)
+        users = get_users(field='username', condition=username)
         response = make_response(json.dumps(empty_result(status='success',
                                                          data=users)), 200)
 

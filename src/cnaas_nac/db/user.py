@@ -134,7 +134,7 @@ class User(Base):
         return True
 
 
-def get_users(username='', field=None, condition=''):
+def get_users(field=None, condition=''):
     result = []
 
     db_field = User.username
@@ -157,13 +157,12 @@ def get_users(username='', field=None, condition=''):
             return []
 
     with sqla_session() as session:
-        if username == '':
-            res = session.query(User, Reply, NasPort, UserInfo).filter(User.username == NasPort.username).filter(Reply.username == User.username).filter(Reply.attribute == 'Tunnel-Private-Group-Id').filter(UserInfo.username == User.username).filter(db_field.like(db_condition)).order_by(User.username).all()
-        else:
-            res = session.query(User, Reply, NasPort, UserInfo).filter(User.username == username).filter(User.username == NasPort.username).filter(Reply.username == User.username).filter(Reply.attribute == 'Tunnel-Private-Group-Id').order_by(User.username).all()
+        res = session.query(User, Reply, NasPort, UserInfo).filter(User.username == NasPort.username).filter(Reply.username == User.username).filter(Reply.attribute == 'Tunnel-Private-Group-Id').filter(UserInfo.username == User.username).filter(db_field.like(db_condition)).order_by(User.username).all()
+
         usernames = []
         for user, reply, nas_port, userinfo in res:
             usernames.append(user.username)
+
         userinfos = UserInfo.get(usernames=usernames)
         for user, reply, nas_port, userinfo in res:
             if usernames != []:
