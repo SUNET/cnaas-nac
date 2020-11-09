@@ -137,7 +137,7 @@ class User(Base):
 def get_users(field=None, condition='', order=''):
     result = []
 
-    db_order = asc(User.username)
+    db_order = desc(User.username)
     db_field = User.username
     db_condition = '%{}%'.format(condition)
 
@@ -159,15 +159,15 @@ def get_users(field=None, condition='', order=''):
 
         if order != '':
             if 'username' in order:
-                db_order = asc(User.username) if order.startswith('-') else desc(User.username)
+                db_order = desc(User.username) if order.startswith('-') else asc(User.username)
             elif 'vlan' in order:
-                db_order = asc(Reply.value) if order.startswith('-') else desc(Reply.value)
+                db_order = desc(Reply.value) if order.startswith('-') else asc(Reply.value)
             elif 'reason' in order:
-                db_order = asc(UserInfo.reason) if order.startswith('-') else desc(UserInfo.reason)
+                db_order = desc(UserInfo.reason) if order.startswith('-') else asc(UserInfo.reason)
             elif 'comment' in order:
-                db_order = asc(UserInfo.authdate) if order.startswith('-') else desc(UserInfo.authdate)
+                db_order = desc(UserInfo.authdate) if order.startswith('-') else asc(UserInfo.authdate)
             else:
-                db_order = asc(User.username)
+                db_order = desc(User.username)
 
     with sqla_session() as session:
         res = session.query(User, Reply, NasPort, UserInfo).filter(User.username == NasPort.username).filter(Reply.username == User.username).filter(Reply.attribute == 'Tunnel-Private-Group-Id').filter(UserInfo.username == User.username).filter(db_field.like(db_condition)).order_by(db_order).all()
