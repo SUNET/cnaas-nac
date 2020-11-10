@@ -1,3 +1,4 @@
+import os
 import json
 
 from flask import request, make_response
@@ -9,7 +10,7 @@ from cnaas_nac.tools.log import get_logger
 from cnaas_nac.db.user import User, get_users, UserInfo
 from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.reply import Reply
-
+from cnaas_nac.api.external.coa import CoA
 from cnaas_nac.version import __api_version__
 
 
@@ -22,7 +23,8 @@ api = Namespace('auth', description='Authentication API',
 user_edit = api.model('auth_enable', {
     'enable': fields.Boolean(required=False),
     'vlan': fields.String(required=False),
-    'comment': fields.String(required=False)
+    'comment': fields.String(required=False),
+    'bounce': fields.String(required=False)
 })
 
 
@@ -78,6 +80,9 @@ class AuthApiByName(Resource):
         json_data = request.get_json()
         result = ''
 
+        if json_data is None:
+            return empty_result(status='error', data='No JSON input found'), 400
+
         if 'enabled' in json_data:
             if json_data['enabled'] is True:
                 result = User.enable(username)
@@ -88,8 +93,31 @@ class AuthApiByName(Resource):
             result = Reply.vlan(username, json_data['vlan'])
         if 'comment' in json_data:
             result = UserInfo.add(username, comment=json_data['comment'])
+        if 'bounce' in json_data:
+            userdata = get_users(field='username', condition=json_data['username'])
+            if userdata is []:
+                return empty_result(status='error', data='User not found')
+
+            nas_ip_address = userdata[0]['nas_ip_address']
+            nas_port_id = userdata[0]['nas_port_id']
+
+            attrs = {
+                'NAS-IP-Address': nas_ip_address,
+                'NAS-Port-Id': nas_port_id,
+                'Arista-PortFlap': '1'
+            }
+
+            secret = str.encode(os.environ('RADIUS_COA_SECRET'))
+
+            try:
+                coa_request = CoA(nas_ip_address, secret)
+                coa_request.send_packet(attrs=attrs)
+            except Exception as e:
+                result = str(e)
+
         if result != '':
-            return empty_result(status='error', data=result), 404
+            return empty_result(status='error', data=result), 400
+
         return empty_result(status='success')
 
     @jwt_required
@@ -122,3 +150,4 @@ class AuthApiByName(Resource):
 api.add_resource(AuthApi, '')
 api.add_resource(AuthApi, '/')
 api.add_resource(AuthApiByName, '/<string:username>')
+api.add_resource(AuthApiByName, '/<string:username>/')
