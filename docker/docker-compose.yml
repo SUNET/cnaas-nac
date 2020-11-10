@@ -9,7 +9,7 @@ services:
         ipv4_address: 172.31.0.10
     environment:
       - RADIUS_SLAVE
-
+      - RADIUS_COA_SECRET
   nac_radius:
     build: ./radius
     ports:
@@ -62,7 +62,7 @@ networks:
     name: cnaas
     ipam:
       config:
-      - subnet: 172.30.0.0/24
+      - subnet: 172.31.0.0/24
     driver_opts:
       com.docker.network.bridge.name: br-cnaas
 
