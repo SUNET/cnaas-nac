@@ -107,6 +107,8 @@ class AuthApiByName(Resource):
                 'Arista-PortFlap': '1'
             }
 
+            if 'RADIUS_COA_SECRET' not in os.environ:
+                return empty_result(status='error', data='CoA secret not configured.'), 400
             secret = str.encode(os.environ('RADIUS_COA_SECRET'))
 
             try:
