@@ -93,8 +93,8 @@ class AuthApiByName(Resource):
             result = Reply.vlan(username, json_data['vlan'])
         if 'comment' in json_data:
             result = UserInfo.add(username, comment=json_data['comment'])
-        if 'bounce' in json_data:
-            userdata = get_users(field='username', condition=json_data['username'])
+        if 'bounce' in json_data and json_data['bounce'] is True:
+            userdata = get_users(field='username', condition=username)
             if userdata is []:
                 return empty_result(status='error', data='User not found')
 
