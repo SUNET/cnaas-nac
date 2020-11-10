@@ -109,7 +109,7 @@ class AuthApiByName(Resource):
 
             if 'RADIUS_COA_SECRET' not in os.environ:
                 return empty_result(status='error', data='CoA secret not configured.'), 400
-            secret = str.encode(os.environ('RADIUS_COA_SECRET'))
+            secret = str.encode(os.environ['RADIUS_COA_SECRET'])
 
             try:
                 coa_request = CoA(nas_ip_address, secret)
