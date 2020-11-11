@@ -21,36 +21,42 @@ script:
 
 extra_jobs:
   # Jobs for the develop branch
-  - name: cnaas-authapi
+  - name: nac-authapi
+    git:
+      brach: develop
     builders:
       - docker
-    docker_name: cnaas/authapi
+    docker_name: cnaas/nac-authapi
     docker_context_dir: docker/api
 
-  - name: cnaas-radius
+  - name: nac-radius
+    git:
+      brach: develop
     builders:
       - docker
-    docker_name: cnaas/radius
+    docker_name: cnaas/nac-radius
     docker_context_dir: docker/radius
 
-  - name: cnaas-nac-postgres
+  - name: nac-postgres
+    git:
+      brach: develop
     builders:
       - docker
     docker_name: cnaas/nac-postgres
     docker_context_dir: docker/postgres
 
   # Jobs for the master branch
-  - name: cnaas-authapi
+  - name: nac-authapi
     git:
       branch: master
     builders:
       - docker
     docker_tags:
       - "v0.1.0"
-    docker_name: cnaas/authapi
+    docker_name: cnaas/nac-authapi
     docker_context_dir: docker/api
 
-  - name: cnaas-radius
+  - name: nac-radius
     git:
       branch: master
     builders:
@@ -58,9 +64,9 @@ extra_jobs:
     docker_tags:
       - "v0.1.0"
     docker_name: cnaas/radius
-    docker_context_dir: docker/radius
+    docker_context_dir: docker/nac-radius
 
-  - name: cnaas-nac-postgres
+  - name: nac-postgres
     git:
       branch: master
     builders:
