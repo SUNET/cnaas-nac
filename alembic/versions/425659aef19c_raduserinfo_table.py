@@ -33,7 +33,7 @@ def upgrade():
                         sa.PrimaryKeyConstraint('id', name='raduserinfo_pkey'))
         op.create_index('raduserinfo_username', 'raduserinfo', ['username'], unique=False)
 
-    if 'authdate' not in inspector.get_columns('raduserinfo'):
+    if 'raduserinfo' in tables and 'authdate' not in inspector.get_columns('raduserinfo'):
         op.add_column('raduserinfo', sa.Column('authdate', postgresql.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP'), autoincrement=False, nullable=True))
 
     # ### end Alembic commands ###
