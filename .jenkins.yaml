@@ -36,32 +36,32 @@ extra_jobs:
     docker_context_dir: docker/postgres
 
   # Jobs for the master branch
-  - name: nac-authapi
+  - name: nac-authapi-master
     git:
       branch: master
     builders:
       - docker
     docker_tags:
-      - "v0.1.0"
+      - "master"
     docker_name: cnaas/nac-authapi
     docker_context_dir: docker/api
 
-  - name: nac-radius
+  - name: nac-radius-master
     git:
       branch: master
     builders:
       - docker
     docker_tags:
-      - "v0.1.0"
+      - "master"
     docker_name: cnaas/nac-radius
     docker_context_dir: docker/radius
 
-  - name: nac-postgres
+  - name: nac-postgres-master
     git:
       branch: master
     builders:
       - docker
     docker_tags:
-      - "v0.1.0"
+      - "master"
     docker_name: cnaas/nac-postgres
     docker_context_dir: docker/postgres
