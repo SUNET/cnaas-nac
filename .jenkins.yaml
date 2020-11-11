@@ -3,21 +3,11 @@
 #
 
 disabled: false
-# downstream:
-#   - cnaas-radius
-#   - cnaas-authapi
 
 git:
   branch: develop
   extensions:
     shallow_clone: true
-
-script:
-  - "python3.7 -m venv venv"
-  - ". venv/bin/activate"
-  - "pip install --upgrade setuptools pip wheel mypy"
-  - "pip install --index-url https://pypi.sunet.se -r requirements.txt"
-  - "nosetests --with-xunit"
 
 extra_jobs:
   # Jobs for the develop branch
@@ -63,7 +53,7 @@ extra_jobs:
       - docker
     docker_tags:
       - "v0.1.0"
-    docker_name: cnaas/radius
+    docker_name: cnaas/nac-radius
     docker_context_dir: docker/nac-radius
 
   - name: nac-postgres
