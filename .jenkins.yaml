@@ -13,7 +13,7 @@ extra_jobs:
   # Jobs for the develop branch
   - name: nac-authapi
     git:
-      brach: develop
+      branch: develop
     builders:
       - docker
     docker_name: cnaas/nac-authapi
@@ -21,7 +21,7 @@ extra_jobs:
 
   - name: nac-radius
     git:
-      brach: develop
+      branch: develop
     builders:
       - docker
     docker_name: cnaas/nac-radius
@@ -29,7 +29,7 @@ extra_jobs:
 
   - name: nac-postgres
     git:
-      brach: develop
+      branch: develop
     builders:
       - docker
     docker_name: cnaas/nac-postgres
