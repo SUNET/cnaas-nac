@@ -54,7 +54,7 @@ extra_jobs:
     docker_tags:
       - "v0.1.0"
     docker_name: cnaas/nac-radius
-    docker_context_dir: docker/nac-radius
+    docker_context_dir: docker/radius
 
   - name: nac-postgres
     git:
