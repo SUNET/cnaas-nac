@@ -5,4 +5,4 @@ CNaaS NAC provides a way for clients to authenticate themselves using IEEE 802.1
 
 ## Components:
 
-![CNaaS component architecture](nac-components-20200323.png?raw=true)
+![CNaaS component architecture](nac-components-20201209.png?raw=true)
