@@ -20,17 +20,12 @@ COPY cert/*.key /etc/nginx/conf.d/
 COPY cert/*.crt /etc/nginx/conf.d/
 COPY cert/jwt_pubkey.pem /opt/cnaas/certs/
 COPY exec-pre-app.sh /opt/cnaas/
-COPY config/cleanup.cron /etc/cron.d/
-COPY config/replicate.cron /etc/cron.d/
-
-# Install cron jobs
-RUN chmod 0644 /etc/cron.d/cleanup.cron
-RUN chmod 0644 /etc/cron.d/replicate.cron
-
-RUN crontab /etc/cron.d/cleanup.cron
-RUN crontab /etc/cron.d/replicate.cron
+COPY config/cleanup /etc/cron.daily/
+COPY config/replicate /etc/cron.hourly/
 
 RUN touch /var/log/cron.log
+RUN chmod +x /etc/cron.daily/cleanup
+RUN chmod +x /etc/cron.hourly/replicate
 
 # Give nginx some special treatment
 RUN unlink /etc/nginx/sites-enabled/default
