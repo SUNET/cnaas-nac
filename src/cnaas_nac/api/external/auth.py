@@ -60,7 +60,10 @@ class AuthApi(Resource):
         Add a user manually.
         """
 
-        errors = []
+        if 'RADIUS_SLAVE' in os.environ:
+            if os.environ['RADIUS_SLAVE'] == 'yes':
+                return empty_result(status='error', data='Users can only be added to master server.'), 400
+
         json_data = request.get_json()
 
         if 'username' not in json_data:
