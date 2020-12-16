@@ -54,6 +54,91 @@ class AuthApi(Resource):
 
         return response
 
+    @jwt_required
+    def post(self):
+        """
+        Add a user manually.
+        """
+
+        errors = []
+        json_data = request.get_json()
+
+        if 'username' not in json_data:
+            return empty_result(status='error',
+                                data='username is a required argument'), 400
+        else:
+            username = json_data['username']
+
+        if 'password' in json_data:
+            password = json_data['password']
+        else:
+            password = username
+
+        if 'vlan' in json_data:
+            vlan = json_data['vlan']
+        else:
+            vlan = 13
+
+        if 'comment' in json_data:
+            comment = json_data['comment']
+        else:
+            comment = None
+
+        if 'nas_identifier' not in json_data:
+            nas_identifier = None
+        else:
+            nas_identifier = json_data['nas_identifier']
+
+        if 'nas_port_id' not in json_data:
+            nas_port_id = None
+        else:
+            nas_port_id = json_data['nas_port_id']
+
+        if 'nas_ip_address' not in json_data:
+            nas_ip_address = None
+        else:
+            nas_ip_address = json_data['nas_ip_address']
+
+        if 'calling_station_id' not in json_data:
+            calling_station_id = None
+        else:
+            calling_station_id = json_data['calling_station_id']
+
+        if 'called_station_id' not in json_data:
+            called_station_id = None
+        else:
+            called_station_id = json_data['called_station_id']
+
+        if nas_identifier == "" or nas_identifier is None:
+            nas_identifier = username
+
+        err = User.add(username, password)
+
+        if err != "":
+            return empty_result(status="error", data=err), 400
+
+        err = Reply.add(username, vlan)
+
+        if err != "":
+            return empty_result(status="error", data=err), 400
+
+        err = Userinfo.add(username, comment)
+
+        if err != "":
+            return empty_result(status="error", data=err), 400
+
+        err = NasPort.add(username, nas_ip_address, nas_identifier, nas_port_id,
+                          calling_station_id,
+                          called_station_id)
+
+        if err != "":
+            return empty_result(status="error", data=err), 400
+
+        user = get_users(field='username', condition=username)
+        response = make_response(json.dumps(empty_result(status='success',
+                                                         data=user)), 200)
+        return response
+
 
 class AuthApiByName(Resource):
     @jwt_required
