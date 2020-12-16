@@ -65,6 +65,27 @@ We can also display information about a single client by appending its username,
    curl -k -H "Authorization: Bearer <Token>" "https://nac.example.com:1443/api/v1.0/auth/de:ad:be:ef:00:aa"
 
 
+Add client
+----------
+
+Clients can be added using the POST method. The following attributes are supported:
+
++ username, required. Must always be present.
++ password, optional. If not present it will be set to the username.
++ vlan, optional. For example "TEST".
++ comment, optional. Any string.
++ nas_identifier, optional. A MAC address.
++ nas_port_id, optional. Interface, for example Ethernet1.
++ calling_station_id, optional. Typically a MAC address.
++ called_station_id, optional.  Typically a MAC address.
+
+CURL example:
+
+::
+
+   curl -k -H "Authorization: Bearer <Token>" -H "Content-Type: application/json" -d '{"username": "foo", "password": "bar", "vlan": "TEST", "nas_identifier": "nas_1", "nas_port_id": "Ethernet1", "nas_ip_address": "1.2.3.4", "comment": "Test"}' "https://localhost:1443/api/v1.0/auth"
+
+
 Sort and filter
 ---------------
 
@@ -144,5 +165,5 @@ Remove clients
 And finally we can remove a client using delete:
 
 ::
-   
+
    curl -k -H "Authorization: Bearer <Token>" -H -X DELETE  "https://nac.example.com:1443/api/v1.0/auth/de:ad:be:ef:aa:00"
