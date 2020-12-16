@@ -62,15 +62,16 @@ class AuthApi(Resource):
 
         if 'RADIUS_SLAVE' in os.environ:
             if os.environ['RADIUS_SLAVE'] == 'yes':
-                return empty_result(status='error', data='Users can only be added to master server.'), 400
+                return empty_result(status='error',
+                                    data='Users can only be added to master server.'), 400
 
         json_data = request.get_json()
 
         if 'username' not in json_data:
             return empty_result(status='error',
                                 data='username is a required argument'), 400
-        else:
-            username = json_data['username']
+
+        username = json_data['username']
 
         if 'password' in json_data:
             password = json_data['password']
@@ -125,7 +126,7 @@ class AuthApi(Resource):
         if err != "":
             return empty_result(status="error", data=err), 400
 
-        err = Userinfo.add(username, comment)
+        err = UserInfo.add(username, comment)
 
         if err != "":
             return empty_result(status="error", data=err), 400
@@ -183,7 +184,7 @@ class AuthApiByName(Resource):
             result = UserInfo.add(username, comment=json_data['comment'])
         if 'bounce' in json_data and json_data['bounce'] is True:
             userdata = get_users(field='username', condition=username)
-            if userdata is []:
+            if userdata == []:
                 return empty_result(status='error', data='User not found')
 
             nas_ip_address = userdata[0]['nas_ip_address']
