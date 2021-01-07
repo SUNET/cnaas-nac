@@ -41,7 +41,7 @@ class AuthApi(Resource):
         for arg in request.args:
             if 'filter' in arg:
                 field = arg[arg.find('[')+1: arg.find(']')]
-                condition = request.args[arg]
+                condition = request.args[arg].split('?')[0]
             if 'sort' in arg:
                 direction = request.args[arg]
 
