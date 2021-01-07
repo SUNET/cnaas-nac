@@ -1,7 +1,7 @@
 import os
 
 from flask import Flask, request, jsonify
-from flask_restplus import Api
+from flask_restx import Api
 
 from cnaas_nac.api.internal.auth import api as auth_api
 from cnaas_nac.version import __api_version__

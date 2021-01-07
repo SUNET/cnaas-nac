@@ -3,7 +3,7 @@ import sys
 
 from flask_cors import CORS
 from flask import Flask, request, jsonify
-from flask_restplus import Api
+from flask_restx import Api
 from flask_jwt_extended import JWTManager, decode_token
 from flask_jwt_extended.exceptions import NoAuthorizationError
 
