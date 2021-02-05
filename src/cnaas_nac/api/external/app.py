@@ -48,9 +48,20 @@ class CnaasApi(Api):
 
 
 try:
-    jwt_pubkey = open('/opt/cnaas/certs/jwt_pubkey.pem').read()
+    # If we don't find a "real" cert, fall back to a self-signed
+    # one. We need this for running tests.
+    if os.path.exists('/opt/cnaas/certs/jwt_pubkey.pem'):
+        cert_path = '/opt/cnaas/certs/jwt_pubkey.pem'
+    elif os.path.exists('./src/cert/jwt_pubkey.pem'):
+        cert_path = './src/cert/jwt_pubkey.pem'
+    else:
+        cert_path = './cert/jwt_pubkey.pem'
+
+    logger.debug(f'Reading JWT certificate from {cert_path}')
+
+    jwt_pubkey = open(cert_path).read()
 except Exception as e:
-    print("Could not load public JWT cert from api.yml config: {}".format(e))
+    print("Could not load public JWT cert: {0}".format(e))
     sys.exit(1)
 
 
