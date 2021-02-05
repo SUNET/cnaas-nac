@@ -7,6 +7,13 @@ from sqlalchemy.orm import sessionmaker
 
 
 def get_dbdata(config='/etc/cnaas-nac/db_config.yml'):
+    if not os.path.exists('/etc/cnaas-nac/db_config.yml'):
+        return {'hostname': 'localhost',
+                'username': 'cnaas',
+                'password': 'cnaas',
+                'type': 'postgres',
+                'database': 'nac',
+                'port': 5432}
     with open(config, 'r') as db_file:
         return yaml.safe_load(db_file)
 
