@@ -10,6 +10,9 @@ services:
     environment:
       - RADIUS_SLAVE
       - RADIUS_COA_SECRET
+    depends_on:
+      - nac_postgres
+
   nac_radius:
     build: ./radius
     ports:
