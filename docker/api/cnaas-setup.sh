@@ -36,7 +36,7 @@ python3 -m venv /opt/cnaas/venv
 cd /opt/cnaas/venv/
 source bin/activate
 
-/opt/cnaas/venv/bin/pip install -U pip
+/opt/cnaas/venv/bin/pip3 install -U pip
 
 # Fetch the code and install dependencies
 git clone https://github.com/SUNET/cnaas-nac.git
