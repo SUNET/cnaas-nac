@@ -1,11 +1,10 @@
-FROM debian:latest
+FROM debian:buster
 
 ENV DEBIAN_FRONTEND noninteractive
 
 # Install freeradius
-RUN apt update
-RUN apt install -y freeradius freeradius-postgresql freeradius-rest python3 python3-requests postgresql netcat samba winbind emacs-nox krb5-user git freeradius-ldap
-
+RUN apt-get update
+RUN apt-get install -y freeradius freeradius-postgresql freeradius-rest python3 python3-requests postgresql netcat samba winbind emacs-nox krb5-user git freeradius-ldap
 
 # Copy to container
 WORKDIR /etc/freeradius/3.0/
