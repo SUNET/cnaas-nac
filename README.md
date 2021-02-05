@@ -1,3 +1,5 @@
+[![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
+
 # cnaas-nac
 Campus Network-as-a-Service - Network Admission Control. Software to automate management of a campus network (LAN). This is an open source software developed as part of SUNETs managed service.
 
