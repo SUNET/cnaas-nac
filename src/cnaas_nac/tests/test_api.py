@@ -1,11 +1,20 @@
 import unittest
-import cnaas_nac.api.app
+import cnaas_nac.api.external.app
+import cnaas_nac.api.internal.app
 
 
 class ApiTests(unittest.TestCase):
     def setUp(self):
-        self.app = cnaas_nac.api.app.app
-        self.client = self.app.test_client()
+        self.app_external = cnaas_nac.api.external.app.app
+        self.app_internal = cnaas_nac.api.internal.app.app
+        self.client_external = self.app_external.test_client()
+        self.client_internal = self.app_internal.test_client()
+        self.token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJpYXQiOjE1NzE' + \
+            'wNTk2MTgsIm5iZiI6MTU3MTA1OTYxOCwianRpIjoiNTQ2MDk2YTUtZTNmOS00' + \
+            'NzFlLWE2NTctZWFlYTZkNzA4NmVhIiwic3ViIjoiYWRtaW4iLCJmcmVzaCI6Z' + \
+            'mFsc2UsInR5cGUiOiJhY2Nlc3MifQ.Sfffg9oZg_Kmoq7Oe8IoTcbuagpP6nu' + \
+            'UXOQzqJpgDfqDq_GM_4zGzt7XxByD4G0q8g4gZGHQnV14TpDer2hJXw'
+        self.headers = {'Authorization': 'Bearer ' + self.token}
 
     def tearDown(self):
         pass
@@ -20,15 +29,17 @@ class ApiTests(unittest.TestCase):
             "called_station_id": "unittest"
         }
 
-        res = self.client.post('/api/v1.0/auth', json=json)
-        self.assertEqual(res.status_code, 404)
+        res = self.client_internal.post(
+            '/api/v1.0/auth', json=json, headers=self.headers)
+        self.assertEqual(res.status_code, 400)
 
     def test_02_enable_user(self):
         json = {
             "enabled": True
         }
 
-        res = self.client.put('/api/v1.0/auth/unittest', json=json)
+        res = self.client_external.put(
+            '/api/v1.0/auth/unittest', json=json, headers=self.headers)
         self.assertEqual(res.status_code, 200)
 
     def test_03_authenticate_user(self):
@@ -41,13 +52,14 @@ class ApiTests(unittest.TestCase):
             "called_station_id": "unittest"
         }
 
-        res = self.client.post('/api/v1.0/auth', json=json)
+        res = self.client_internal.post('/api/v1.0/auth', json=json)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json['Tunnel-Type']['value'], 'VLAN')
         self.assertEqual(res.json['Tunnel-Medium-Type']['value'], 'IEEE-802')
         self.assertEqual(res.json['Tunnel-Private-Group-Id']['value'], '13')
 
-        res = self.client.get('/api/v1.0/auth/unittest')
+        res = self.client_external.get(
+            '/api/v1.0/auth/unittest', headers=self.headers)
         self.assertEqual(res.json['data'][0]['reason'], 'User accepted')
 
     def test_04_set_vlan(self):
@@ -55,7 +67,8 @@ class ApiTests(unittest.TestCase):
             "vlan": "UNITTEST"
         }
 
-        res = self.client.put('/api/v1.0/auth/unittest', json=json)
+        res = self.client_external.put(
+            '/api/v1.0/auth/unittest', json=json, headers=self.headers)
         self.assertEqual(res.status_code, 200)
 
         json = {
@@ -67,26 +80,30 @@ class ApiTests(unittest.TestCase):
             "called_station_id": "unittest"
         }
 
-        res = self.client.post('/api/v1.0/auth', json=json)
+        res = self.client_internal.post('/api/v1.0/auth', json=json)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json['Tunnel-Type']['value'], 'VLAN')
         self.assertEqual(res.json['Tunnel-Medium-Type']['value'], 'IEEE-802')
-        self.assertEqual(res.json['Tunnel-Private-Group-Id']['value'], 'UNITTEST')
+        self.assertEqual(
+            res.json['Tunnel-Private-Group-Id']['value'], 'UNITTEST')
 
     def test_05_set_description(self):
         json = {
             "comment": "UNITTEST"
         }
 
-        res = self.client.put('/api/v1.0/auth/unittest', json=json)
+        res = self.client_external.put(
+            '/api/v1.0/auth/unittest', json=json, headers=self.headers)
         self.assertEqual(res.status_code, 200)
 
-        res = self.client.get('/api/v1.0/auth/unittest')
+        res = self.client_external.get(
+            '/api/v1.0/auth/unittest', headers=self.headers)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json['data'][0]['comment'], 'UNITTEST')
 
     def test_06_authenticate_user_new_vlan(self):
-        res = self.client.get('/api/v1.0/auth/unittest')
+        res = self.client_external.get(
+            '/api/v1.0/auth/unittest', headers=self.headers)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json['data'][0]['vlan'], 'UNITTEST')
 
@@ -100,8 +117,9 @@ class ApiTests(unittest.TestCase):
             "called_station_id": "unittest"
         }
 
-        res = self.client.post('/api/v1.0/auth', json=json)
-        self.assertEqual(res.status_code, 404)
+        res = self.client_external.post(
+            '/api/v1.0/auth', json=json, headers=self.headers)
+        self.assertEqual(res.status_code, 400)
 
     def test_08_wrong_station(self):
         json = {
@@ -113,15 +131,17 @@ class ApiTests(unittest.TestCase):
             "called_station_id": "wrong_station"
         }
 
-        res = self.client.post('/api/v1.0/auth', json=json)
-        self.assertEqual(res.status_code, 404)
+        res = self.client_external.post(
+            '/api/v1.0/auth', json=json, headers=self.headers)
+        self.assertEqual(res.status_code, 400)
 
     def test_09_disable_user(self):
         json = {
             "enabled": False
         }
 
-        res = self.client.put('/api/v1.0/auth/unittest', json=json)
+        res = self.client_external.put(
+            '/api/v1.0/auth/unittest', json=json, headers=self.headers)
         self.assertEqual(res.status_code, 200)
 
     def test_10_authenticate_user(self):
@@ -134,11 +154,14 @@ class ApiTests(unittest.TestCase):
             "called_station_id": "unittest"
         }
 
-        res = self.client.post('/api/v1.0/auth', json=json)
-        self.assertEqual(res.status_code, 404)
+        res = self.client_internal.post(
+            '/api/v1.0/auth', json=json)
+        self.assertEqual(res.status_code, 400)
 
     def test_11_verify_user_data(self):
-        res = self.client.get('/api/v1.0/auth/unittest')
+        res = self.client_external.get(
+            '/api/v1.0/auth/unittest', headers=self.headers)
+
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json['data'][0]['vlan'], 'UNITTEST')
         self.assertEqual(res.json['data'][0]['username'], 'unittest')
@@ -154,7 +177,8 @@ class ApiTests(unittest.TestCase):
             "enabled": False
         }
 
-        res = self.client.put('/api/v1.0/auth/unittest', json=json)
+        res = self.client_external.put(
+            '/api/v1.0/auth/unittest', json=json, headers=self.headers)
         self.assertEqual(res.status_code, 200)
 
         json = {
@@ -166,14 +190,15 @@ class ApiTests(unittest.TestCase):
             "called_station_id": "unittest_new_station"
         }
 
-        res = self.client.post('/api/v1.0/auth', json=json)
-        self.assertEqual(res.status_code, 404)
+        res = self.client_internal.post('/api/v1.0/auth', json=json)
+        self.assertEqual(res.status_code, 400)
 
         json = {
             "enabled": True
         }
 
-        res = self.client.put('/api/v1.0/auth/unittest', json=json)
+        res = self.client_external.put(
+            '/api/v1.0/auth/unittest', json=json, headers=self.headers)
         self.assertEqual(res.status_code, 200)
 
         json = {
@@ -185,7 +210,8 @@ class ApiTests(unittest.TestCase):
             "called_station_id": "unittest_new_station"
         }
 
-        res = self.client.post('/api/v1.0/auth', json=json)
+        res = self.client_internal.post(
+            '/api/v1.0/auth', json=json)
         self.assertEqual(res.status_code, 200)
 
         json = {
@@ -197,8 +223,8 @@ class ApiTests(unittest.TestCase):
             "called_station_id": "unittest"
         }
 
-        res = self.client.post('/api/v1.0/auth', json=json)
-        self.assertEqual(res.status_code, 404)
+        res = self.client_internal.post('/api/v1.0/auth', json=json)
+        self.assertEqual(res.status_code, 400)
 
     def test_13_repeated_auth(self):
         json = {
@@ -211,12 +237,46 @@ class ApiTests(unittest.TestCase):
         }
 
         for i in range(20):
-            res = self.client.post('/api/v1.0/auth', json=json)
+            res = self.client_internal.post('/api/v1.0/auth', json=json)
             self.assertEqual(res.status_code, 200)
 
+        json = {
+            "username": "unittest",
+            "nas_identifier": "unittest",
+            "nas_port_id": "unittest_wrong_port",
+            "nas_ip_address": "unittest",
+            "calling_station_id": "unittest",
+            "called_station_id": "unittest_new_station"
+        }
+
+        for i in range(20):
+            res = self.client_internal.post('/api/v1.0/auth', json=json)
+            self.assertEqual(res.status_code, 400)
+
+        json = {
+            "username": "unittest_wrong",
+            "nas_identifier": "unittest",
+            "nas_port_id": "unittest_new_port",
+            "nas_ip_address": "unittest",
+            "calling_station_id": "unittest",
+            "called_station_id": "unittest_new_station"
+        }
+
+        for i in range(20):
+            res = self.client_internal.post('/api/v1.0/auth', json=json)
+            self.assertEqual(res.status_code, 400)
+
     def test_99_delete_user(self):
-        res = self.client.delete('/api/v1.0/auth/unittest')
+        res = self.client_external.delete(
+            '/api/v1.0/auth/unittest', headers=self.headers)
         self.assertEqual(res.status_code, 200)
-        res = self.client.get('/api/v1.0/auth/unittest')
+        res = self.client_external.get(
+            '/api/v1.0/auth/unittest', headers=self.headers)
+        res = self.client_external.delete(
+            '/api/v1.0/auth/unittest_wrong', headers=self.headers)
+        self.assertEqual(res.status_code, 200)
+        res = self.client_external.get(
+            '/api/v1.0/auth/unittest_wrong', headers=self.headers)
+
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json['data'], [])
