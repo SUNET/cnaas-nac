@@ -67,10 +67,10 @@ def accept(username):
 
 def reject(username, errstr=''):
     """
-    Reject the user with a 404.
+    Reject the user with a 400.
     """
     UserInfo.add(username, reason=errstr, auth=True)
-    return empty_result(status='error', data=errstr), 404
+    return empty_result(status='error', data=errstr), 400
 
 
 class AuthApi(Resource):
@@ -225,7 +225,8 @@ class AuthApi(Resource):
                 if User.is_enabled(username):
                     return accept(username)
                 else:
-                    logger.info('[{}] Slave mode, user disabled. Rejecting.'.format(username))
+                    logger.info(
+                        '[{}] Slave mode, user disabled. Rejecting.'.format(username))
                     return reject(username, 'User is disabled')
 
         # If we don't run in slave mode and the user don't exist,
