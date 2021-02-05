@@ -1,5 +1,7 @@
 FROM debian:buster
 
+ENV DEBIAN_FRONTEND noninteractive
+
 # Create directories
 RUN mkdir -p /opt/cnaas
 RUN mkdir /etc/cnaas-nac
