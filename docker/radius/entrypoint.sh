@@ -65,7 +65,7 @@ fi
 
 if [ ! -z "$AD_USERNAME" ] && [ ! -z "$AD_PASSWORD" ] && \
        [ ! -z "$AD_DOMAIN" ] && \
-       [ ! -z "$AD_BASE_DN" ]; then
+       [ ! -z "$AD_BASE_DN" ] && [ "$DISABLE_AD" != "True" ]; then
     echo "[entrypoint.sh] Setting AD server and credentials"
 
     if [ ! -f "/etc/freeradius/3.0/mods-enabled/ldap" ]; then
@@ -92,7 +92,7 @@ else
 fi
 
 # Configure DNS server
-if [ ${AD_DNS_PRIMARY} ]; then
+if [ ${AD_DNS_PRIMARY} ] && [ "$DISABLE_AD" != "True" ]; then
     echo "nameserver ${AD_DNS_PRIMARY}" > /etc/resolv.conf
     if [ ${AD_DNS_SECONDARY} ]; then
 	echo "nameserver ${AD_DNS_SECONDARY}" >> /etc/resolv.conf
@@ -102,7 +102,7 @@ if [ ${AD_DNS_PRIMARY} ]; then
 fi
 
 # Join the AD domain if we have a AD password configured
-if [ ${AD_PASSWORD} ]; then
+if [ ${AD_PASSWORD} ] && [ "$DISABLE_AD" != "True" ]; then
     # Test if we already joined the domain
     winbindd
     wbinfo -p
