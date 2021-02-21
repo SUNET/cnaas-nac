@@ -2,7 +2,7 @@ import os
 import time
 
 from cnaas_nac.tools.log import get_logger
-from cnaas_nac.db.user import User, UserInfo
+from cnaas_nac.db.user import User, UserInfo, Reply
 from cnaas_nac.db.nas import NasPort
 
 
@@ -42,7 +42,7 @@ def db_cleanup():
         if current_epoch - last_seen_epoch >= ONE_MONTH:
             logger.info('Removing user {}'.format(user['username']))
             User.delete(user['username'])
-            User.reply_delete(user['username'])
+            Reply.delete(user['username'])
             NasPort.delete(user['username'])
         else:
             logger.info('Keeping user {}'.format(user['username']))
