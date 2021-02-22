@@ -33,6 +33,7 @@ services:
       - NTLM_DOMAIN
       - AD_DNS_PRIMARY
       - AD_DNS_SECONDARY
+      - RADIUS_NO_PORT_LOCK=True
     depends_on:
       - nac_api
     volumes:
@@ -71,8 +72,8 @@ networks:
 
 volumes:
   nac-postgres-data:
-    external: true
+    external: false
   nac-freeradius-data:
-    external: true
+    external: false
   nac-var-data:
-    external: true
+    external: false

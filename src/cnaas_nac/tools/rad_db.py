@@ -76,7 +76,8 @@ def edit_replies(diff, connstr, remove=False):
             op = diff_user['op']
             value = diff_user['value']
 
-            reply = session.query(Reply).filter(Reply.username == username).filter(Reply.attribute == attribute).one_or_none()
+            reply = session.query(Reply).filter(Reply.username == username).filter(
+                Reply.attribute == attribute).one_or_none()
 
             if remove and reply is not None:
                 print('Removing reply {}'.format(username))
@@ -219,7 +220,9 @@ def edit_userinfo(userinfo_diff, connstr, table=UserInfo, remove=False):
             username = diff_user['username']
             comment = diff_user['comment']
             reason = diff_user['reason']
-            authdate = diff_user['authdate']
+
+            if 'authdate' in diff_user:
+                authdate = diff_user['authdate']
 
             userinfo = session.query(table).filter(UserInfo.username ==
                                                    username).one_or_none()
