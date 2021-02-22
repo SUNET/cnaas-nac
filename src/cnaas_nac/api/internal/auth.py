@@ -179,6 +179,11 @@ class AuthApi(Resource):
 
         errors = []
         json_data = request.get_json()
+        port_locking = True
+
+        if 'RADIUS_NO_PORT_LOCK' in os.environ:
+            if os.environ['RADIUS_NO_PORT_LOCK'] == 'yes':
+                port_locking = False
 
         try:
             (username, password, vlan, nas_identifier, nas_port_id,
@@ -195,7 +200,7 @@ class AuthApi(Resource):
 
             nas_ports = NasPort.get(username)
 
-            if not User.is_enabled(username):
+            if not User.is_enabled(username) or port_locking is False:
                 logger.info('[{}] User is disabled'.format(username))
                 if nas_ports['nas_port_id'] != nas_port_id or \
                    nas_ports['called_station_id'] != called_station_id:
@@ -226,8 +231,8 @@ class AuthApi(Resource):
                     return accept(username)
                 else:
                     logger.info(
-                        '[{}] Slave mode, user disabled. Rejecting.'.format(username))
-                    return reject(username, 'User is disabled')
+                        '[{}] Slave mode, user creation disabled. Rejecting.'.format(username))
+                    return reject(username, 'User do not exist, rejecting.')
 
         # If we don't run in slave mode and the user don't exist,
         # create it and set the default reply (VLAN 13).
