@@ -1,3 +1,4 @@
+import os
 import unittest
 import cnaas_nac.api.external.app
 import cnaas_nac.api.internal.app
@@ -265,6 +266,21 @@ class ApiTests(unittest.TestCase):
         for i in range(20):
             res = self.client_internal.post('/api/v1.0/auth', json=json)
             self.assertEqual(res.status_code, 400)
+
+    def test_14_disable_port_lock(self):
+        os.environ['RADIUS_NO_PORT_LOCK'] = 'yes'
+        json = {
+            "username": "unittest",
+            "nas_identifier": "unittest",
+            "nas_port_id": "definetly_wrong_port",
+            "nas_ip_address": "unittest",
+            "calling_station_id": "unittest_wrong",
+            "called_station_id": "unittest_wrong"
+        }
+
+        res = self.client_internal.post(
+            '/api/v1.0/auth', json=json)
+        self.assertEqual(res.status_code, 200)
 
     def test_99_delete_user(self):
         res = self.client_external.delete(
