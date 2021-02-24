@@ -282,6 +282,20 @@ class ApiTests(unittest.TestCase):
             '/api/v1.0/auth', json=json)
         self.assertEqual(res.status_code, 200)
 
+        os.environ['RADIUS_NO_PORT_LOCK'] = 'no'
+        json = {
+            "username": "unittest",
+            "nas_identifier": "unittest",
+            "nas_port_id": "definetly_wrong_port_again",
+            "nas_ip_address": "unittest",
+            "calling_station_id": "unittest_wrong_again",
+            "called_station_id": "unittest_wrong_again"
+        }
+
+        res = self.client_internal.post(
+            '/api/v1.0/auth', json=json)
+        self.assertEqual(res.status_code, 400)
+
     def test_99_delete_user(self):
         res = self.client_external.delete(
             '/api/v1.0/auth/unittest', headers=self.headers)
