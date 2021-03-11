@@ -13,6 +13,7 @@ from cnaas_nac.db.reply import Reply
 from cnaas_nac.api.external.coa import CoA
 from cnaas_nac.version import __api_version__
 
+from netaddr import EUI, mac_unix_expanded
 
 logger = get_logger()
 
@@ -71,10 +72,18 @@ class AuthApi(Resource):
             return empty_result(status='error',
                                 data='username is a required argument'), 400
 
-        username = json_data['username']
+        try:
+            username = str(EUI(
+                json_data['username'], dialect=mac_unix_expanded))
+        except Exception:
+            username = json_data['username']
 
         if 'password' in json_data:
-            password = json_data['password']
+            try:
+                password = str(EUI(
+                    json_data['password'], dialect=mac_unix_expanded))
+            except Exception:
+                password = json_data['password']
         else:
             password = username
 
