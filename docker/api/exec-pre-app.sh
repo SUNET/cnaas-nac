@@ -1,7 +1,7 @@
 cd /opt/cnaas/venv
 . bin/activate
 
-if [ ! -f /opt/cnaas/cert/cert.pem ]; then
+if [ ! -f /opt/cnaas/certs/nginx_cert.pem ]; then
   echo "WARNING: No cert found, using snakeoil (self-signed) certificate and key."
   cp /opt/cnaas/certs/snakeoil_cert.pem /opt/cnaas/certs/nginx_cert.pem
   cp /opt/cnaas/certs/snakeoil_key.pem /opt/cnaas/certs/nginx_key.pem
