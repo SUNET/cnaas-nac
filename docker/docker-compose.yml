@@ -43,6 +43,9 @@ services:
       - type: volume
         source: nac-var-data
         target: /var/
+      - type: volume
+        source: nac-api-certs
+        target: /opt/cnaas/certs/
 
   nac_postgres:
     build: ./postgres
@@ -76,4 +79,6 @@ volumes:
   nac-freeradius-data:
     external: false
   nac-var-data:
+    external: false
+  nac-api-certs:
     external: false

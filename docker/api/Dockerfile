@@ -18,9 +18,7 @@ COPY config/uwsgi_external.ini /opt/cnaas/
 COPY config/supervisord_app.conf /etc/supervisor/supervisord.conf
 COPY config/nginx_internal.conf /etc/nginx/sites-available/
 COPY config/nginx_external.conf /etc/nginx/sites-available/
-COPY cert/*.key /etc/nginx/conf.d/
-COPY cert/*.crt /etc/nginx/conf.d/
-COPY cert/jwt_pubkey.pem /opt/cnaas/certs/
+COPY cert/*.pem /opt/cnaas/certs/
 COPY exec-pre-app.sh /opt/cnaas/
 COPY config/cleanup /etc/cron.daily/
 COPY config/replicate /etc/cron.hourly/
