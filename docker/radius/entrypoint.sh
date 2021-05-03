@@ -40,20 +40,20 @@ fi
 #fi
 
 # Copy the rest of the files
-cp /tmp/gitrepo_etc/radius/* /etc/freeradius/3.0/
-echo "[entrypoint.sh] Copied FreeRADIUS files"
+# cp /tmp/gitrepo_etc/radius/* /etc/freeradius/3.0/
+# echo "[entrypoint.sh] Copied FreeRADIUS files"
 
-if [ ! -z "$EDUROAM_R1_SECRET" ] && [ ! -z "$EDUROAM_R2_SECRET" ] && \
-       [ ! -z "$MDH_ISE_SECRET" ]; then
-    # Replace PSKs when needed
-    echo "[entrypoint.sh] Setting Eduroam secrets"
+# if [ ! -z "$EDUROAM_R1_SECRET" ] && [ ! -z "$EDUROAM_R2_SECRET" ] && \
+#        [ ! -z "$MDH_ISE_SECRET" ]; then
+#     # Replace PSKs when needed
+#     echo "[entrypoint.sh] Setting Eduroam secrets"
 
-    sed -e "s/EDUROAM_R1_SECRET/$EDUROAM_R1_SECRET/" \
-	-e "s/EDUROAM_R2_SECRET/$EDUROAM_R2_SECRET/" \
-	-e "s/MDH_ISE_SECRET/$MDH_ISE_SECRET/" \
-	< /etc/freeradius/3.0/proxy.conf > /tmp/proxy.conf.new \
-	&& cat /tmp/proxy.conf.new > /etc/freeradius/3.0/proxy.conf
-fi
+#     sed -e "s/EDUROAM_R1_SECRET/$EDUROAM_R1_SECRET/" \
+# 	-e "s/EDUROAM_R2_SECRET/$EDUROAM_R2_SECRET/" \
+# 	-e "s/MDH_ISE_SECRET/$MDH_ISE_SECRET/" \
+# 	< /etc/freeradius/3.0/proxy.conf > /tmp/proxy.conf.new \
+# 	&& cat /tmp/proxy.conf.new > /etc/freeradius/3.0/proxy.conf
+# fi
 
 if [ ! -z "$RADIUS_SERVER_SECRET" ]; then
     echo "[entrypoint.sh] Setting RADIUS secret"
