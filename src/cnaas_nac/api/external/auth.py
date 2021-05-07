@@ -90,7 +90,10 @@ class AuthApi(Resource):
         if 'vlan' in json_data:
             vlan = json_data['vlan']
         else:
-            vlan = 13
+            if 'RADIUS_DEFAULT_VLAN' in os.environ:
+                vlan = os.environ['RADIUS_DEFAULT_VLAN']
+            else:
+                vlan = 13
 
         if 'comment' in json_data:
             comment = json_data['comment']
@@ -147,6 +150,10 @@ class AuthApi(Resource):
         if err != "":
             return empty_result(status="error", data=err), 400
 
+        if 'active' in json_data and isinstance(json_data['active'], bool):
+            if json_data['active']:
+                User.enable(username)
+
         user = get_users(field='username', condition=username)
         response = make_response(json.dumps(empty_result(status='success',
                                                          data=user)), 200)
@@ -181,8 +188,8 @@ class AuthApiByName(Resource):
         if json_data is None:
             return empty_result(status='error', data='No JSON input found'), 400
 
-        if 'enabled' in json_data:
-            if json_data['enabled'] is True:
+        if 'active' in json_data:
+            if json_data['active'] is True:
                 result = User.enable(username)
             else:
                 result = User.disable(username)
@@ -218,7 +225,8 @@ class AuthApiByName(Resource):
         if result != '':
             return empty_result(status='error', data=result), 400
 
-        return empty_result(status='success')
+        return empty_result(status='success',
+                            data=get_users(field='username', condition=username))
 
     @jwt_required
     def delete(self, username):
@@ -244,7 +252,7 @@ class AuthApiByName(Resource):
 
         if errors != []:
             return empty_result(status='error', data=errors), 400
-        return empty_result(status='success')
+        return empty_result(status='success', data=[])
 
 
 api.add_resource(AuthApi, '')

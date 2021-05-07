@@ -102,7 +102,10 @@ class AuthApi(Resource):
         if 'vlan' in json_data:
             vlan = json_data['vlan']
         else:
-            vlan = 13
+            if 'RADIUS_DEFAULT_VLAN' in os.environ:
+                vlan = os.environ['RADIUS_DEFAULT_VLAN']
+            else:
+                vlan = 13
 
         if 'nas_identifier' not in json_data:
             nas_identifier = None
