@@ -36,7 +36,7 @@ class ApiTests(unittest.TestCase):
 
     def test_02_enable_user(self):
         json = {
-            "enabled": True
+            "active": True
         }
 
         res = self.client_external.put(
@@ -138,7 +138,7 @@ class ApiTests(unittest.TestCase):
 
     def test_09_disable_user(self):
         json = {
-            "enabled": False
+            "active": False
         }
 
         res = self.client_external.put(
@@ -175,7 +175,7 @@ class ApiTests(unittest.TestCase):
 
     def test_12_move_port(self):
         json = {
-            "enabled": False
+            "active": False
         }
 
         res = self.client_external.put(
@@ -195,7 +195,7 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(res.status_code, 400)
 
         json = {
-            "enabled": True
+            "active": True
         }
 
         res = self.client_external.put(
