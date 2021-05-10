@@ -2,6 +2,7 @@ import os
 import unittest
 import cnaas_nac.api.external.app
 import cnaas_nac.api.internal.app
+import random
 
 
 class ApiTests(unittest.TestCase):
@@ -16,6 +17,9 @@ class ApiTests(unittest.TestCase):
             'mFsc2UsInR5cGUiOiJhY2Nlc3MifQ.Sfffg9oZg_Kmoq7Oe8IoTcbuagpP6nu' + \
             'UXOQzqJpgDfqDq_GM_4zGzt7XxByD4G0q8g4gZGHQnV14TpDer2hJXw'
         self.headers = {'Authorization': 'Bearer ' + self.token}
+
+        if 'RADIUS_DEFAULT_VLAN' not in os.environ:
+            os.environ['RADIUS_DEFAULT_VLAN'] = str(random.randint(100, 1000))
 
     def tearDown(self):
         pass
@@ -57,7 +61,9 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json['Tunnel-Type']['value'], 'VLAN')
         self.assertEqual(res.json['Tunnel-Medium-Type']['value'], 'IEEE-802')
-        self.assertEqual(res.json['Tunnel-Private-Group-Id']['value'], '13')
+        self.assertEqual(
+            res.json['Tunnel-Private-Group-Id']['value'],
+            os.environ['RADIUS_DEFAULT_VLAN'])
 
         res = self.client_external.get(
             '/api/v1.0/auth/unittest', headers=self.headers)
