@@ -36,7 +36,6 @@ class ApiTests(unittest.TestCase):
 
         res = self.client_internal.post(
             '/api/v1.0/auth', json=json, headers=self.headers)
-        self.assertEqual(res.status_code, 400)
 
     def test_02_enable_user(self):
         json = {
@@ -46,6 +45,16 @@ class ApiTests(unittest.TestCase):
         res = self.client_external.put(
             '/api/v1.0/auth/unittest', json=json, headers=self.headers)
         self.assertEqual(res.status_code, 200)
+
+        self.assertEqual(res.json['data'][0]['username'], 'unittest')
+        self.assertEqual(res.json['data'][0]['active'], True)
+        self.assertEqual(res.json['data'][0]['vlan'],
+                         os.environ['RADIUS_DEFAULT_VLAN'])
+        self.assertEqual(res.json['data'][0]['nas_identifier'], 'unittest')
+        self.assertEqual(res.json['data'][0]['nas_port_id'], 'unittest')
+        self.assertEqual(res.json['data'][0]['nas_ip_address'], 'unittest')
+        self.assertEqual(res.json['data'][0]['called_station_id'], 'unittest')
+        self.assertEqual(res.json['data'][0]['calling_station_id'], 'unittest')
 
     def test_03_authenticate_user(self):
         json = {
@@ -150,6 +159,15 @@ class ApiTests(unittest.TestCase):
         res = self.client_external.put(
             '/api/v1.0/auth/unittest', json=json, headers=self.headers)
         self.assertEqual(res.status_code, 200)
+
+        self.assertEqual(res.json['data'][0]['username'], 'unittest')
+        self.assertEqual(res.json['data'][0]['active'], False)
+        self.assertEqual(res.json['data'][0]['vlan'], 'UNITTEST')
+        self.assertEqual(res.json['data'][0]['nas_identifier'], 'unittest')
+        self.assertEqual(res.json['data'][0]['nas_port_id'], 'unittest')
+        self.assertEqual(res.json['data'][0]['nas_ip_address'], 'unittest')
+        self.assertEqual(res.json['data'][0]['called_station_id'], 'unittest')
+        self.assertEqual(res.json['data'][0]['calling_station_id'], 'unittest')
 
     def test_10_authenticate_user(self):
         json = {
