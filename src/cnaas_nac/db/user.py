@@ -1,15 +1,16 @@
+from cnaas_nac.db.userinfo import UserInfo
+from cnaas_nac.db.reply import Reply
+from cnaas_nac.db.nas import NasPort
+from cnaas_nac.db.session import sqla_session
+from sqlalchemy import Boolean, desc, asc
+from sqlalchemy.ext.declarative import declarative_base
 import enum
 import ipaddress
-import datetime
+from datetime import datetime, timedelta
 
 from typing import Optional
-from sqlalchemy import Column, Integer, Unicode, UniqueConstraint, DateTime
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Boolean, desc, asc
-from cnaas_nac.db.session import sqla_session
-from cnaas_nac.db.nas import NasPort
-from cnaas_nac.db.reply import Reply
-from cnaas_nac.db.userinfo import UserInfo
+from sqlalchemy import Column, Integer, Unicode, UniqueConstraint, DateTime, \
+    func
 
 
 Base = declarative_base()
@@ -38,7 +39,7 @@ class User(Base):
                 continue
             elif issubclass(value.__class__, ipaddress.IPv4Address):
                 value = str(value)
-            elif issubclass(value.__class__, datetime.datetime):
+            elif issubclass(value.__class__, datetime):
                 value = str(value)
             d[col.name] = value
         return d
@@ -122,24 +123,28 @@ class User(Base):
                 session.commit()
         return ''
 
-    @classmethod
-    def is_enabled(cls, username):
-        with sqla_session() as session:
-            instance = session.query(User).filter(User.username ==
-                                                  username).one_or_none()
-            if not instance:
-                return None
-            if instance.op != ':=':
-                return False
-        return True
 
-
-def get_users(field=None, condition='', order=''):
+def get_users(field=None, condition='', order='', when=None):
     result = []
 
     db_order = asc(User.username)
     db_field = User.username
     db_condition = '%{}%'.format(condition)
+    db_when = datetime.now() - timedelta(days=3650)
+
+    if when is not None:
+        if when == 'day':
+            db_when = datetime.now() - timedelta(days=1)
+        elif when == 'week':
+            db_when = datetime.now() - timedelta(days=7)
+        elif when == 'month':
+            db_when = datetime.now() - timedelta(days=31)
+        elif when == 'year':
+            db_when = datetime.now() - timedelta(days=365)
+        elif when == 'all':
+            db_when = datetime.now() - timedelta(days=3650)
+        else:
+            db_when = datetime.now() - timedelta(days=3650)
 
     if field is not None:
         if field == 'username':
@@ -159,18 +164,23 @@ def get_users(field=None, condition='', order=''):
 
     if order != '':
         if 'username' in order:
-            db_order = desc(User.username) if order.startswith('-') else asc(User.username)
+            db_order = desc(User.username) if order.startswith(
+                '-') else asc(User.username)
         elif 'vlan' in order:
-            db_order = desc(Reply.value) if order.startswith('-') else asc(Reply.value)
+            db_order = desc(Reply.value) if order.startswith(
+                '-') else asc(Reply.value)
         elif 'reason' in order:
-            db_order = desc(UserInfo.reason) if order.startswith('-') else asc(UserInfo.reason)
+            db_order = desc(UserInfo.reason) if order.startswith(
+                '-') else asc(UserInfo.reason)
         elif 'comment' in order:
-            db_order = desc(UserInfo.authdate) if order.startswith('-') else asc(UserInfo.authdate)
+            db_order = desc(UserInfo.authdate) if order.startswith(
+                '-') else asc(UserInfo.authdate)
         else:
             db_order = desc(User.username)
 
     with sqla_session() as session:
-        res = session.query(User, Reply, NasPort, UserInfo).filter(User.username == NasPort.username).filter(Reply.username == User.username).filter(Reply.attribute == 'Tunnel-Private-Group-Id').filter(UserInfo.username == User.username).filter(db_field.like(db_condition)).order_by(db_order).all()
+        res = session.query(User, Reply, NasPort, UserInfo).filter(User.username == NasPort.username).filter(Reply.username == User.username).filter(
+            Reply.attribute == 'Tunnel-Private-Group-Id').filter(UserInfo.username == User.username).filter(db_field.like(db_condition)).filter(UserInfo.authdate > db_when).order_by(db_order).all()
 
         usernames = []
         for user, reply, nas_port, userinfo in res:

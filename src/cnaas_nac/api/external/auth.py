@@ -38,6 +38,7 @@ class AuthApi(Resource):
         field = None
         condition = ''
         direction = 'username'
+        when = None
 
         for arg in request.args:
             if 'filter' in arg:
@@ -45,8 +46,11 @@ class AuthApi(Resource):
                 condition = request.args[arg].split('?')[0]
             if 'sort' in arg:
                 direction = request.args[arg]
+            if 'when' in arg:
+                when = request.args[arg]
 
-        users = get_users(field=field, condition=condition, order=direction)
+        users = get_users(field=field, condition=condition,
+                          order=direction, when=when)
         response = make_response(json.dumps(empty_result(status='success',
                                                          data=users)), 200)
 
