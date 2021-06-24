@@ -133,7 +133,9 @@ def get_users(field=None, condition='', order='', when=None):
     db_when = datetime.now() - timedelta(days=3650)
 
     if when is not None:
-        if when == 'day':
+        if when == 'hour':
+            db_when = datetime.now() - timedelta(hours=1)
+        elif when == 'day':
             db_when = datetime.now() - timedelta(days=1)
         elif when == 'week':
             db_when = datetime.now() - timedelta(days=7)
