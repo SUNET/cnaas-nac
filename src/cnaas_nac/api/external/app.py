@@ -138,7 +138,7 @@ app.config['JWT_PUBLIC_KEY'] = jwt_pubkey
 app.config['JWT_IDENTITY_CLAIM'] = 'sub'
 app.config['JWT_ALGORITHM'] = 'ES256'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
-app.config["REDIS_URL"] = "redis://localhost"
+app.config["REDIS_URL"] = "redis://nac_redis"
 
 jwt = JWTManager(app)
 cors = CORS(app,

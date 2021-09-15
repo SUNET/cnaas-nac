@@ -20,7 +20,7 @@ logger = get_logger()
 api = Namespace('auth', description='Authentication API',
                 prefix='/api/{}'.format(__api_version__))
 
-redis_client = redis.Redis(host="localhost", port=6379)
+redis_client = redis.Redis(host="nac_redis", port=6379)
 
 user_add = api.model('auth', {
     'username': fields.String(required=True),
