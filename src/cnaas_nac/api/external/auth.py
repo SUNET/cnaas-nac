@@ -30,7 +30,7 @@ user_edit = api.model('auth_enable', {
 
 
 class AuthApi(Resource):
-    #    @jwt_required
+    @jwt_required
     def get(self):
         """
         Get a JSON blob with all users, replies and other information.
@@ -59,7 +59,7 @@ class AuthApi(Resource):
 
         return response
 
-#    @jwt_required
+    @jwt_required
     def post(self):
         """
         Add a user manually.
@@ -165,7 +165,7 @@ class AuthApi(Resource):
 
 
 class AuthApiByName(Resource):
-    #    @jwt_required
+    @jwt_required
     def get(self, username):
         """
         Return a JSON blob with all users, VLANs and other information.
@@ -180,7 +180,7 @@ class AuthApiByName(Resource):
         return response
 
     @api.expect(user_edit)
-#    @jwt_required
+    @jwt_required
     def put(self, username):
         """
         Update user parameters such as VLAN, if the user is
@@ -232,7 +232,7 @@ class AuthApiByName(Resource):
         return empty_result(status='success',
                             data=get_users(field='username', condition=username))
 
-#    @jwt_required
+    @jwt_required
     def delete(self, username):
         """
         Remove a user.
