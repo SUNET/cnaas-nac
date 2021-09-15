@@ -21,7 +21,7 @@ import random
 import redis
 
 logger = get_logger()
-redis_client = redis.Redis(host="localhost", port=6379)
+redis_client = redis.Redis(host="nac_redis", port=6379)
 
 authorizations = {
     'apikey': {
