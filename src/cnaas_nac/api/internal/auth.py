@@ -12,12 +12,15 @@ from cnaas_nac.db.reply import Reply
 
 from cnaas_nac.version import __api_version__
 
+import redis
 
 logger = get_logger()
 
 
 api = Namespace('auth', description='Authentication API',
                 prefix='/api/{}'.format(__api_version__))
+
+redis_client = redis.Redis(host="localhost", port=6379)
 
 user_add = api.model('auth', {
     'username': fields.String(required=True),
@@ -29,6 +32,17 @@ user_add = api.model('auth', {
     'calling_station_id': fields.String(required=True),
     'called_station_id': fields.String(required=True)
 })
+
+
+def event_add_data(client, event):
+    logger.debug(f'Incrementing client {client} for event {event}')
+
+    try:
+        redis_client.hincrby(client, event)
+        if not redis_client.sismember('clients', client):
+            redis_client.sadd('clients', client)
+    except Exception as e:
+        logger.debug(f'Redis operation failed: {e}')
 
 
 def accept(username):
@@ -62,6 +76,8 @@ def accept(username):
 
     UserInfo.add(username, reason='User accepted', auth=True)
 
+    event_add_data(username, 'accepts')
+
     return json_reply
 
 
@@ -70,6 +86,9 @@ def reject(username, errstr=''):
     Reject the user with a 400.
     """
     UserInfo.add(username, reason=errstr, auth=True)
+
+    event_add_data(username, 'rejects')
+
     return empty_result(status='error', data=errstr), 400
 
 

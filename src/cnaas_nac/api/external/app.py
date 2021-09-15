@@ -6,17 +6,22 @@ from flask import Flask, request, jsonify
 from flask_restx import Api
 from flask_jwt_extended import JWTManager, decode_token
 from flask_jwt_extended.exceptions import NoAuthorizationError
+from flask_sse import sse
 
 from cnaas_nac.api.external.auth import api as auth_api
 from cnaas_nac.version import __api_version__
 from cnaas_nac.tools.log import get_logger
 
+from apscheduler.schedulers.background import BackgroundScheduler
+
 from jwt.exceptions import DecodeError, InvalidSignatureError, \
     InvalidTokenError
 
+import random
+import redis
 
 logger = get_logger()
-
+redis_client = redis.Redis(host="localhost", port=6379)
 
 authorizations = {
     'apikey': {
@@ -47,6 +52,68 @@ class CnaasApi(Api):
         return jsonify(data)
 
 
+def get_data_accepted():
+    data = list()
+
+    try:
+        accepted = redis_client.sort(
+            "clients", by="*->accepts", start=0, num=10)
+
+        if not accepted:
+            return []
+
+        for client in accepted:
+            client_accepts = redis_client.hget(client, "accepts")
+
+            if not client_accepts:
+                continue
+
+            data.append(client.decode(
+                'UTF-8') + ': ' + client_accepts.decode('UTF-8'))
+        data.reverse()
+    except Exception as e:
+        logger.error(f'Failed to get accepts from Redis: {e}')
+
+    logger.debug(f'Pushed event for accepted clients: {data}')
+
+    return data
+
+
+def get_data_rejected():
+    data = list()
+
+    try:
+        rejected = redis_client.sort(
+            "clients", by="*->rejects", start=0, num=10)
+
+        if not rejected:
+            return []
+
+        for client in rejected:
+            client_rejects = redis_client.hget(client, "rejects")
+
+            if not client_rejects:
+                continue
+
+            data.append(client.decode(
+                'UTF-8') + ': ' + client_rejects.decode('UTF-8'))
+        data.reverse()
+    except Exception as e:
+        logger.error(f'Failed to get rejects from Redis: {e}')
+
+    logger.debug(f'Pushed event for rejected clients: {data}')
+
+    return data
+
+
+def server_event():
+    with app.app_context():
+        sse.publish(get_data_accepted(), type='event_update')
+        sse.publish(get_data_rejected(), type='event_update')
+
+
+print(os.path.abspath(os.getcwd()))
+
 try:
     # If we don't find a "real" cert, fall back to a self-signed
     # one. We need this for running tests.
@@ -61,7 +128,7 @@ try:
 
     jwt_pubkey = open(cert_path).read()
 except Exception as e:
-    print("Could not load public JWT cert: {0}".format(e))
+    logger.debug("Could not load public JWT cert: {0}".format(e))
     sys.exit(1)
 
 
@@ -71,6 +138,7 @@ app.config['JWT_PUBLIC_KEY'] = jwt_pubkey
 app.config['JWT_IDENTITY_CLAIM'] = 'sub'
 app.config['JWT_ALGORITHM'] = 'ES256'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
+app.config["REDIS_URL"] = "redis://localhost"
 
 jwt = JWTManager(app)
 cors = CORS(app,
@@ -82,6 +150,12 @@ api = CnaasApi(app, prefix='/api/{}'.format(__api_version__),
                security='apikey')
 
 api.add_namespace(auth_api)
+app.register_blueprint(sse, url_prefix='/events')
+
+
+sched = BackgroundScheduler(daemon=True)
+sched.add_job(server_event, 'interval', seconds=10)
+sched.start()
 
 
 # Log all requests, include username etc
