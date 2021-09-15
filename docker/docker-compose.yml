@@ -10,8 +10,11 @@ services:
     environment:
       - RADIUS_SLAVE
       - RADIUS_COA_SECRET
+      - RADIUS_NO_PORT_LOCK
+      - RADIUS_DEFAULT_VLAN
     depends_on:
       - nac_postgres
+      - nac_redis
 
   nac_radius:
     build: ./radius
@@ -33,7 +36,6 @@ services:
       - NTLM_DOMAIN
       - AD_DNS_PRIMARY
       - AD_DNS_SECONDARY
-      - RADIUS_NO_PORT_LOCK=True
     depends_on:
       - nac_api
     volumes:
@@ -54,14 +56,22 @@ services:
         source: nac-postgres-data
         target: /var/lib/postgresql/data/
     environment:
-      - POSTGRES_USER=cnaas
-      - POSTGRES_PASSWORD=cnaas
-      - POSTGRES_DB=nac
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
     ports:
       - 5432:5432
     networks:
       cnaas:
         ipv4_address: 172.31.0.30
+
+  nac_redis:
+    build: ./redis/
+    ports:
+      - 6379:6379
+    networks:
+      cnaas:
+        ipv4_address: 172.31.0.40
 
 networks:
   cnaas:
