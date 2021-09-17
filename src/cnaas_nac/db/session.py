@@ -11,7 +11,7 @@ def get_dbdata(config='/etc/cnaas-nac/db_config.yml'):
         return {'hostname': 'localhost',
                 'username': 'cnaas',
                 'password': 'cnaas',
-                'type': 'postgres',
+                'type': 'postgresql',
                 'database': 'nac',
                 'port': 5432}
     with open(config, 'r') as db_file:
