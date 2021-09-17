@@ -1,5 +1,7 @@
 import os
 import sys
+import redis
+import random
 
 from flask_cors import CORS
 from flask import Flask, request, jsonify
@@ -17,11 +19,18 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from jwt.exceptions import DecodeError, InvalidSignatureError, \
     InvalidTokenError
 
-import random
-import redis
 
 logger = get_logger()
-redis_client = redis.Redis(host="nac_redis", port=6379)
+
+try:
+    redis_client = redis.Redis(host="nac_redis", port=6379)
+    redis_client.ping()
+except redis.exceptions.ConnectionError:
+    redis_client = redis.Redis(host="localhost", port=6379)
+    redis_client.ping()
+else:
+    logger.error('Could not connect to Redis. Fatal error.')
+    sys.exit(-1)
 
 authorizations = {
     'apikey': {

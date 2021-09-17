@@ -1,4 +1,6 @@
 import os
+import sys
+import redis
 
 from flask import request
 from flask_restx import Resource, Namespace, fields
@@ -12,7 +14,6 @@ from cnaas_nac.db.reply import Reply
 
 from cnaas_nac.version import __api_version__
 
-import redis
 
 logger = get_logger()
 
@@ -20,7 +21,16 @@ logger = get_logger()
 api = Namespace('auth', description='Authentication API',
                 prefix='/api/{}'.format(__api_version__))
 
-redis_client = redis.Redis(host="nac_redis", port=6379)
+try:
+    redis_client = redis.Redis(host="nac_redis", port=6379)
+    redis_client.ping()
+except redis.exceptions.ConnectionError:
+    redis_client = redis.Redis(host="localhost", port=6379)
+    redis_client.ping()
+else:
+    logger.error('Could not connect to Redis. Fatal error.')
+    sys.exit(-1)
+
 
 user_add = api.model('auth', {
     'username': fields.String(required=True),
