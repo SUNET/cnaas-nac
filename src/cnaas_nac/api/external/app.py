@@ -74,15 +74,15 @@ def get_data_accepted():
             if not client_accepts:
                 continue
 
-            data.append(client.decode(
-                'UTF-8') + ': ' + client_accepts.decode('UTF-8'))
+            data.append({client.decode(
+                'UTF-8'): client_accepts.decode('UTF-8')})
         data.reverse()
     except Exception as e:
         logger.error(f'Failed to get accepts from Redis: {e}')
 
     logger.debug(f'Pushed event for accepted clients: {data}')
 
-    return data
+    return {'accepted': data}
 
 
 def get_data_rejected():
@@ -101,21 +101,21 @@ def get_data_rejected():
             if not client_rejects:
                 continue
 
-            data.append(client.decode(
-                'UTF-8') + ': ' + client_rejects.decode('UTF-8'))
+            data.append({client.decode(
+                'UTF-8'): client_rejects.decode('UTF-8')})
         data.reverse()
     except Exception as e:
         logger.error(f'Failed to get rejects from Redis: {e}')
 
     logger.debug(f'Pushed event for rejected clients: {data}')
 
-    return data
+    return {'rejected': data}
 
 
 def server_event():
     with app.app_context():
-        sse.publish(get_data_accepted(), type='event_update')
-        sse.publish(get_data_rejected(), type='event_update')
+        sse.publish(get_data_accepted(), type='accepted_update')
+        sse.publish(get_data_rejected(), type='rejected_update')
 
 
 print(os.path.abspath(os.getcwd()))
