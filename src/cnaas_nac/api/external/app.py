@@ -28,9 +28,6 @@ try:
 except redis.exceptions.ConnectionError:
     redis_client = redis.Redis(host="localhost", port=6379)
     redis_client.ping()
-else:
-    logger.error('Could not connect to Redis. Fatal error.')
-    sys.exit(-1)
 
 authorizations = {
     'apikey': {
