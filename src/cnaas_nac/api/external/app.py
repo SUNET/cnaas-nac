@@ -80,7 +80,7 @@ def get_data_accepted():
     except Exception as e:
         logger.error(f'Failed to get accepts from Redis: {e}')
 
-    logger.debug(f'Pushed event for accepted clients: {data}')
+    logger.debug(f'[External API] Pushed event for accepted clients: {data}')
 
     return {'accepted': data}
 
@@ -107,7 +107,7 @@ def get_data_rejected():
     except Exception as e:
         logger.error(f'Failed to get rejects from Redis: {e}')
 
-    logger.debug(f'Pushed event for rejected clients: {data}')
+    logger.debug(f'[External API] Pushed event for rejected clients: {data}')
 
     return {'rejected': data}
 
@@ -130,11 +130,12 @@ try:
     else:
         cert_path = './cert/jwt_pubkey.pem'
 
-    logger.debug(f'Reading JWT certificate from {cert_path}')
+    logger.debug(f'[External API] Reading JWT certificate from {cert_path}')
 
     jwt_pubkey = open(cert_path).read()
 except Exception as e:
-    logger.debug("Could not load public JWT cert: {0}".format(e))
+    logger.debug(
+        "[External API] Could not load public JWT cert: {0}".format(e))
     sys.exit(1)
 
 
