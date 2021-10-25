@@ -41,7 +41,7 @@ source bin/activate
 # Fetch the code and install dependencies
 git clone https://github.com/SUNET/cnaas-nac.git
 cd cnaas-nac/
-git checkout feature.monitoring
+git checkout feature.monitoring.cors
 /opt/cnaas/venv/bin/pip3 install -r requirements.txt
 
 # Clean up packages
