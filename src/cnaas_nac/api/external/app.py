@@ -117,6 +117,10 @@ def server_event():
         sse.publish(get_data_accepted(), type='accepted_update')
         sse.publish(get_data_rejected(), type='rejected_update')
 
+def send_event(data, type):
+    with app.app_context():
+        sse.publish(data, type=type)
+
 
 print(os.path.abspath(os.getcwd()))
 
@@ -160,9 +164,9 @@ api.add_namespace(auth_api)
 app.register_blueprint(sse, url_prefix='/events')
 
 
-sched = BackgroundScheduler(daemon=True)
-sched.add_job(server_event, 'interval', seconds=10)
-sched.start()
+# sched = BackgroundScheduler(daemon=True)
+# sched.add_job(server_event, 'interval', seconds=10)
+# sched.start()
 
 
 # Log all requests, include username etc

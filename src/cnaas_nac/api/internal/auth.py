@@ -12,6 +12,8 @@ from cnaas_nac.db.oui import DeviceOui
 from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.reply import Reply
 
+from cnaas_nac.api.external.app import send_event
+
 from cnaas_nac.version import __api_version__
 
 
@@ -83,7 +85,8 @@ def accept(username):
 
     UserInfo.add(username, reason='User accepted', auth=True)
 
-    event_add_data(username, 'accepts')
+    # event_add_data(username, 'accepts')
+    send_event(username, 'accepted_update')
 
     return json_reply
 
@@ -94,7 +97,8 @@ def reject(username, errstr=''):
     """
     UserInfo.add(username, reason=errstr, auth=True)
 
-    event_add_data(username, 'rejects')
+    # event_add_data(username, 'rejects')
+    send_event(username, 'rejected_update')
 
     return empty_result(status='error', data=errstr), 400
 
