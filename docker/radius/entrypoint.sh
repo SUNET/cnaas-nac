@@ -1,59 +1,8 @@
-
 #!/bin/sh
-
 
 # Wait a while for PostgreSQL and API to start
 echo "[entrypoint.sh] Waiting for API and Postgres to start..."
 sleep 5
-
-# Clone settings from repository
-if [ -d "/tmp/gitrepo_etc" ]; then
-    (cd /tmp/gitrepo_etc; git pull)
-    echo "[entrypoint.sh] Updated existing Git repository"
-else
-    git clone $GITREPO_ETC /tmp/gitrepo_etc
-    echo "[entrypoint.sh] Cloned Git repository from $GITREPO_ETC"
-fi
-
-# Copy radiusd configuration
-if [ -f "/tmp/gitrepo_etc/radius/radiusd.conf" ]; then
-    cp /tmp/gitrepo_etc/radius/radiusd.conf /etc/freeradius/3.0/
-    echo "[entrypoint.sh] Copied radiusd.conf"
-fi
-
-# Copy Samba configuration
-if [ -f "/tmp/gitrepo_etc/radius/smb.conf" ]; then
-    cp /tmp/gitrepo_etc/radius/smb.conf /etc/samba/
-    echo "[entrypoint.sh] Copied smb.conf"
-fi
-
-# Copy Kerberos 5 configuration
-if [ -f "/tmp/gitrepo_etc/radius/krb5.conf" ]; then
-    cp /tmp/gitrepo_etc/radius/krb5.conf /etc/
-    echo "[entrypoint.sh] Copied krb5.conf"
-fi
-
-# Move the sites-default file if it exists
-#if [ -f "/tmp/gitrepo_etc/radius/site-default" ]; then
-#    cp /tmp/gitrepo_etc/radius/site-default /etc/freeradius/3.0/sites-available/default
-#    echo "[entrypoint.sh] Copied site-default"
-#fi
-
-# Copy the rest of the files
-# cp /tmp/gitrepo_etc/radius/* /etc/freeradius/3.0/
-# echo "[entrypoint.sh] Copied FreeRADIUS files"
-
-# if [ ! -z "$EDUROAM_R1_SECRET" ] && [ ! -z "$EDUROAM_R2_SECRET" ] && \
-#        [ ! -z "$MDH_ISE_SECRET" ]; then
-#     # Replace PSKs when needed
-#     echo "[entrypoint.sh] Setting Eduroam secrets"
-
-#     sed -e "s/EDUROAM_R1_SECRET/$EDUROAM_R1_SECRET/" \
-# 	-e "s/EDUROAM_R2_SECRET/$EDUROAM_R2_SECRET/" \
-# 	-e "s/MDH_ISE_SECRET/$MDH_ISE_SECRET/" \
-# 	< /etc/freeradius/3.0/proxy.conf > /tmp/proxy.conf.new \
-# 	&& cat /tmp/proxy.conf.new > /etc/freeradius/3.0/proxy.conf
-# fi
 
 if [ ! -z "$RADIUS_SERVER_SECRET" ]; then
     echo "[entrypoint.sh] Setting RADIUS secret"
@@ -146,4 +95,4 @@ fi
 chown freerad:freerad /var/run/freeradius
 
 # Start freeradius in the foreground with debug enabled
-freeradius -f -x -l stdout
+freeradius -f -l stdout
