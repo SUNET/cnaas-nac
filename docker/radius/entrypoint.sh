@@ -2,7 +2,7 @@
 
 # Wait a while for PostgreSQL and API to start
 echo "[entrypoint.sh] Waiting for API and Postgres to start..."
-sleep 5
+sleep 10
 
 if [ ! -z "$RADIUS_SERVER_SECRET" ]; then
     echo "[entrypoint.sh] Setting RADIUS secret"
