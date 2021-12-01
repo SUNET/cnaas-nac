@@ -135,10 +135,11 @@ def main(argv):
         source, target, username, password = env_vars()
 
     if None in (source, target, username, password):
-        sys.exit(-1)
+        usage()
 
     try:
-        logger.info('Starting DB replication from {} to {}'.format(source, target))
+        logger.info(
+            'Starting DB replication from {} to {}'.format(source, target))
 
         logger.info('Replicating users...')
         rad_replicate(source, target, username, password, User)
