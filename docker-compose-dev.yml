@@ -14,7 +14,6 @@ services:
       - RADIUS_DEFAULT_VLAN=13
     depends_on:
       - nac_postgres
-      - nac_redis
 
   nac_radius:
     build: ./docker/radius
@@ -55,14 +54,6 @@ services:
     networks:
       cnaas:
         ipv4_address: 172.31.0.30
-
-  nac_redis:
-    build: ./docker/redis/
-    ports:
-      - 6379:6379
-    networks:
-      cnaas:
-        ipv4_address: 172.31.0.40
 
 networks:
   cnaas:
