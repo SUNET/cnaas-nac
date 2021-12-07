@@ -1,16 +1,19 @@
+import enum
+import ipaddress
+import re
+
 from cnaas_nac.db.userinfo import UserInfo
 from cnaas_nac.db.reply import Reply
 from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.session import sqla_session
+
 from sqlalchemy import Boolean, desc, asc
 from sqlalchemy.ext.declarative import declarative_base
-import enum
-import ipaddress
-from datetime import datetime, timedelta
-
-from typing import Optional
 from sqlalchemy import Column, Integer, Unicode, UniqueConstraint, DateTime, \
     func
+
+from datetime import datetime, timedelta
+from typing import Optional
 
 
 Base = declarative_base()
@@ -124,13 +127,14 @@ class User(Base):
         return ''
 
 
-def get_users(field=None, condition='', order='', when=None):
+def get_users(field=None, condition='', order='', when=None, client_type=None):
     result = []
 
     db_order = asc(User.username)
     db_field = User.username
     db_condition = '%{}%'.format(condition)
     db_when = datetime.now() - timedelta(days=3650)
+    mab_regex = re.compile(r'((?:(\d{1,2}|[a-fA-F]{1,2}){2})(?::|-*)){6}')
 
     if when is not None:
         if when == 'hour':
@@ -193,7 +197,16 @@ def get_users(field=None, condition='', order='', when=None):
             if usernames != []:
                 if user.username not in usernames:
                     continue
+
             res_dict = dict()
+
+            if client_type == 'mab':
+                if not re.findall(mab_regex, user.username.lower()):
+                    continue
+            elif client_type == 'eap':
+                if re.findall(mab_regex, user.username.lower()):
+                    continue
+
             res_dict['username'] = user.username
 
             if user.op == ':=':

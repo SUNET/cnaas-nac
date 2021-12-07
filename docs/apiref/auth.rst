@@ -166,4 +166,4 @@ And finally we can remove a client using delete:
 
 ::
 
-   curl -k -H "Authorization: Bearer <Token>" -H -X DELETE  "https://nac.example.com:1443/api/v1.0/auth/de:ad:be:ef:aa:00"
+   curl -k -H "Authorization: Bearer <Token>" -X DELETE  "https://nac.example.com:1443/api/v1.0/auth/de:ad:be:ef:aa:00"

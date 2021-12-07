@@ -21,6 +21,14 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
+--
+--
+
+CREATE EXTENSION pg_cron;
+SELECT cron.schedule('Cleanup raddacct', '0 23 * * *', $$DELETE FROM radacct WHERE acctstoptime < (now() - '30 days'::interval)$$);
+SELECT cron.schedule('Reindex racct', '30 23 * * *', 'REINDEX TABLE radacct');
+
+--
 -- Name: alembic_version; Type: TABLE; Schema: public; Owner: cnaas
 --
 
@@ -807,4 +815,3 @@ CREATE INDEX radusergroup_username ON public.radusergroup USING btree (username)
 --
 -- PostgreSQL database dump complete
 --
-
