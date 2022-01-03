@@ -52,6 +52,22 @@ fi
 
 # Join the AD domain if we have a AD password configured
 if [ ${AD_PASSWORD} ] && [ "$DISABLE_AD" != "True" ]; then
+
+    # Write Samba config
+    REALM=`echo "${NTLM_DOMAIN}" | tr '[:lower:]' '[:upper:]'`
+    WORKGROUP=`echo ${REALM} | cut -d"." -f1`
+
+    cat <<EOF > /etc/samba/smb.conf
+[global]
+   workgroup = ${WORKGROUP}
+   security = ADS
+   realm = ${REALM}
+   winbind refresh tickets = yes
+   vfs objects = acl_xattr
+   map acl inherit = yes
+   store dos attributes = yes
+EOF
+
     # Test if we already joined the domain
     winbindd
     wbinfo -p
