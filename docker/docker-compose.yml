@@ -35,7 +35,7 @@ services:
       - AD_DNS_SECONDARY
       - RADIUS_NO_PORT_LOCK=True
     depends_on:
-      - nac_api
+      - nac_postgres
     volumes:
       - type: volume
         source: nac-freeradius-data

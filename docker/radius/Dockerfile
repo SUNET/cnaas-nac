@@ -1,8 +1,13 @@
-FROM debian:buster
+FROM debian:bullseye
 
 ENV DEBIAN_FRONTEND noninteractive
 
 # Install freeradius
+RUN apt-get update
+RUN apt-get install -y curl gnupg2
+RUN curl -s 'https://packages.networkradius.com/pgp/packages%40networkradius.com' | apt-key add -
+RUN echo "deb http://packages.networkradius.com/freeradius-3.0/debian/bullseye bullseye main" | tee /etc/apt/sources.list.d/networkradius.list
+
 RUN apt-get update
 RUN apt-get install -y freeradius freeradius-postgresql freeradius-rest python3 python3-requests postgresql netcat samba winbind emacs-nox krb5-user git freeradius-ldap
 
