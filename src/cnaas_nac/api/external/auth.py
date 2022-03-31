@@ -1,18 +1,16 @@
-import os
 import json
+import os
 
-from flask import request, make_response
-from flask_restx import Resource, Namespace, fields
-from flask_jwt_extended import jwt_required
-
+from cnaas_nac.api.external.coa import CoA
 from cnaas_nac.api.generic import empty_result
-from cnaas_nac.tools.log import get_logger
-from cnaas_nac.db.user import User, get_users, UserInfo
 from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.reply import Reply
-from cnaas_nac.api.external.coa import CoA
+from cnaas_nac.db.user import User, UserInfo, get_users
+from cnaas_nac.tools.log import get_logger
 from cnaas_nac.version import __api_version__
-
+from flask import make_response, request
+from flask_jwt_extended import jwt_required
+from flask_restx import Namespace, Resource, fields
 from netaddr import EUI, mac_unix_expanded
 
 logger = get_logger()
@@ -195,6 +193,11 @@ class AuthApiByName(Resource):
         if json_data is None:
             return empty_result(status='error', data='No JSON input found'), 400
 
+        if 'password' in json_data:
+            userdata = get_users(field='username', condition=username)
+            if userdata == []:
+                return empty_result(status='error', data='User not found')
+            result = User.password(username, json_data['password'])
         if 'active' in json_data:
             if json_data['active'] is True:
                 result = User.enable(username)

@@ -1,20 +1,16 @@
 import enum
 import ipaddress
 import re
-
-from cnaas_nac.db.userinfo import UserInfo
-from cnaas_nac.db.reply import Reply
-from cnaas_nac.db.nas import NasPort
-from cnaas_nac.db.session import sqla_session
-
-from sqlalchemy import Boolean, desc, asc
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, Unicode, UniqueConstraint, DateTime, \
-    func
-
 from datetime import datetime, timedelta
 from typing import Optional
 
+from cnaas_nac.db.nas import NasPort
+from cnaas_nac.db.reply import Reply
+from cnaas_nac.db.session import sqla_session
+from cnaas_nac.db.userinfo import UserInfo
+from sqlalchemy import (Boolean, Column, DateTime, Integer, Unicode,
+                        UniqueConstraint, asc, desc, func)
+from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
@@ -124,6 +120,16 @@ class User(Base):
             for _ in instance:
                 session.delete(_)
                 session.commit()
+        return ''
+
+    @classmethod
+    def password(cls, username, password):
+        with sqla_session() as session:
+            user: User = session.query(User).filter(User.username ==
+                                                    username).order_by(User.id).one_or_none()
+            if not user:
+                return None
+            user.value = password
         return ''
 
 
