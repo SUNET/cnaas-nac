@@ -55,7 +55,6 @@ if [ ${AD_PASSWORD} ] && [ "$DISABLE_AD" != "True" ]; then
 
     # Write Samba config
     REALM=`echo "${NTLM_DOMAIN}" | tr '[:lower:]' '[:upper:]'`
-    WORKGROUP=`echo ${REALM} | cut -d"." -f1`
 
     cat <<EOF > /etc/samba/smb.conf
 [global]
