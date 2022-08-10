@@ -93,7 +93,6 @@ EOF
 
 	if [ $? != 0 ]; then
 	    echo "Could not start windbindd, exiting."
-	    exit
 	else
 	    echo "[entrypoint.sh] Started windbindd"
 	fi
