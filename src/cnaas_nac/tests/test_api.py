@@ -1,8 +1,9 @@
 import os
+import random
 import unittest
+
 import cnaas_nac.api.external.app
 import cnaas_nac.api.internal.app
-import random
 
 
 class ApiTests(unittest.TestCase):
@@ -16,7 +17,10 @@ class ApiTests(unittest.TestCase):
             'NzFlLWE2NTctZWFlYTZkNzA4NmVhIiwic3ViIjoiYWRtaW4iLCJmcmVzaCI6Z' + \
             'mFsc2UsInR5cGUiOiJhY2Nlc3MifQ.Sfffg9oZg_Kmoq7Oe8IoTcbuagpP6nu' + \
             'UXOQzqJpgDfqDq_GM_4zGzt7XxByD4G0q8g4gZGHQnV14TpDer2hJXw'
-        self.headers = {'Authorization': 'Bearer ' + self.token}
+        self.headers = {
+            'Authorization': 'Bearer ' + self.token,
+            'Content-Type': 'application/json'
+        }
 
         if 'RADIUS_DEFAULT_VLAN' not in os.environ:
             os.environ['RADIUS_DEFAULT_VLAN'] = str(random.randint(100, 1000))
@@ -27,6 +31,7 @@ class ApiTests(unittest.TestCase):
     def test_01_add_user(self):
         json = {
             "username": "unittest",
+            "password": "unittest",
             "nas_identifier": "unittest",
             "nas_port_id": "unittest",
             "nas_ip_address": "unittest",
@@ -34,7 +39,7 @@ class ApiTests(unittest.TestCase):
             "called_station_id": "unittest"
         }
 
-        res = self.client_internal.post(
+        self.client_internal.post(
             '/api/v1.0/auth', json=json, headers=self.headers)
 
     def test_02_enable_user(self):
@@ -44,8 +49,8 @@ class ApiTests(unittest.TestCase):
 
         res = self.client_external.put(
             '/api/v1.0/auth/unittest', json=json, headers=self.headers)
-        self.assertEqual(res.status_code, 200)
 
+        self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json['data'][0]['username'], 'unittest')
         self.assertEqual(res.json['data'][0]['active'], True)
         self.assertEqual(res.json['data'][0]['vlan'],
@@ -67,6 +72,7 @@ class ApiTests(unittest.TestCase):
         }
 
         res = self.client_internal.post('/api/v1.0/auth', json=json)
+
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json['Tunnel-Type']['value'], 'VLAN')
         self.assertEqual(res.json['Tunnel-Medium-Type']['value'], 'IEEE-802')
@@ -76,6 +82,7 @@ class ApiTests(unittest.TestCase):
 
         res = self.client_external.get(
             '/api/v1.0/auth/unittest', headers=self.headers)
+
         self.assertEqual(res.json['data'][0]['reason'], 'User accepted')
 
     def test_04_set_vlan(self):
@@ -110,6 +117,7 @@ class ApiTests(unittest.TestCase):
 
         res = self.client_external.put(
             '/api/v1.0/auth/unittest', json=json, headers=self.headers)
+
         self.assertEqual(res.status_code, 200)
 
         res = self.client_external.get(
@@ -158,8 +166,8 @@ class ApiTests(unittest.TestCase):
 
         res = self.client_external.put(
             '/api/v1.0/auth/unittest', json=json, headers=self.headers)
-        self.assertEqual(res.status_code, 200)
 
+        self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json['data'][0]['username'], 'unittest')
         self.assertEqual(res.json['data'][0]['active'], False)
         self.assertEqual(res.json['data'][0]['vlan'], 'UNITTEST')

@@ -1,17 +1,14 @@
 import os
 
-from flask import request
-from flask_restx import Resource, Namespace, fields
-
 from cnaas_nac.api.generic import empty_result
-from cnaas_nac.tools.log import get_logger
-from cnaas_nac.db.user import User, get_users, UserInfo
-from cnaas_nac.db.oui import DeviceOui
 from cnaas_nac.db.nas import NasPort
+from cnaas_nac.db.oui import DeviceOui
 from cnaas_nac.db.reply import Reply
-
+from cnaas_nac.db.user import User, UserInfo, get_users
+from cnaas_nac.tools.log import get_logger
 from cnaas_nac.version import __api_version__
-
+from flask import request
+from flask_restx import Namespace, Resource, fields
 
 logger = get_logger()
 
