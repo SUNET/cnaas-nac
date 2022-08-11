@@ -7,6 +7,13 @@ from sqlalchemy.orm import sessionmaker
 
 
 def get_dbdata(config='/etc/cnaas-nac/db_config.yml'):
+    if not os.path.exists('/etc/cnaas-nac/db_config.yml'):
+        return {'hostname': 'localhost',
+                'username': 'cnaas',
+                'password': 'cnaas',
+                'type': 'postgres',
+                'database': 'nac',
+                'port': 5432}
     with open(config, 'r') as db_file:
         return yaml.safe_load(db_file)
 
@@ -31,16 +38,19 @@ def get_sqlalchemy_conn_str(**kwargs) -> str:
     )
 
 
-@contextmanager
-def sqla_session(conn_str='', **kwargs):
+def get_session(conn_str=''):
     if conn_str == '':
         conn_str = get_sqlalchemy_conn_str()
 
     engine = create_engine(conn_str, pool_size=50, max_overflow=0)
-    connection = engine.connect()
     Session = sessionmaker(bind=engine)
-    session = Session()
 
+    return Session()
+
+
+@contextmanager
+def sqla_session(conn_str='', **kwargs):
+    session = get_session(conn_str)
     try:
         yield session
         session.commit()

@@ -1,0 +1,32 @@
+mac-addr-regexp = '([0-9a-f]{2})[^0-9a-f]?([0-9a-f]{2})[^0-9a-f]?([0-9a-f]{2})[^0-9a-f]?([0-9a-f]{2})[^0-9a-f]?([0-9a-f]{2})[^0-9a-f]?([0-9a-f]{2})'
+
+check_sql_or_rest {
+    if (&EAP-Message) {
+		if (&Calling-Station-Id && (&Calling-Station-Id =~ /^${policy.mac-addr-regexp}$/i)) {
+            update request {
+                &Stripped-User-Name := User-Name
+                    &User-Name := "%{tolower:%{1}:%{2}:%{3}:%{4}:%{5}:%{6}}"
+            }
+        }
+	
+        -sql
+        if (!ok) {
+            update reply {
+                Reply-Message = "NSQL"
+            }
+        }
+	
+        update request {
+            &User-Name := Stripped-User-Name
+        }
+    }
+    else {
+        rest
+        if (updated) {
+            accept
+        }
+        else {
+            reject
+        }
+    }
+}

@@ -2,7 +2,7 @@ import os
 import time
 
 from cnaas_nac.tools.log import get_logger
-from cnaas_nac.db.user import User, PostAuth
+from cnaas_nac.db.user import User, UserInfo, Reply
 from cnaas_nac.db.nas import NasPort
 
 
@@ -18,34 +18,34 @@ def db_cleanup():
         return ''
 
     users = User.get()
-    pattern = '%Y-%m-%d %H:%M:%S.%f%z'
 
     logger.info('Cleaning up users...')
 
     for user in users:
+        username = user['username']
 
         # Skip enabled users
         if user['op'] != '':
-            logger.info('User {} active, skipping'.format(user['username']))
+            logger.info('User {} active, skipping'.format(username))
             continue
 
-        postauth = PostAuth.get_last_seen(username=user['username'], last=True)
+        userinfo = UserInfo.get([username])
+        last_seen = userinfo[username]['authdate']
 
-        if len(postauth) > 1:
-            logger.info('Got more than one timestamp for user {}, bailing out.'.format(
-                user['username']))
+        if last_seen is None or last_seen == '':
+            logger.info('No timestamp for user {}, skipping'.format(username))
             continue
 
-        last_seen = postauth[0]['authdate']
-        last_seen_epoch = int(time.mktime(time.strptime(last_seen, pattern)))
-
+        last_seen_epoch = int(last_seen.timestamp())
         current_epoch = int(time.time())
 
         if current_epoch - last_seen_epoch >= ONE_MONTH:
             logger.info('Removing user {}'.format(user['username']))
             User.delete(user['username'])
-            User.reply_delete(user['username'])
+            Reply.delete(user['username'])
             NasPort.delete(user['username'])
+        else:
+            logger.info('Keeping user {}'.format(user['username']))
 
     return ''
 

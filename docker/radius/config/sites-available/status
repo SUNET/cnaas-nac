@@ -1,0 +1,24 @@
+# This will not be exposed to the wide world, so we don't
+# really care about if we listen to all adresses and expose
+# the passwords on GitHub etc.
+
+server status {
+	listen {
+		type = status
+		ipaddr = 0.0.0.0
+		port = 18121
+	}
+
+	client admin {
+		ipaddr = 0.0.0.0
+		secret = wURL53R9uM8ukf52
+	}
+
+	authorize {
+		ok
+
+		Autz-Type Status-Server {
+			ok
+		}
+	}
+}

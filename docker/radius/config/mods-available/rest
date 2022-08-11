@@ -4,7 +4,7 @@ rest {
 		check_cert_cn = no
 	}
 
-	connect_uri = "https://nac_api:443/api/v1.0/auth"
+	connect_uri = "https://172.31.0.10:443/api/v1.0/auth"
 
 	authorize {
 		uri = "${..connect_uri}"
@@ -14,7 +14,7 @@ rest {
 		data = '{"username": "%{User-Name}", "nas_identifier": "%{NAS-Identifier}", "nas_port_id": "%{NAS-Port-Id}", "calling_station_id": "%{Calling-Station-Id}", "called_station_id": "%{Called-Station-Id}", "nas_ip_address": "%{NAS-IP-Address}"}'
 	}
 
-	Pool {
+	pool {
 		start = ${thread[pool].start_servers}
 		min = ${thread[pool].min_spare_servers}
 		max = ${thread[pool].max_servers}

@@ -1,20 +1,22 @@
 version: '3.7'
 services:
   nac_api:
-    build: ./api/
+    build: .
     ports:
       - 1443:4430
     networks:
       cnaas:
         ipv4_address: 172.31.0.10
     environment:
-      - RADIUS_SLAVE
-      - RADIUS_COA_SECRET
+      - RADIUS_SLAVE=no
+      - RADIUS_COA_SECRET=testing123
+      - RADIUS_NO_PORT_LOCK=no
+      - RADIUS_DEFAULT_VLAN=13
     depends_on:
       - nac_postgres
 
   nac_radius:
-    build: ./radius
+    build: ./docker/radius
     ports:
       - 1812:1812/udp
       - 1813:1813/udp
@@ -22,18 +24,7 @@ services:
       cnaas:
         ipv4_address: 172.31.0.20
     environment:
-      - EDUROAM_R1_SECRET
-      - EDUROAM_R2_SECRET
-      - RADIUS_SERVER_SECRET
-      - GITREPO_ETC
-      - AD_DOMAIN
-      - AD_USERNAME
-      - AD_PASSWORD
-      - AD_BASE_DN
-      - NTLM_DOMAIN
-      - AD_DNS_PRIMARY
-      - AD_DNS_SECONDARY
-      - RADIUS_NO_PORT_LOCK=True
+      - RADIUS_SERVER_SECRET=testing123
     depends_on:
       - nac_api
     volumes:
@@ -48,7 +39,8 @@ services:
         target: /opt/cnaas/certs/
 
   nac_postgres:
-    build: ./postgres
+    build: ./docker/postgres
+    restart: unless-stopped
     volumes:
       - type: volume
         source: nac-postgres-data

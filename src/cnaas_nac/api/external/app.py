@@ -1,11 +1,13 @@
 import os
+import sys
 
+from flask_cors import CORS
 from flask import Flask, request, jsonify
-from flask_restplus import Api
+from flask_restx import Api
 from flask_jwt_extended import JWTManager, decode_token
 from flask_jwt_extended.exceptions import NoAuthorizationError
 
-from cnaas_nac.api.auth import api as auth_api
+from cnaas_nac.api.external.auth import api as auth_api
 from cnaas_nac.version import __api_version__
 from cnaas_nac.tools.log import get_logger
 
@@ -45,19 +47,42 @@ class CnaasApi(Api):
         return jsonify(data)
 
 
+try:
+    # If we don't find a "real" cert, fall back to a self-signed
+    # one. We need this for running tests.
+    if os.path.exists('/opt/cnaas/certs/jwt_pubkey.pem'):
+        cert_path = '/opt/cnaas/certs/jwt_pubkey.pem'
+    elif os.path.exists('./src/cert/jwt_pubkey.pem'):
+        cert_path = './src/cert/jwt_pubkey.pem'
+    else:
+        cert_path = './cert/jwt_pubkey.pem'
+
+    logger.debug(f'Reading JWT certificate from {cert_path}')
+
+    jwt_pubkey = open(cert_path).read()
+except Exception as e:
+    print("Could not load public JWT cert: {0}".format(e))
+    sys.exit(1)
+
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(128)
-app.config['JWT_PUBLIC_KEY'] = open('certs/public.pem').read()
+app.config['JWT_PUBLIC_KEY'] = jwt_pubkey
 app.config['JWT_IDENTITY_CLAIM'] = 'sub'
 app.config['JWT_ALGORITHM'] = 'ES256'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
 
 jwt = JWTManager(app)
+cors = CORS(app,
+            resources={r"/api/*": {"origins": "*"}},
+            expose_headers=["Content-Type", "Authorization", "X-Total-Count"])
+
 api = CnaasApi(app, prefix='/api/{}'.format(__api_version__),
                authorizations=authorizations,
                security='apikey')
 
 api.add_namespace(auth_api)
+
 
 # Log all requests, include username etc
 @app.after_request
@@ -67,6 +92,6 @@ def log_request(response):
         user = decode_token(token).get('sub')
     except Exception:
         user = 'unknown'
-    logger.info('User: {}, Method: {}, Status: {}, URL: {}, JSON: {}'.format(
+    logger.info('[External API] User: {}, Method: {}, Status: {}, URL: {}, JSON: {}'.format(
         user, request.method, response.status_code, request.url, request.json))
     return response

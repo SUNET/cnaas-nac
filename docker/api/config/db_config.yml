@@ -1,5 +1,5 @@
 type: postgresql
-hostname: cnaas_postgres
+hostname: 172.31.0.30
 port: 5432
 username: cnaas
 password: cnaas
