@@ -1,19 +1,16 @@
 import os
 import sys
 
+from cnaas_nac.api.external.auth import api as auth_api
+from cnaas_nac.tools.log import get_logger
+from cnaas_nac.version import __api_version__
+from flask import Flask, jsonify, logging, request
 from flask_cors import CORS
-from flask import Flask, request, jsonify
-from flask_restx import Api
 from flask_jwt_extended import JWTManager, decode_token
 from flask_jwt_extended.exceptions import NoAuthorizationError
-
-from cnaas_nac.api.external.auth import api as auth_api
-from cnaas_nac.version import __api_version__
-from cnaas_nac.tools.log import get_logger
-
-from jwt.exceptions import DecodeError, InvalidSignatureError, \
-    InvalidTokenError
-
+from flask_restx import Api
+from jwt.exceptions import (DecodeError, InvalidSignatureError,
+                            InvalidTokenError)
 
 logger = get_logger()
 
@@ -44,6 +41,7 @@ class CnaasApi(Api):
             data = {'status': 'error', 'data': 'JWT token missing?'}
         else:
             return super(CnaasApi, self).handle_error(e)
+
         return jsonify(data)
 
 
@@ -92,6 +90,8 @@ def log_request(response):
         user = decode_token(token).get('sub')
     except Exception:
         user = 'unknown'
-    logger.info('[External API] User: {}, Method: {}, Status: {}, URL: {}, JSON: {}'.format(
-        user, request.method, response.status_code, request.url, request.json))
+
+    app.logger.info('[External API] User: {}, Method: {}, Status: {}, URL: {}'.format(
+        user, request.method, response.status_code, request.url))
+
     return response

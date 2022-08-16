@@ -25,6 +25,8 @@ apt-get update && \
       cron \
       emacs-nox \
       uwsgi-plugin-python3 \
+      postgresql \
+      postgresql-server-dev-all \
     && apt-get clean
 
 pip3 install uwsgi

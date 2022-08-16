@@ -1,15 +1,12 @@
 import os
 
-from flask import Flask, request, jsonify
-from flask_restx import Api
-
 from cnaas_nac.api.internal.auth import api as auth_api
-from cnaas_nac.version import __api_version__
 from cnaas_nac.tools.log import get_logger
-
-from jwt.exceptions import DecodeError, InvalidSignatureError, \
-    InvalidTokenError
-
+from cnaas_nac.version import __api_version__
+from flask import Flask, jsonify, request
+from flask_restx import Api
+from jwt.exceptions import (DecodeError, InvalidSignatureError,
+                            InvalidTokenError)
 
 logger = get_logger()
 
@@ -38,8 +35,10 @@ api = CnaasApi(app, prefix='/api/{}'.format(__api_version__))
 api.add_namespace(auth_api)
 
 # Log all requests, include username etc
+
+
 @app.after_request
 def log_request(response):
-    logger.info('[Internal API] Method: {}, Status: {}, URL: {}, JSON: {}'.format(
-        request.method, response.status_code, request.url, request.json))
+    logger.info('[Internal API] Method: {}, Status: {}, URL: {}'.format(
+        request.method, response.status_code, request.url))
     return response
