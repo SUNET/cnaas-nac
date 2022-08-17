@@ -1,5 +1,7 @@
 import json
 import os
+import time
+from datetime import datetime
 
 from cnaas_nac.api.external.coa import CoA
 from cnaas_nac.api.generic import empty_result
@@ -123,6 +125,34 @@ class AuthApi(Resource):
         else:
             called_station_id = json_data['called_station_id']
 
+        if "access_start" in json_data:
+            try:
+                access_start = datetime.strptime(
+                    json_data["access_start"], "%Y-%m-%d %H:%M")
+            except ValueError as e:
+                return empty_result(status="error", data="Invalid date and time format."), 400
+        else:
+            access_start = None
+
+        if "access_stop" in json_data:
+            try:
+                access_stop = datetime.strptime(
+                    json_data["access_stop"], "%Y-%m-%d %H:%M")
+            except ValueError as e:
+                return empty_result(status="error", data="Invalid date and time format."), 400
+        else:
+            access_stop = None
+
+        if access_start and access_stop:
+            start_time = int(round(time.mktime(access_start.timetuple())))
+            stop_time = int(round(time.mktime(access_stop.timetuple())))
+
+            if start_time == stop_time:
+                return empty_result(status="error", data="Start time and stop time must not be identical."), 400
+
+            if start_time > stop_time:
+                return empty_result(status="error", data="Start time must be before stop time."), 400
+
         if nas_identifier == "" or nas_identifier is None:
             nas_identifier = username
 
@@ -136,7 +166,8 @@ class AuthApi(Resource):
         if err != "":
             return empty_result(status="error", data=err), 400
 
-        err = UserInfo.add(username, comment)
+        err = UserInfo.add(username, comment=comment,
+                           access_start=access_start, access_stop=access_stop)
 
         if err != "":
             return empty_result(status="error", data=err), 400

@@ -1,5 +1,7 @@
+import datetime
 import os
 import random
+import time
 import unittest
 
 import cnaas_nac.api.external.app
@@ -328,17 +330,200 @@ class ApiTests(unittest.TestCase):
             '/api/v1.0/auth', json=json)
         self.assertEqual(res.status_code, 400)
 
+    def test_15_add_user_wrong_time(self):
+        date = datetime.datetime.now() + datetime.timedelta(minutes=1)
+        year = date.year
+        month = date.month
+        day = date.day
+        hour = date.hour
+        minute = date.minute
+
+        startstr = f"{year}-{month}-{day} {hour}:{minute}"
+
+        date = datetime.datetime.now() + datetime.timedelta(minutes=-100)
+        year = date.year
+        month = date.month
+        day = date.day
+        hour = date.hour
+        minute = date.minute
+
+        stopstr = f"{year}-{month}-{day} {hour}:{minute}"
+
+        json = {
+            "username": "unittest_wrong_accesstime",
+            "password": "unittest_wrong_accesstime",
+            "nas_identifier": "unittest",
+            "nas_port_id": "unittest",
+            "nas_ip_address": "unittest",
+            "calling_station_id": "unittest",
+            "called_station_id": "unittest",
+            "access_start": startstr,
+            "access_stop": startstr
+        }
+
+        res = self.client_external.post(
+            '/api/v1.0/auth', json=json, headers=self.headers)
+
+        self.assertEqual(res.status_code, 400)
+
+        res = self.client_external.delete(
+            '/api/v1.0/auth/unittest_wrong_accesstime', headers=self.headers)
+        self.assertEqual(res.status_code, 400)
+
+        json = {
+            "username": "unittest_wrong_accesstime",
+            "password": "unittest_wrong_accesstime",
+            "nas_identifier": "unittest",
+            "nas_port_id": "unittest",
+            "nas_ip_address": "unittest",
+            "calling_station_id": "unittest",
+            "called_station_id": "unittest",
+            "access_start": startstr,
+            "access_stop": stopstr
+        }
+
+        res = self.client_external.post(
+            '/api/v1.0/auth', json=json, headers=self.headers)
+
+        self.assertEqual(res.status_code, 400)
+
+        res = self.client_external.delete(
+            '/api/v1.0/auth/unittest_wrong_accesstime', headers=self.headers)
+        self.assertEqual(res.status_code, 400)
+
+        json = {
+            "username": "unittest_wrong_accesstime",
+            "password": "unittest_wrong_accesstime",
+            "nas_identifier": "unittest",
+            "nas_port_id": "unittest",
+            "nas_ip_address": "unittest",
+            "calling_station_id": "unittest",
+            "called_station_id": "unittest",
+            "access_start": "asdasd",
+            "access_stop": stopstr
+        }
+
+        res = self.client_external.post(
+            '/api/v1.0/auth', json=json, headers=self.headers)
+
+        self.assertEqual(res.status_code, 400)
+
+        res = self.client_external.delete(
+            '/api/v1.0/auth/unittest_wrong_accesstime', headers=self.headers)
+        self.assertEqual(res.status_code, 400)
+
+        json = {
+            "username": "unittest_wrong_accesstime",
+            "password": "unittest_wrong_accesstime",
+            "nas_identifier": "unittest",
+            "nas_port_id": "unittest",
+            "nas_ip_address": "unittest",
+            "calling_station_id": "unittest",
+            "called_station_id": "unittest",
+            "access_start": startstr,
+            "access_stop": "asdasd"
+        }
+
+        res = self.client_external.post(
+            '/api/v1.0/auth', json=json, headers=self.headers)
+
+        self.assertEqual(res.status_code, 400)
+
+        res = self.client_external.delete(
+            '/api/v1.0/auth/unittest_wrong_accesstime', headers=self.headers)
+        self.assertEqual(res.status_code, 400)
+
+    def test_16_add_user_access_time(self):
+        date = datetime.datetime.now() + datetime.timedelta(minutes=1)
+        year = date.year
+        month = date.month
+        day = date.day
+        hour = date.hour
+        minute = date.minute
+
+        startstr = f"{year}-{month}-{day} {hour}:{minute}"
+
+        date = datetime.datetime.now() + datetime.timedelta(minutes=2)
+        year = date.year
+        month = date.month
+        day = date.day
+        hour = date.hour
+        minute = date.minute
+
+        stopstr = f"{year}-{month}-{day} {hour}:{minute}"
+
+        json = {
+            "username": "unittest_accesstime",
+            "password": "unittest_accesstime",
+            "nas_identifier": "unittest",
+            "nas_port_id": "unittest",
+            "nas_ip_address": "unittest",
+            "calling_station_id": "unittest",
+            "called_station_id": "unittest",
+            "access_start": startstr,
+            "access_stop": stopstr
+        }
+
+        res = self.client_external.post(
+            '/api/v1.0/auth', json=json, headers=self.headers)
+
+        self.assertEqual(res.status_code, 200)
+
+        res = self.client_internal.post('/api/v1.0/auth', json=json)
+
+        self.assertEqual(res.status_code, 400)
+
+        json = {
+            "active": True
+        }
+
+        res = self.client_external.put(
+            '/api/v1.0/auth/unittest_accesstime', json=json, headers=self.headers)
+
+        self.assertEqual(res.status_code, 200)
+
+        json = {
+            "username": "unittest_accesstime",
+            "password": "unittest_accesstime",
+            "nas_identifier": "unittest",
+            "nas_port_id": "unittest",
+            "nas_ip_address": "unittest",
+            "calling_station_id": "unittest",
+            "called_station_id": "unittest"
+        }
+
+        res = self.client_internal.post('/api/v1.0/auth', json=json)
+
+        self.assertEqual(res.status_code, 400)
+
+        time.sleep(65)
+
+        res = self.client_internal.post('/api/v1.0/auth', json=json)
+
+        self.assertEqual(res.status_code, 200)
+
+        time.sleep(100)
+
+        res = self.client_internal.post('/api/v1.0/auth', json=json)
+
+        self.assertEqual(res.status_code, 400)
+
     def test_99_delete_user(self):
         res = self.client_external.delete(
             '/api/v1.0/auth/unittest', headers=self.headers)
         self.assertEqual(res.status_code, 200)
         res = self.client_external.get(
             '/api/v1.0/auth/unittest', headers=self.headers)
+
         res = self.client_external.delete(
             '/api/v1.0/auth/unittest_wrong', headers=self.headers)
         self.assertEqual(res.status_code, 200)
         res = self.client_external.get(
             '/api/v1.0/auth/unittest_wrong', headers=self.headers)
 
+        res = self.client_external.delete(
+            '/api/v1.0/auth/unittest_accesstime', headers=self.headers)
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.json['data'], [])
+        res = self.client_external.get(
+            '/api/v1.0/auth/unittest_accesstime', headers=self.headers)
+        pass
