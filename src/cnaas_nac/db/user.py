@@ -8,17 +8,8 @@ from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.reply import Reply
 from cnaas_nac.db.session import sqla_session
 from cnaas_nac.db.userinfo import UserInfo
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    Integer,
-    Unicode,
-    UniqueConstraint,
-    asc,
-    desc,
-    func,
-)
+from sqlalchemy import (Boolean, Column, DateTime, Integer, Unicode,
+                        UniqueConstraint, asc, desc, func)
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -210,7 +201,8 @@ def get_users(field=None, condition="", order="", when=None, client_type=None):
                 "-") else asc(Reply.value)
         elif "reason" in order:
             db_order = (
-                desc(UserInfo.reason) if order.startswith("-") else asc(UserInfo.reason)
+                desc(UserInfo.reason) if order.startswith(
+                    "-") else asc(UserInfo.reason)
             )
         elif "comment" in order:
             db_order = (
@@ -267,6 +259,9 @@ def get_users(field=None, condition="", order="", when=None, client_type=None):
             res_dict["called_station_id"] = nas_port.called_station_id
             res_dict["comment"] = userinfos[user.username]["comment"]
             res_dict["reason"] = userinfos[user.username]["reason"]
+            res_dict["access_start"] = userinfos[user.username]["access_start"]
+            res_dict["access_stop"] = userinfos[user.username]["access_stop"]
+            res_dict["access_restricted"] = userinfos[user.username]["access_restricted"]
 
             if "authdate" not in userinfos[user.username]:
                 authdate = ""
