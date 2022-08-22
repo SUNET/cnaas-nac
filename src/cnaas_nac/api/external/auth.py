@@ -8,9 +8,9 @@ from cnaas_nac.db.reply import Reply
 from cnaas_nac.db.user import User, UserInfo, get_users
 from cnaas_nac.tools.log import get_logger
 from cnaas_nac.version import __api_version__
-from flask import make_response, request
+from flask import jsonify, make_response, request
 from flask_jwt_extended import jwt_required
-from flask_restx import Namespace, Resource, fields
+from flask_restx import Namespace, Resource
 from netaddr import EUI, mac_unix_expanded
 
 logger = get_logger()
@@ -19,16 +19,9 @@ logger = get_logger()
 api = Namespace('auth', description='Authentication API',
                 prefix='/api/{}'.format(__api_version__))
 
-user_edit = api.model('auth_enable', {
-    'enable': fields.Boolean(required=False),
-    'vlan': fields.String(required=False),
-    'comment': fields.String(required=False),
-    'bounce': fields.String(required=False)
-})
-
 
 class AuthApi(Resource):
-    @jwt_required
+    @jwt_required()
     def get(self):
         """
         Get a JSON blob with all users, replies and other information.
@@ -52,15 +45,15 @@ class AuthApi(Resource):
 
         users = get_users(field=field, condition=condition,
                           order=direction, when=when, client_type=client_type)
-        response = make_response(json.dumps(empty_result(status='success',
-                                                         data=users)), 200)
+
+        response = make_response(jsonify(empty_result(status='success',
+                                                      data=users)), 200)
 
         response.headers['X-Total-Count'] = len(users)
-        response.headers['Content-Type'] = 'application/json'
 
         return response
 
-    @jwt_required
+    @jwt_required()
     def post(self):
         """
         Add a user manually.
@@ -166,7 +159,7 @@ class AuthApi(Resource):
 
 
 class AuthApiByName(Resource):
-    @jwt_required
+    @jwt_required()
     def get(self, username):
         """
         Return a JSON blob with all users, VLANs and other information.
@@ -180,8 +173,7 @@ class AuthApiByName(Resource):
 
         return response
 
-    @api.expect(user_edit)
-    @jwt_required
+    @jwt_required()
     def put(self, username):
         """
         Update user parameters such as VLAN, if the user is
@@ -238,7 +230,7 @@ class AuthApiByName(Resource):
         return empty_result(status='success',
                             data=get_users(field='username', condition=username))
 
-    @jwt_required
+    @jwt_required()
     def delete(self, username):
         """
         Remove a user.
