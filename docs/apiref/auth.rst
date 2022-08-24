@@ -78,6 +78,7 @@ Clients can be added using the POST method. The following attributes are support
 + nas_port_id, optional. Interface, for example Ethernet1.
 + calling_station_id, optional. Typically a MAC address.
 + called_station_id, optional.  Typically a MAC address.
++ active, optional. Can be set to true or false, sets the user to active if true.
 
 CURL example:
 
