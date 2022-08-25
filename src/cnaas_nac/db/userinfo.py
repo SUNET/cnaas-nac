@@ -28,6 +28,12 @@ class UserInfo(Base):
     def add(cls, username, comment=None, reason=None, auth=False,
             access_start=None, access_stop=None):
 
+        if access_start == "":
+            access_start = None
+
+        if access_stop == "":
+            access_stop = None
+
         with sqla_session() as session:
             res = session.query(UserInfo).filter(
                 UserInfo.username == username).one_or_none()
@@ -66,14 +72,7 @@ class UserInfo(Base):
                 user_info = dict()
                 access_restricted = False
 
-                if not userinfo:
-                    user_info["comment"] = ""
-                    user_info["reason"] = ""
-                    user_info["authdate"] = ""
-                    user_info["access_start"] = ""
-                    user_info["access_stop"] = ""
-                    user_info["access_restricted"] = ""
-                else:
+                if userinfo:
                     time_now = int(round(time.time()))
 
                     if userinfo.access_start:
@@ -106,7 +105,7 @@ class UserInfo(Base):
             res = session.query(UserInfo).filter(
                 UserInfo.username == username).one_or_none()
             if res is None:
-                return "User information not found"
+                return f"User {username} information not found"
             session.delete(res)
 
         return ""

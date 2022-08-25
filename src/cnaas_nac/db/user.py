@@ -58,6 +58,7 @@ class User(Base):
                 user_dict = dict()
                 user_dict["id"] = user["id"]
                 user_dict["username"] = user["username"]
+                user_dict["password"] = ""
                 user_dict["op"] = user["op"]
                 user_dict["attribute"] = user["attribute"]
                 result.append(user_dict)
@@ -66,7 +67,7 @@ class User(Base):
     @classmethod
     def add(cls, username, password):
         if cls.get(username) != []:
-            return "User already exists"
+            return f"User {username} already exists"
         with sqla_session() as session:
             new_user = User()
             new_user.username = username
@@ -86,7 +87,7 @@ class User(Base):
                 .one_or_none()
             )
             if not user:
-                return "Username not found"
+                return f"Username {username} not found"
             user.attribute = "Cleartext-Password"
             user.op = ":="
         return ""
@@ -101,7 +102,7 @@ class User(Base):
                 .one_or_none()
             )
             if not user:
-                return "Username not found"
+                return f"Username {username} not found"
             user.attribute = "Cleartext-Password"
             user.op = ""
         return ""
@@ -128,7 +129,7 @@ class User(Base):
             instance = session.query(User).filter(
                 User.username == username).all()
             if not instance:
-                return "Username not found"
+                return f"Username {username} not found"
             for _ in instance:
                 session.delete(_)
                 session.commit()
@@ -246,6 +247,7 @@ def get_users(field=None, condition="", order="", when=None, client_type=None):
                     continue
 
             res_dict["username"] = user.username
+            res_dict["password"] = ""
 
             if user.op == ":=":
                 res_dict["active"] = True

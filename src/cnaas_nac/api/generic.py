@@ -1,3 +1,5 @@
+import re
+
 from flask import request
 
 
@@ -44,3 +46,32 @@ def empty_result(status='success', data=None):
             'status': status,
             'message': data if data else "Unknown error"
         }
+
+
+def csv_to_json(text):
+    json_data = []
+
+    for line in text.split("\n"):
+        res_line = re.sub(r",\s", ",", line)
+        csv_fields = res_line.split(",")
+
+        if len(csv_fields) != 11:
+            raise ValueError("Invalid number of fields in CSV, should be 11.")
+
+        tmp_dict = {
+            "username": csv_fields[0],
+            "password": csv_fields[1],
+            "active": csv_fields[2],
+            "vlan": csv_fields[3],
+            "nas_identifier": csv_fields[4],
+            "nas_port_id": csv_fields[5],
+            "nas_ip_address": csv_fields[6],
+            "calling_station_id": csv_fields[7],
+            "called_station_id": csv_fields[8],
+            "access_start": csv_fields[9],
+            "access_stop": csv_fields[10],
+        }
+
+        json_data.append(tmp_dict)
+
+    return json_data

@@ -1,6 +1,6 @@
+import datetime
 import enum
 import ipaddress
-import datetime
 
 from cnaas_nac.db.session import sqla_session
 from sqlalchemy import Column, Integer, Unicode, UniqueConstraint
@@ -83,7 +83,7 @@ class Reply(Base):
             instance = session.query(Reply).filter(Reply.username ==
                                                    username).all()
             if not instance:
-                return 'Reply not found'
+                return f"Reply for {username} not found"
             for _ in instance:
                 session.delete(_)
                 session.commit()
@@ -92,8 +92,9 @@ class Reply(Base):
     @classmethod
     def vlan(cls, username, vlan):
         with sqla_session() as session:
-            instance = session.query(Reply).filter(Reply.username == username).filter(Reply.attribute == 'Tunnel-Private-Group-Id').one_or_none()
+            instance = session.query(Reply).filter(Reply.username == username).filter(
+                Reply.attribute == 'Tunnel-Private-Group-Id').one_or_none()
             if not instance:
-                return 'Reply not found'
+                return f"Reply for {username} not found"
             instance.value = vlan
         return ''
