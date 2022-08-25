@@ -78,12 +78,14 @@ Clients can be added using the POST method. The following attributes are support
 + nas_port_id, optional. Interface, for example Ethernet1.
 + calling_station_id, optional. Typically a MAC address.
 + called_station_id, optional.  Typically a MAC address.
++ access_start, optional. Time when the account will be active, format: 2022-8-19 12:00.
++ access_stop, optional. Time when the account will be disabled, format: 2022-8-19 12:00.
 
 CURL example:
 
 ::
 
-   curl -k -H "Authorization: Bearer <Token>" -H "Content-Type: application/json" -d '{"username": "foo", "password": "bar", "vlan": "TEST", "nas_identifier": "nas_1", "nas_port_id": "Ethernet1", "nas_ip_address": "1.2.3.4", "comment": "Test"}' "https://localhost:1443/api/v1.0/auth"
+   curl -k -H "Authorization: Bearer <Token>" -H "Content-Type: application/json" -d '{"username": "foo", "password": "bar", "vlan": "TEST", "nas_identifier": "nas_1", "nas_port_id": "Ethernet1", "nas_ip_address": "1.2.3.4", "comment": "Test", "access_start": "2022-8-19 12:00", "access_stop": "2022-8-19 13:00"}' "https://localhost:1443/api/v1.0/auth"
 
 
 Sort and filter

@@ -8,17 +8,8 @@ from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.reply import Reply
 from cnaas_nac.db.session import sqla_session
 from cnaas_nac.db.userinfo import UserInfo
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    Integer,
-    Unicode,
-    UniqueConstraint,
-    asc,
-    desc,
-    func,
-)
+from sqlalchemy import (Boolean, Column, DateTime, Integer, Unicode,
+                        UniqueConstraint, asc, desc, func)
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -67,6 +58,7 @@ class User(Base):
                 user_dict = dict()
                 user_dict["id"] = user["id"]
                 user_dict["username"] = user["username"]
+                user_dict["password"] = ""
                 user_dict["op"] = user["op"]
                 user_dict["attribute"] = user["attribute"]
                 result.append(user_dict)
@@ -75,7 +67,7 @@ class User(Base):
     @classmethod
     def add(cls, username, password):
         if cls.get(username) != []:
-            return "User already exists"
+            return f"User {username} already exists"
         with sqla_session() as session:
             new_user = User()
             new_user.username = username
@@ -95,7 +87,7 @@ class User(Base):
                 .one_or_none()
             )
             if not user:
-                return "Username not found"
+                return f"Username {username} not found"
             user.attribute = "Cleartext-Password"
             user.op = ":="
         return ""
@@ -110,7 +102,7 @@ class User(Base):
                 .one_or_none()
             )
             if not user:
-                return "Username not found"
+                return f"Username {username} not found"
             user.attribute = "Cleartext-Password"
             user.op = ""
         return ""
@@ -137,7 +129,7 @@ class User(Base):
             instance = session.query(User).filter(
                 User.username == username).all()
             if not instance:
-                return "Username not found"
+                return f"Username {username} not found"
             for _ in instance:
                 session.delete(_)
                 session.commit()
@@ -210,7 +202,8 @@ def get_users(field=None, condition="", order="", when=None, client_type=None):
                 "-") else asc(Reply.value)
         elif "reason" in order:
             db_order = (
-                desc(UserInfo.reason) if order.startswith("-") else asc(UserInfo.reason)
+                desc(UserInfo.reason) if order.startswith(
+                    "-") else asc(UserInfo.reason)
             )
         elif "comment" in order:
             db_order = (
@@ -254,6 +247,7 @@ def get_users(field=None, condition="", order="", when=None, client_type=None):
                     continue
 
             res_dict["username"] = user.username
+            res_dict["password"] = ""
 
             if user.op == ":=":
                 res_dict["active"] = True
@@ -267,6 +261,9 @@ def get_users(field=None, condition="", order="", when=None, client_type=None):
             res_dict["called_station_id"] = nas_port.called_station_id
             res_dict["comment"] = userinfos[user.username]["comment"]
             res_dict["reason"] = userinfos[user.username]["reason"]
+            res_dict["access_start"] = userinfos[user.username]["access_start"]
+            res_dict["access_stop"] = userinfos[user.username]["access_stop"]
+            res_dict["access_restricted"] = userinfos[user.username]["access_restricted"]
 
             if "authdate" not in userinfos[user.username]:
                 authdate = ""

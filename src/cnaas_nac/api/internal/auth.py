@@ -196,15 +196,20 @@ class AuthApi(Resource):
             if user['username'] != username:
                 continue
 
-            logger.info('[{}] User already exists.'.format(user['username']))
-
             nas_ports = NasPort.get(username)
+            userinfo = UserInfo.get([username])
+
+            if "access_restricted" in userinfo[username]:
+                if userinfo[username]["access_restricted"] == True:
+                    logger.info(f"[{username}] Time based access, rejecting")
+                    return reject(username, errstr="User restrcited due to time constraints.")
+                else:
+                    logger.info(
+                        f"[{username}] Time based access, accepting")
 
             if not User.is_enabled(username) or port_locking is False:
                 logger.info('[{}] User is disabled'.format(username))
-                if nas_ports['nas_port_id'] != nas_port_id or \
-                   nas_ports['called_station_id'] != called_station_id:
-
+                if nas_ports['nas_port_id'] != nas_port_id or nas_ports['called_station_id'] != called_station_id:
                     logger.info('[{}] Updating port info'.format(username))
                     NasPort.delete(username)
                     NasPort.add(username, nas_ip_address, nas_identifier,
