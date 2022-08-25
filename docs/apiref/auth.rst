@@ -80,6 +80,7 @@ Clients can be added using the POST method. The following attributes are support
 + called_station_id, optional.  Typically a MAC address.
 + access_start, optional. Time when the account will be active, format: 2022-8-19 12:00.
 + access_stop, optional. Time when the account will be disabled, format: 2022-8-19 12:00.
++ active, optional. Can be set to true or false, sets the user to active if true.
 
 CURL example:
 
@@ -137,7 +138,7 @@ The following fields can be filtered:
 Modify clients
 --------------
 
-We can update and remove clients using the PUT and DELETE methods. The fields vlan, comment, enabled and bounce can be set then using the PUT method.
+We can update and remove clients using the PUT and DELETE methods. The fields vlan, comment, active and bounce can be set then using the PUT method.
 
 For example, to update the VLAN for a client using CURL, we can do like this:
 
@@ -146,11 +147,11 @@ For example, to update the VLAN for a client using CURL, we can do like this:
    curl -k -H "Authorization: Bearer <Token>" -H "Content-Type: application/json" -X PUT -d '{"vlan": "TEST2}' "https://nac.example.com:1443/api/v1.0/auth/de:ad:be:ef:aa:00"
 
 
-To disable a client, wen simply replace the VLAN with enabled:
+To disable a client, wen simply replace the VLAN with active:
 
 ::
 
-   curl -k -H "Authorization: Bearer <Token>" -H "Content-Type: application/json" -X PUT -d '{"enabled": false}' "https://nac.example.com:1443/api/v1.0/auth/de:ad:be:ef:aa:00"
+   curl -k -H "Authorization: Bearer <Token>" -H "Content-Type: application/json" -X PUT -d '{"active": false}' "https://nac.example.com:1443/api/v1.0/auth/de:ad:be:ef:aa:00"
 
 Bounce will trigger a port flap, which basically is to shut down the
 port and make it available again. The bounce command will use the port
