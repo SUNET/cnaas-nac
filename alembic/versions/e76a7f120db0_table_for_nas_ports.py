@@ -5,10 +5,9 @@ Revises: 6c431b45dfe0
 Create Date: 2019-11-21 08:42:10.566995
 
 """
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.schema import CreateSequence, Sequence
-
 
 # revision identifiers, used by Alembic.
 revision = 'e76a7f120db0'
@@ -40,3 +39,4 @@ def upgrade():
 
 def downgrade():
     op.drop_table('nas_port')
+    op.execute("drop sequence nas_port_id_seq")
