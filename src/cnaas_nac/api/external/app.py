@@ -2,9 +2,10 @@ import os
 import sys
 
 from cnaas_nac.api.external.auth import api as auth_api
+from cnaas_nac.api.external.vlans import api as vlans_api
 from cnaas_nac.tools.log import get_logger
 from cnaas_nac.version import __api_version__
-from flask import Flask, jsonify, logging, request
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, decode_token
 from flask_jwt_extended.exceptions import NoAuthorizationError
@@ -80,6 +81,7 @@ api = CnaasApi(app, prefix='/api/{}'.format(__api_version__),
                security='apikey')
 
 api.add_namespace(auth_api)
+api.add_namespace(vlans_api)
 
 
 # Log all requests, include username etc

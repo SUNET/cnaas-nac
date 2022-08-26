@@ -3,7 +3,7 @@ import enum
 import ipaddress
 
 from cnaas_nac.db.session import sqla_session
-from sqlalchemy import Column, Integer, Unicode, UniqueConstraint
+from sqlalchemy import Column, Integer, Unicode, UniqueConstraint, distinct
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -98,3 +98,29 @@ class Reply(Base):
                 return f"Reply for {username} not found"
             instance.value = vlan
         return ''
+
+    @classmethod
+    def get_vlans(cls):
+        vlans = []
+        with sqla_session() as session:
+            instance = session.query(distinct(Reply.value)).filter(
+                Reply.attribute == "Tunnel-Private-Group-Id").all()
+            if not instance:
+                return None
+            for vlan in instance:
+                vlans.append(vlan[0])
+
+        return vlans
+
+    @classmethod
+    def get_users_from_vlan(cls, vlan):
+        users = []
+        with sqla_session() as session:
+            instance = session.query(Reply.username).filter(
+                Reply.value == vlan).all()
+            if not instance:
+                return None
+            for user in instance:
+                users.append(user.username)
+
+        return users

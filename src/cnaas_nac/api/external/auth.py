@@ -59,7 +59,7 @@ class AuthApi(Resource):
                           order=direction, when=when, client_type=client_type)
         user_count = len(users)
 
-        if "Content-Type" in request.headers:
+        if "Content-Type" in request.headers and user_count > 0:
             if request.headers["Content-Type"] in ("application/csv", "text/csv"):
                 content = io.StringIO()
                 data = csv.DictWriter(content, users[0].keys())

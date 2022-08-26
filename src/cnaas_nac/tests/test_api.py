@@ -540,7 +540,7 @@ class ApiTests(unittest.TestCase):
     def test_18_import_csv(self):
         csv = """username1,password1,True,100,nas_id1,nas_port1,1.2.3.4,calling1,called1,2022-08-24 15:30,2022-09-01 11:00
 username2,password2,True,200,nas_id2,nas_port2,2.2.3.4,calling2,called2,2022-08-24 23:30,2022-09-02 22:00
-username3,password3,True,300,nas_id3,nas_port3,3.3.3.4,calling3,called3,2033-08-30 15:30,2033-09-03 23:59"""
+username3,password3,True,100,nas_id3,nas_port3,3.3.3.4,calling3,called3,2033-08-30 15:30,2033-09-03 23:59"""
         headers = self.headers.copy()
         headers["Content-Type"] = "text/csv"
 
@@ -563,6 +563,14 @@ username3,password3,True,300,nas_id3,nas_port3,3.3.3.4,calling3,called3,2033-08-
         res = self.client_external.get(
             "/api/v1.0/auth/username3", headers=headers)
         self.assertEqual(res.status_code, 200)
+
+        res = self.client_external.get(
+            "/api/v1.0/vlans/100", headers=self.headers)
+        self.assertEqual(res.status_code, 200)
+
+        self.assertEqual(len(res.json["data"]), 2)
+        self.assertTrue(res.json["data"][0]["username"] == "username1")
+        self.assertTrue(res.json["data"][1]["username"] == "username3")
 
     def test_99_delete_user(self):
         res = self.client_external.delete(
