@@ -1,6 +1,5 @@
 import csv
 import io
-import json
 import os
 import time
 from datetime import datetime
@@ -90,8 +89,7 @@ class AuthApi(Resource):
         """
         Add a user manually.
         """
-
-        users = list()
+        users = []
         errors = []
 
         if "RADIUS_SLAVE" in os.environ:
@@ -115,12 +113,13 @@ class AuthApi(Resource):
         for json_data in json_request:
             if "username" not in json_data:
                 errors.append("username is a required argument")
-
-            try:
-                username = str(EUI(
-                    json_data["username"], dialect=mac_unix_expanded))
-            except Exception:
-                username = json_data["username"]
+                break
+            else:
+                try:
+                    username = str(EUI(
+                        json_data["username"], dialect=mac_unix_expanded))
+                except Exception as e:
+                    username = json_data["username"]
 
             if User.get(username) != []:
                 errors.append(f"User {username} already exists")
@@ -166,8 +165,8 @@ class AuthApi(Resource):
                     errors.append(
                         f"{username}: Start time must be before stop time.")
 
-            if errors != []:
-                return make_response(jsonify(empty_result(status="error", data=errors)), 400)
+        if errors != []:
+            return make_response(jsonify(empty_result(status="error", data=errors)), 400)
 
         for json_data in json_request:
             try:
@@ -267,12 +266,12 @@ class AuthApi(Resource):
 
 class AuthApiByName(Resource):
     @jwt_required()
-    def get(self, username):
+    def get(self, usernames):
         """
         Return a JSON blob with all users, VLANs and other information.
         """
 
-        users = get_users(field="username", condition=username)
+        users = get_users(field="username", condition=usernames)
         response = make_response(jsonify(empty_result(status="success",
                                                       data=users)), 200)
 
@@ -282,7 +281,7 @@ class AuthApiByName(Resource):
         return response
 
     @jwt_required()
-    def put(self, username):
+    def put(self, usernames):
         """
         Update user parameters such as VLAN, if the user is
         enabled/disabled and so on.
@@ -294,22 +293,22 @@ class AuthApiByName(Resource):
             return empty_result(status="error", data="No JSON input found"), 400
 
         if "password" in json_data:
-            userdata = get_users(field="username", condition=username)
+            userdata = get_users(field="username", condition=usernames)
             if userdata == []:
                 return empty_result(status="error", data="User not found")
-            result = User.password(username, json_data["password"])
+            result = User.password(usernames, json_data["password"])
         if "active" in json_data:
             if json_data["active"] is True:
-                result = User.enable(username)
+                result = User.enable(usernames)
             else:
-                result = User.disable(username)
-            UserInfo.add(username, reason="", auth=True)
+                result = User.disable(usernames)
+            UserInfo.add(usernames, reason="", auth=True)
         if "vlan" in json_data:
-            result = Reply.vlan(username, json_data["vlan"])
+            result = Reply.vlan(usernames, json_data["vlan"])
         if "comment" in json_data:
-            result = UserInfo.add(username, comment=json_data["comment"])
+            result = UserInfo.add(usernames, comment=json_data["comment"])
         if "bounce" in json_data and json_data["bounce"] is True:
-            userdata = get_users(field="username", condition=username)
+            userdata = get_users(field="username", condition=usernames)
             if userdata == []:
                 return empty_result(status="error", data="User not found")
 
@@ -335,32 +334,42 @@ class AuthApiByName(Resource):
         if result != "":
             return empty_result(status="error", data=result), 400
 
-        user = get_users(field="username", condition=username)
+        user = get_users(field="username", condition=usernames)
         response = make_response(jsonify(empty_result(status="success",
                                                       data=user)), 200)
         return response
 
     @jwt_required()
-    def delete(self, username):
+    def delete(self, usernames):
         """
         Remove a user.
         """
-        errors = []
-        result = User.delete(username)
-        if result != "":
-            errors.append(result)
+        if usernames == "__all_really_remove_all":
+            userdict = get_users()
+            usernames = []
+            for user in userdict:
+                usernames.append(user["username"])
 
-        result = Reply.delete(username)
-        if result != "":
-            errors.append(result)
+        if isinstance(usernames, str):
+            usernames = [usernames]
 
-        result = NasPort.delete(username)
-        if result != "":
-            errors.append(result)
+        for username in usernames:
+            errors = []
+            result = User.delete(username)
+            if result != "":
+                errors.append(result)
 
-        result = UserInfo.delete(username)
-        if result != "":
-            errors.append(result)
+            result = Reply.delete(username)
+            if result != "":
+                errors.append(result)
+
+            result = NasPort.delete(username)
+            if result != "":
+                errors.append(result)
+
+            result = UserInfo.delete(username)
+            if result != "":
+                errors.append(result)
 
         if errors != []:
             return empty_result(status="error", data=errors), 400
@@ -369,5 +378,5 @@ class AuthApiByName(Resource):
 
 api.add_resource(AuthApi, "")
 api.add_resource(AuthApi, "/")
-api.add_resource(AuthApiByName, "/<string:username>")
-api.add_resource(AuthApiByName, "/<string:username>/")
+api.add_resource(AuthApiByName, "/<string:usernames>")
+api.add_resource(AuthApiByName, "/<string:usernames>/")

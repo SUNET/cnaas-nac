@@ -150,7 +150,8 @@ class User(Base):
         return ""
 
 
-def get_users(field=None, condition="", order="", when=None, client_type=None, usernames_list=None):
+def get_users(field=None, condition="", order="", when=None, client_type=None,
+              usernames_list=None):
     result = []
 
     db_order = asc(User.username)
@@ -160,36 +161,32 @@ def get_users(field=None, condition="", order="", when=None, client_type=None, u
     mab_regex = re.compile(r"((?:(\d{1,2}|[a-fA-F]{1,2}){2})(?::|-*)){6}")
 
     if when is not None:
-        if when == "hour":
-            db_when = datetime.now() - timedelta(hours=1)
-        elif when == "day":
-            db_when = datetime.now() - timedelta(days=1)
-        elif when == "week":
-            db_when = datetime.now() - timedelta(days=7)
-        elif when == "month":
-            db_when = datetime.now() - timedelta(days=31)
-        elif when == "year":
-            db_when = datetime.now() - timedelta(days=365)
-        elif when == "all":
+        when_dict = {
+            "hour": datetime.now() - timedelta(hours=1),
+            "day": datetime.now() - timedelta(days=1),
+            "week": datetime.now() - timedelta(days=7),
+            "month": datetime.now() - timedelta(days=31),
+            "year": datetime.now() - timedelta(days=365),
+            "all": datetime.now() - timedelta(days=3650)
+        }
+
+        if when not in when_dict:
             db_when = datetime.now() - timedelta(days=3650)
-        else:
-            db_when = datetime.now() - timedelta(days=3650)
+        db_when = when_dict[when]
 
     if field is not None:
-        if field == "username":
-            db_field = func.lower(User.username)
-        elif field == "vlan":
-            db_field = func.lower(Reply.value)
-        elif field == "nasip":
-            db_field = func.lower(NasPort.nas_ip_address)
-        elif field == "nasport":
-            db_field = func.lower(NasPort.nas_port_id)
-        elif field == "reason":
-            db_field = func.lower(UserInfo.reason)
-        elif field == "comment":
-            db_field = func.lower(UserInfo.comment)
-        else:
+        field_dict = {
+            "username": func.lower(User.username),
+            "vlan": func.lower(Reply.value),
+            "nasip": func.lower(NasPort.nas_ip_address),
+            "nasport": func.lower(NasPort.nas_port_id),
+            "reason": func.lower(UserInfo.reason),
+            "comment": func.lower(UserInfo.comment)
+        }
+
+        if field not in field_dict:
             return []
+        db_field = field_dict[field]
 
     if order != "":
         if "username" in order:

@@ -2,6 +2,18 @@ import re
 
 from flask import request
 
+fields = [
+    "username",
+    "nas_identifier",
+    "nas_port_id",
+    "nas_ip_address",
+    "calling_station_id",
+    "called_station_id",
+    "comment",
+    "authdate",
+    "vlan"
+]
+
 
 def limit_results() -> int:
     """Find number of results to limit query to, either by user requested

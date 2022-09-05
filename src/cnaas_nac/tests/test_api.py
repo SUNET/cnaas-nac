@@ -572,32 +572,103 @@ username3,password3,True,100,nas_id3,nas_port3,3.3.3.4,calling3,called3,2033-08-
         self.assertTrue(res.json["data"][0]["username"] == "username1")
         self.assertTrue(res.json["data"][1]["username"] == "username3")
 
-    def test_99_delete_user(self):
+    def test_19_groups(self):
+        users = [
+            {
+                "username": "groups_user_1",
+                "password": "groups_user_1",
+                "nas_identifier": "groups_user_1",
+                "nas_port_id": "groups_user_1",
+                "nas_ip_address": "groups_user_1",
+                "calling_station_id": "groups_user_1",
+                "called_station_id": "groups_user_1",
+                "vlan": "groups_vlan_1"
+            },
+            {
+                "username": "groups_user_2",
+                "password": "groups_user_2",
+                "nas_identifier": "groups_user_2",
+                "nas_port_id": "groups_user_2",
+                "nas_ip_address": "groups_user_2",
+                "calling_station_id": "groups_user_2",
+                "called_station_id": "groups_user_2",
+                "vlan": "groups_vlan_1"
+            },
+            {
+                "username": "groups_user_3",
+                "password": "groups_user_3",
+                "nas_identifier": "groups_user_3",
+                "nas_port_id": "groups_user_3",
+                "nas_ip_address": "groups_user_3",
+                "calling_station_id": "groups_user_3",
+                "called_station_id": "groups_user_3",
+                "vlan": "groups_vlan_3"
+            }
+        ]
+
+        groups = [
+            {
+                "groupname": "groupname_1",
+                "fieldname": "vlan",
+                "condition": "vlan_1"
+            },
+            {
+                "groupname": "all_users",
+                "fieldname": "username",
+                "condition": "groups_"
+            },
+            {
+                "groupname": "one_user",
+                "fieldname": "username",
+                "condition": "groups_user_3"
+            }
+        ]
+
+        res = self.client_external.post(
+            "/api/v1.0/auth", json=users, headers=self.headers)
+
+        self.assertEqual(res.status_code, 200)
+
+        res = self.client_external.post(
+            "/api/v1.0/groups", json=groups, headers=self.headers)
+
+        self.assertEqual(res.status_code, 200)
+
+        res = self.client_external.get(
+            "/api/v1.0/groups/groupname_1", headers=self.headers)
+
+        self.assertEqual(res.json["data"][0]["username"], "groups_user_1")
+        self.assertEqual(res.json["data"][1]["username"], "groups_user_2")
+
+        res = self.client_external.get(
+            "/api/v1.0/groups/all_users", headers=self.headers)
+
+        self.assertEqual(res.json["data"][0]["username"], "groups_user_1")
+        self.assertEqual(res.json["data"][1]["username"], "groups_user_2")
+        self.assertEqual(res.json["data"][2]["username"], "groups_user_3")
+
+        res = self.client_external.get(
+            "/api/v1.0/groups/one_user", headers=self.headers)
+
+        self.assertEqual(res.json["data"][0]["username"], "groups_user_3")
+
+    def test_99_delete_users(self):
         res = self.client_external.delete(
-            "/api/v1.0/auth/unittest", headers=self.headers)
+            "/api/v1.0/auth/__all_really_remove_all", headers=self.headers)
+
         self.assertEqual(res.status_code, 200)
 
         res = self.client_external.delete(
-            "/api/v1.0/auth/unittest_wrong", headers=self.headers)
+            "/api/v1.0/groups/groupname_1", headers=self.headers)
+
         self.assertEqual(res.status_code, 200)
 
         res = self.client_external.delete(
-            "/api/v1.0/auth/unittest_accesstime", headers=self.headers)
+            "/api/v1.0/groups/all_users", headers=self.headers)
+
         self.assertEqual(res.status_code, 200)
 
         res = self.client_external.delete(
-            "/api/v1.0/auth/unittest_export", headers=self.headers)
-        self.assertEqual(res.status_code, 200)
+            "/api/v1.0/groups/one_user", headers=self.headers)
 
-        res = self.client_external.delete(
-            "/api/v1.0/auth/username1", headers=self.headers)
         self.assertEqual(res.status_code, 200)
-
-        res = self.client_external.delete(
-            "/api/v1.0/auth/username2", headers=self.headers)
-        self.assertEqual(res.status_code, 200)
-
-        res = self.client_external.delete(
-            "/api/v1.0/auth/username3", headers=self.headers)
-        self.assertEqual(res.status_code, 200)
-        pass

@@ -25,7 +25,7 @@ class VlansApi(Resource):
         return response
 
 
-class VlansApiByVlan(Resource):
+class VlansApiByName(Resource):
     @jwt_required()
     def get(self, vlan):
         vlan_users = Reply.get_users_from_vlan(vlan)
@@ -39,5 +39,5 @@ class VlansApiByVlan(Resource):
 
 
 api.add_resource(VlansApi, "")
-api.add_resource(VlansApiByVlan, "/<string:vlan>")
-api.add_resource(VlansApiByVlan, "/<string:vlan>/")
+api.add_resource(VlansApiByName, "/<string:vlan>")
+api.add_resource(VlansApiByName, "/<string:vlan>/")
