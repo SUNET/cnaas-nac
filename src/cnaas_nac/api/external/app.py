@@ -2,6 +2,7 @@ import os
 import sys
 
 from cnaas_nac.api.external.auth import api as auth_api
+from cnaas_nac.api.external.export import api as export_api
 from cnaas_nac.api.external.groups import api as groups_api
 from cnaas_nac.api.external.vlans import api as vlans_api
 from cnaas_nac.tools.log import get_logger
@@ -73,6 +74,8 @@ app.config['JWT_ALGORITHM'] = 'ES256'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
 
 jwt = JWTManager(app)
+
+
 cors = CORS(app,
             resources={r"/api/*": {"origins": "*"}},
             expose_headers=["Content-Type", "Authorization", "X-Total-Count"])
@@ -84,6 +87,7 @@ api = Api(app, prefix='/api/{}'.format(__api_version__),
 api.add_namespace(auth_api)
 api.add_namespace(vlans_api)
 api.add_namespace(groups_api)
+api.add_namespace(export_api)
 
 # Log all requests, include username etc
 

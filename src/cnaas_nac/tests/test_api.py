@@ -537,6 +537,14 @@ class ApiTests(unittest.TestCase):
                 key_found = True
             self.assertIsNotNone(key_found)
 
+        res = self.client_external.get("/api/v1.0/export/" + self.token)
+
+        for key in json:
+            key_found = False
+            if json[key] in res.text:
+                key_found = True
+            self.assertIsNotNone(key_found)
+
     def test_18_import_csv(self):
         csv = """username1,password1,True,100,nas_id1,nas_port1,1.2.3.4,calling1,called1,2022-08-24 15:30,2022-09-01 11:00
 username2,password2,True,200,nas_id2,nas_port2,2.2.3.4,calling2,called2,2022-08-24 23:30,2022-09-02 22:00

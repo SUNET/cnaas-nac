@@ -1,3 +1,5 @@
+import csv
+import io
 import re
 
 from flask import request
@@ -87,3 +89,17 @@ def csv_to_json(text):
         json_data.append(tmp_dict)
 
     return json_data
+
+
+def csv_export(users):
+    headers = {}
+    content = io.StringIO()
+    data = csv.DictWriter(content, users[0].keys())
+
+    for k, v in users[0].items():
+        headers[k] = k
+
+    data.writerow(headers)
+    data.writerows(users)
+
+    return content.getvalue()

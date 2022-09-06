@@ -1,11 +1,9 @@
-import csv
-import io
 import os
 import time
 from datetime import datetime
 
 from cnaas_nac.api.external.coa import CoA
-from cnaas_nac.api.generic import csv_to_json, empty_result
+from cnaas_nac.api.generic import csv_export, csv_to_json, empty_result
 from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.reply import Reply
 from cnaas_nac.db.user import User, UserInfo, get_users
@@ -39,8 +37,6 @@ class AuthApi(Resource):
         user_count = 0
         csv_file = False
 
-        headers = dict()
-
         for arg in request.args:
             if "filter" in arg:
                 field = arg[arg.find("[")+1: arg.find("]")]
@@ -60,16 +56,9 @@ class AuthApi(Resource):
 
         if "Content-Type" in request.headers and user_count > 0:
             if request.headers["Content-Type"] in ("application/csv", "text/csv"):
-                content = io.StringIO()
-                data = csv.DictWriter(content, users[0].keys())
+                csv_file = True
 
-                for k, v in users[0].items():
-                    headers[k] = k
-
-                data.writerow(headers)
-                data.writerows(users)
-
-                response = make_response(content.getvalue())
+                response = make_response(csv_export(users))
                 response.headers["Content-type"] = request.headers["Content-Type"]
 
                 if csv_file:
@@ -78,7 +67,7 @@ class AuthApi(Resource):
         if not response:
             response = make_response(jsonify(empty_result(status="success",
                                                           data=users)), 200)
-            response.headers["Content-Type"] = "application/json"
+            response.headers["Content-Type"] = "application/octet-stream"
 
         response.headers["X-Total-Count"] = user_count
 
