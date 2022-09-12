@@ -22,16 +22,18 @@ class GroupsApi(Resource):
         errors = []
         json_request = request.get_json()
 
-        if isinstance(json_request, str):
+        if not isinstance(json_request, list):
             json_request = [json_request]
 
         for json_data in json_request:
-            if "groupname" not in json_data:
+            if "groupname" not in json_data or json_data["groupname"] == "":
                 errors.append("groupname is mandatory")
-            if "fieldname" not in json_data:
+            if "fieldname" not in json_data or json_data["fieldname"] == "":
                 errors.append("fieldname is mandatory")
-            if "condition" not in json_data:
+            if "condition" not in json_data or json_data["condition"] == "":
                 errors.append("condition is mandatory")
+
+            print(json_data)
 
             if errors != []:
                 return make_response(jsonify(empty_result(status="error",
