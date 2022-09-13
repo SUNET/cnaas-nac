@@ -2,7 +2,6 @@ import os
 import sys
 import getopt
 
-from cnaas_nac.db.session import sqla_session
 from cnaas_nac.db.user import User
 from cnaas_nac.db.reply import Reply
 from cnaas_nac.db.userinfo import UserInfo

@@ -200,7 +200,7 @@ class AuthApi(Resource):
             userinfo = UserInfo.get([username])
 
             if "access_restricted" in userinfo[username]:
-                if userinfo[username]["access_restricted"] == True:
+                if userinfo[username]["access_restricted"]:
                     logger.info(f"[{username}] Time based access, rejecting")
                     return reject(username, errstr="User restrcited due to time constraints.")
                 else:

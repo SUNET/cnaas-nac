@@ -9,10 +9,12 @@ def get_logger():
     else:
         logger = logging.getLogger('cnaas-nms')
         if not logger.handlers:
-            formatter = logging.Formatter('[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
-            # stdout logging
+            formatter = logging.Formatter(
+                '[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
+
             handler = logging.StreamHandler()
             handler.setFormatter(formatter)
             logger.addHandler(handler)
-    logger.setLevel(logging.DEBUG) #TODO: get from /etc config ?
+    logger.setLevel(logging.DEBUG)
+
     return logger

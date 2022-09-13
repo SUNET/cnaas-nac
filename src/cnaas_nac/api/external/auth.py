@@ -107,7 +107,7 @@ class AuthApi(Resource):
                 try:
                     username = str(EUI(
                         json_data["username"], dialect=mac_unix_expanded))
-                except Exception as e:
+                except Exception:
                     username = json_data["username"]
 
             if User.get(username) != []:
@@ -119,14 +119,14 @@ class AuthApi(Resource):
             if UserInfo.get([username])[username] != {}:
                 errors.append(f"UserInfo for {username} already exists")
 
-            if NasPort.get(username) != None:
+            if NasPort.get(username):
                 errors.append(f"NasPort for {username} already exists")
 
             if "access_start" in json_data:
                 try:
                     access_start = datetime.strptime(
                         json_data["access_start"], "%Y-%m-%d %H:%M")
-                except ValueError as e:
+                except ValueError:
                     errors.append(f"{username}: Invalid date and time format")
                     access_start = False
             else:
@@ -136,7 +136,7 @@ class AuthApi(Resource):
                 try:
                     access_stop = datetime.strptime(
                         json_data["access_stop"], "%Y-%m-%d %H:%M")
-                except ValueError as e:
+                except ValueError:
                     errors.append(f"{username}: Invalid date and time format.")
                     access_stop = False
             else:

@@ -1,5 +1,3 @@
-import re
-
 from cnaas_nac.api.generic import empty_result, fields
 from cnaas_nac.db.groups import Group
 from cnaas_nac.db.user import get_users

@@ -2,14 +2,13 @@ import enum
 import ipaddress
 import re
 from datetime import datetime, timedelta
-from typing import Optional
 
 from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.reply import Reply
 from cnaas_nac.db.session import sqla_session
 from cnaas_nac.db.userinfo import UserInfo
-from sqlalchemy import (Boolean, Column, DateTime, Integer, Unicode,
-                        UniqueConstraint, asc, desc, func)
+from sqlalchemy import (Column, Integer, Unicode, UniqueConstraint, asc, desc,
+                        func)
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
