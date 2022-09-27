@@ -1,17 +1,16 @@
+import getopt
 import os
 import sys
-import getopt
 
-from cnaas_nac.db.user import User
-from cnaas_nac.db.reply import Reply
-from cnaas_nac.db.userinfo import UserInfo
-from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.accounting import Accounting
+from cnaas_nac.db.nas import NasPort
+from cnaas_nac.db.reply import Reply
+from cnaas_nac.db.user import User
+from cnaas_nac.db.userinfo import UserInfo
 from cnaas_nac.tools.log import get_logger
-
-from cnaas_nac.tools.rad_db import edit_nas, edit_replies, edit_users, \
-    get_connstrs, get_rows, copy_accounting, edit_userinfo
-
+from cnaas_nac.tools.rad_db import (copy_accounting, edit_nas, edit_replies,
+                                    edit_userinfo, edit_users, get_connstrs,
+                                    get_rows)
 
 logger = get_logger()
 

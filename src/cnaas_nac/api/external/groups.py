@@ -1,10 +1,9 @@
-from cnaas_nac.api.generic import empty_result, fields
+from cnaas_nac.api.generic import empty_result, fields, jwt_required
 from cnaas_nac.db.groups import Group
 from cnaas_nac.db.user import get_users
 from cnaas_nac.tools.log import get_logger
 from cnaas_nac.version import __api_version__
 from flask import jsonify, make_response, request
-from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, Resource
 
 logger = get_logger()
@@ -63,6 +62,7 @@ class GroupsApi(Resource):
     @jwt_required()
     def get(self):
         data = Group.get()
+
         response = make_response(jsonify(empty_result(status="success",
                                                       data=data)), 200)
         response.headers["X-Total-Count"] = len(data)
@@ -93,7 +93,7 @@ class GroupsApiByName(Resource):
         return make_response(jsonify(empty_result(status="success", data=users)), 200)
 
     @jwt_required()
-    def put(self):
+    def put(self, groupname):
         pass
 
     @jwt_required()

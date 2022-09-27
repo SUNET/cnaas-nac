@@ -1,10 +1,9 @@
-from cnaas_nac.api.generic import empty_result
+from cnaas_nac.api.generic import empty_result, jwt_required
 from cnaas_nac.db.reply import Reply
 from cnaas_nac.db.user import get_users
 from cnaas_nac.tools.log import get_logger
 from cnaas_nac.version import __api_version__
 from flask import jsonify, make_response
-from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, Resource
 
 logger = get_logger()

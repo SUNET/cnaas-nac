@@ -3,20 +3,18 @@ import time
 from datetime import datetime
 
 from cnaas_nac.api.external.coa import CoA
-from cnaas_nac.api.generic import csv_export, csv_to_json, empty_result
+from cnaas_nac.api.generic import (csv_export, csv_to_json, empty_result,
+                                   jwt_required)
 from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.reply import Reply
 from cnaas_nac.db.user import User, UserInfo, get_users
 from cnaas_nac.tools.log import get_logger
 from cnaas_nac.version import __api_version__
 from flask import jsonify, make_response, request
-from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, Resource
 from netaddr import EUI, mac_unix_expanded
 
 logger = get_logger()
-
-
 api = Namespace("auth", description="Authentication API",
                 prefix="/api/{}".format(__api_version__))
 

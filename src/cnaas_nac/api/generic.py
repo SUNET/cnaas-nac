@@ -1,8 +1,19 @@
 import csv
 import io
+import os
 import re
 
 from flask import request
+
+if not os.environ.get("DISABLE_JWT"):
+    from flask_jwt_extended import jwt_required
+else:
+    def jwt_required(bool=False, fresh=False, refresh=False, locations=None,
+                     verify_type=True):
+        def wrapper(func):
+            return func
+
+        return wrapper
 
 fields = [
     "username",
