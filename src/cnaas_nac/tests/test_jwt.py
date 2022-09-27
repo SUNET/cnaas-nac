@@ -1,6 +1,9 @@
 import unittest
 
 import cnaas_nac.api.external.app
+from cnaas_nac.tools.log import get_logger
+
+logger = get_logger()
 
 
 class JwtTests(unittest.TestCase):
@@ -35,7 +38,7 @@ class JwtTests(unittest.TestCase):
         ]
 
         for endpoint, method in endpoints:
-            print(f"Testing enpoint {endpoint} and method {method}")
+            logger.info(f"Testing enpoint {endpoint} and method {method}")
 
             if method == "GET":
                 res = self.client_external.get(
