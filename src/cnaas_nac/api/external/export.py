@@ -1,3 +1,5 @@
+import os
+
 from cnaas_nac.api.generic import csv_export, empty_result
 from cnaas_nac.db.user import get_users
 from cnaas_nac.tools.log import get_logger
@@ -17,12 +19,23 @@ api = Namespace(
 
 
 class ExportApi(Resource):
-    def get(self, token):
+    def __validate_token(self, token):
+        if os.environ.get("DISABLE_JWT"):
+            return ""
+
         try:
             decode_token(token)
         except Exception as e:
+            return str(e)
+
+        return ""
+
+    def get(self, token):
+        err = self.__validate_token(token)
+
+        if err != "":
             return make_response(
-                jsonify(empty_result(status="error", data=str(e))), 400
+                jsonify(empty_result(status="error", data=str(err))), 400
             )
 
         users = get_users()
@@ -30,9 +43,7 @@ class ExportApi(Resource):
 
         response = make_response(csv_export(users))
         response.headers["Content-type"] = "application/csv"
-        response.headers[
-            "Content-Disposition"
-        ] = "attachment; filename=export.csv"
+        response.headers["Content-Disposition"] = "attachment; filename=export.csv"
         response.headers["X-Total-Count"] = user_count
 
         return response
