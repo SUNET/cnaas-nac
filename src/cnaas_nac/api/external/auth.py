@@ -120,7 +120,7 @@ class AuthApi(Resource):
             if NasPort.get(username):
                 errors.append(f"NasPort for {username} already exists")
 
-            if "access_start" in json_data:
+            if "access_start" in json_data and json_data["access_start"] is not None and json_data["access_start"] != "":
                 try:
                     access_start = datetime.strptime(
                         json_data["access_start"], "%Y-%m-%d %H:%M")
@@ -130,7 +130,7 @@ class AuthApi(Resource):
             else:
                 access_start = None
 
-            if "access_stop" in json_data:
+            if "access_stop" in json_data and json_data["access_stop"] is not None and json_data["access_stop"] != "":
                 try:
                     access_stop = datetime.strptime(
                         json_data["access_stop"], "%Y-%m-%d %H:%M")
@@ -153,7 +153,8 @@ class AuthApi(Resource):
                         f"{username}: Start time must be before stop time.")
 
         if errors != []:
-            return make_response(jsonify(empty_result(status="error", data=errors)), 400)
+            return make_response(jsonify(empty_result(status="error",
+                                                      data=errors)), 400)
 
         for json_data in json_request:
             try:
