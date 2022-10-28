@@ -34,6 +34,7 @@ class AuthApi(Resource):
         response = None
         user_count = 0
         csv_file = False
+        groupname = None
 
         for arg in request.args:
             if "filter" in arg:
@@ -47,9 +48,13 @@ class AuthApi(Resource):
                 client_type = request.args[arg]
             if "file" in arg:
                 csv_file = True
+            if "group" in arg:
+                groupname = request.args[arg]
 
         users = get_users(field=field, condition=condition,
-                          order=direction, when=when, client_type=client_type)
+                          order=direction, when=when,
+                          client_type=client_type,
+                          group=groupname)
         user_count = len(users)
 
         if "Content-Type" in request.headers and user_count > 0:

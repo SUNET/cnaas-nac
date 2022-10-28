@@ -3,6 +3,7 @@ import ipaddress
 import re
 from datetime import datetime, timedelta
 
+from cnaas_nac.db.groups import Group
 from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.reply import Reply
 from cnaas_nac.db.session import sqla_session
@@ -150,14 +151,18 @@ class User(Base):
 
 
 def get_users(field=None, condition="", order="", when=None, client_type=None,
-              usernames_list=None):
+              usernames_list=None, group=None):
     result = []
+
+    if group is not None and group != "all":
+        groupdict = Group.get(group)[0]
+        field = groupdict["fieldname"]
+        condition = groupdict["condition"]
 
     db_order = asc(User.username)
     db_field = User.username
     db_condition = "%{}%".format(condition.lower())
     db_when = datetime.now() - timedelta(days=3650)
-    mab_regex = re.compile(r"((?:(\d{1,2}|[a-fA-F]{1,2}){2})(?::|-*)){6}")
 
     if when is not None:
         when_dict = {
@@ -238,14 +243,6 @@ def get_users(field=None, condition="", order="", when=None, client_type=None,
                     continue
 
             res_dict = dict()
-
-            if client_type == "mab":
-                if not re.findall(mab_regex, user.username.lower()):
-                    continue
-            elif client_type == "eap":
-                if re.findall(mab_regex, user.username.lower()):
-                    continue
-
             res_dict["username"] = user.username
             res_dict["password"] = ""
 

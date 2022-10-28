@@ -3,11 +3,16 @@ import io
 import os
 import re
 
+from cnaas_nac.tools.log import get_logger
 from flask import request
+
+logger = get_logger()
 
 if not os.environ.get("DISABLE_JWT"):
     from flask_jwt_extended import jwt_required
 else:
+    logger.info("JWT authentication disabled.")
+
     def jwt_required(bool=False, fresh=False, refresh=False, locations=None,
                      verify_type=True):
         def wrapper(func):

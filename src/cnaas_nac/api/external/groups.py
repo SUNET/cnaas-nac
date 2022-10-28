@@ -30,8 +30,6 @@ class GroupsApi(Resource):
             if "condition" not in json_data or json_data["condition"] == "":
                 errors.append("condition is mandatory")
 
-            print(json_data)
-
             if errors != []:
                 return make_response(jsonify(empty_result(status="error",
                                                           data=errors)), 400)
@@ -62,6 +60,24 @@ class GroupsApi(Resource):
     @jwt_required()
     def get(self):
         data = Group.get()
+        tmp_data = list()
+
+        if "type" in request.args:
+            if request.args["type"] == "ui":
+                for group in data:
+                    tmp_data.append({
+                        "key": group["groupname"],
+                        "value": group["groupname"],
+                        "text": group["groupname"]
+                    })
+
+                tmp_data.append({
+                    "key": "all",
+                    "value": "all",
+                    "text": "All"
+                })
+
+            data = tmp_data
 
         response = make_response(jsonify(empty_result(status="success",
                                                       data=data)), 200)
