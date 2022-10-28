@@ -66,11 +66,11 @@ class AuthApi(Resource):
 
                 if csv_file:
                     response.headers["Content-Disposition"] = "attachment; filename=export.csv"
+                    response.headers["Content-Type"] = "application/octet-stream"
 
         if not response:
             response = make_response(jsonify(empty_result(status="success",
                                                           data=users)), 200)
-            response.headers["Content-Type"] = "application/octet-stream"
 
         response.headers["X-Total-Count"] = user_count
 
