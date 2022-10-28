@@ -660,6 +660,26 @@ username3,password3,True,100,nas_id3,nas_port3,3.3.3.4,calling3,called3,2033-08-
 
         self.assertEqual(res.json["data"][0]["username"], "groups_user_3")
 
+        res = self.client_external.get(
+            "/api/v1.0/auth?group=all", headers=self.headers)
+
+        self.assertEqual(res.json["data"][0]["username"], "groups_user_1")
+        self.assertEqual(res.json["data"][1]["username"], "groups_user_2")
+        self.assertEqual(res.json["data"][2]["username"], "groups_user_3")
+
+        res = self.client_external.get(
+            "/api/v1.0/auth?group=all_users", headers=self.headers)
+
+        self.assertEqual(res.json["data"][0]["username"], "groups_user_1")
+        self.assertEqual(res.json["data"][1]["username"], "groups_user_2")
+        self.assertEqual(res.json["data"][2]["username"], "groups_user_3")
+
+        res = self.client_external.get(
+            "/api/v1.0/auth?group=groupname_1", headers=self.headers)
+
+        self.assertEqual(res.json["data"][0]["username"], "groups_user_1")
+        self.assertEqual(res.json["data"][1]["username"], "groups_user_2")
+
     def test_99_delete_users(self):
         res = self.client_external.delete(
             "/api/v1.0/auth/__all_really_remove_all", headers=self.headers)
