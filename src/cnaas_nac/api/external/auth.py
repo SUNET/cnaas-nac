@@ -158,6 +158,8 @@ class AuthApi(Resource):
                         f"{username}: Start time must be before stop time.")
 
         if errors != []:
+            logger.debug("Errors:\n" + "    \n".join(errors))
+
             return make_response(jsonify(empty_result(status="error",
                                                       data=errors)), 400)
 

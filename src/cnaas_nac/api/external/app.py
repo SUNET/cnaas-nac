@@ -4,6 +4,7 @@ import sys
 from cnaas_nac.api.external.auth import api as auth_api
 from cnaas_nac.api.external.export import api as export_api
 from cnaas_nac.api.external.groups import api as groups_api
+from cnaas_nac.api.external.oui import api as oui_api
 from cnaas_nac.api.external.vlans import api as vlans_api
 from cnaas_nac.tools.log import get_logger
 from cnaas_nac.version import __api_version__
@@ -88,6 +89,7 @@ api.add_namespace(auth_api)
 api.add_namespace(vlans_api)
 api.add_namespace(groups_api)
 api.add_namespace(export_api)
+api.add_namespace(oui_api)
 
 # Log all requests, include username etc
 
