@@ -21,6 +21,7 @@ class User(Base):
         None,
         UniqueConstraint("id"),
     )
+
     id = Column(Integer, autoincrement=True, primary_key=True)
     username = Column(Unicode(64), nullable=False)
     attribute = Column(Unicode(64), nullable=False)
@@ -261,6 +262,8 @@ def get_users(field=None, condition="", order="", when=None, client_type=None,
             res_dict["access_start"] = userinfos[user.username]["access_start"]
             res_dict["access_stop"] = userinfos[user.username]["access_stop"]
             res_dict["access_restricted"] = userinfos[user.username]["access_restricted"]
+            res_dict["accepts"] = userinfos[user.username]["accepts"]
+            res_dict["rejects"] = userinfos[user.username]["rejects"]
 
             if "authdate" not in userinfos[user.username]:
                 authdate = ""
