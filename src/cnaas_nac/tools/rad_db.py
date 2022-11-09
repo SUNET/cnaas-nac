@@ -237,6 +237,8 @@ def edit_userinfo(userinfo_diff, connstr, table=UserInfo, remove=False):
             username = diff_user["username"]
             comment = diff_user["comment"]
             reason = diff_user["reason"]
+            accepts = diff_user["accepts"]
+            rejects = diff_user["rejects"]
 
             if "authdate" in diff_user:
                 authdate = diff_user["authdate"]
@@ -264,6 +266,8 @@ def edit_userinfo(userinfo_diff, connstr, table=UserInfo, remove=False):
                 new_userinfo.authdate = authdate
                 new_userinfo.access_start = access_start
                 new_userinfo.access_stop = access_stop
+                new_userinfo.accepts = accepts
+                new_userinfo.rejects = rejects
                 session.add(new_userinfo)
             elif userinfo is not None:
                 if comment != userinfo.comment or reason != userinfo.reason:
@@ -273,5 +277,6 @@ def edit_userinfo(userinfo_diff, connstr, table=UserInfo, remove=False):
                     userinfo.authdate = authdate
                     userinfo.access_start = access_start
                     userinfo.access_stop = access_stop
-
+                    userinfo.accepts = accepts
+                    userinfo.rejects = rejects
             session.commit()
