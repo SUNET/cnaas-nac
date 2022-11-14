@@ -124,6 +124,8 @@ class UserInfo(Base):
                 UserInfo.accepts.desc()).limit(10).all()
 
             for userinfo in userinfos:
+                if "@" in userinfo.username:
+                    continue
                 stats["accepts"].append({
                     "username": userinfo.username,
                     "accepts": userinfo.accepts
@@ -134,6 +136,8 @@ class UserInfo(Base):
                 UserInfo.rejects.desc()).limit(10).all()
 
             for userinfo in userinfos:
+                if "@" in userinfo.username:
+                    continue
                 stats["rejects"].append({
                     "username": userinfo.username,
                     "rejects": userinfo.rejects
@@ -144,6 +148,8 @@ class UserInfo(Base):
                 UserInfo.authdate.desc()).limit(10).all()
 
             for userinfo in userinfos:
+                if "@" in userinfo.username:
+                    continue
                 stats["last_seen"].append({
                     "username": userinfo.username,
                     "timestamp": userinfo.authdate,
