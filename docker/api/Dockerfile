@@ -20,7 +20,6 @@ COPY config/nginx_internal.conf /etc/nginx/sites-available/
 COPY config/nginx_external.conf /etc/nginx/sites-available/
 COPY cert/*.pem /opt/cnaas/certs/
 COPY exec-pre-app.sh /opt/cnaas/
-COPY config/cleanup /etc/cron.daily/
 COPY config/replicate /etc/cron.hourly/
 
 RUN touch /var/log/cron.log
