@@ -62,6 +62,8 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(res.json["data"][0]["nas_ip_address"], "unittest")
         self.assertEqual(res.json["data"][0]["called_station_id"], "unittest")
         self.assertEqual(res.json["data"][0]["calling_station_id"], "unittest")
+        self.assertEqual(res.json["data"][0]["accepts"], 0)
+        self.assertEqual(res.json["data"][0]["rejects"], 0)
 
     def test_03_authenticate_user(self):
         json = {
@@ -86,6 +88,8 @@ class ApiTests(unittest.TestCase):
             "/api/v1.0/auth/unittest", headers=self.headers)
 
         self.assertEqual(res.json["data"][0]["reason"], "User accepted")
+        self.assertEqual(res.json["data"][0]["accepts"], 1)
+        self.assertEqual(res.json["data"][0]["rejects"], 0)
 
     def test_04_set_vlan(self):
         json = {

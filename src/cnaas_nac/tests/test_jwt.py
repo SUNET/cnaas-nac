@@ -34,7 +34,10 @@ class JwtTests(unittest.TestCase):
             ["/api/v1.0/groups", "POST"],
             ["/api/v1.0/groups/testgroup", "GET"],
             ["/api/v1.0/groups/testgroup", "DELETE"],
-            ["/api/v1.0/groups/testgroup", "PUT"]
+            ["/api/v1.0/groups/testgroup", "PUT"],
+            ["/api/v1.0/oui", "GET"],
+            ["/api/v1.0/oui/aa:bb:cc", "GET"],
+            ["/api/v1.0/state", "GET"],
         ]
 
         for endpoint, method in endpoints:
