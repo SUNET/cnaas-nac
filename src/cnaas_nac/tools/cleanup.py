@@ -30,14 +30,10 @@ def db_cleanup():
 
         userinfo = UserInfo.get([username])
         authdate = userinfo[username]["authdate"]
-        access_restricted = userinfo[username]["access_restricted"]
 
         if authdate is None or authdate == "":
             logger.info("No timestamp for user {}, skipping".format(username))
             continue
-
-        if access_restricted:
-            User.disable(user["username"])
 
         authdate_epoch = int(authdate.timestamp())
         current_epoch = int(time.time())
