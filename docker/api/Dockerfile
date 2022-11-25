@@ -23,7 +23,6 @@ COPY exec-pre-app.sh /opt/cnaas/
 COPY config/replicate /etc/cron.hourly/
 
 RUN touch /var/log/cron.log
-RUN chmod +x /etc/cron.daily/cleanup
 RUN chmod +x /etc/cron.hourly/replicate
 
 # Give nginx some special treatment
