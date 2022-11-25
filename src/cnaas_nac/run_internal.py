@@ -1,7 +1,7 @@
 import os
 
 from cnaas_nac.api.internal import app
-from cnaas_nac.tools.cleanup import db_cleanup
+from cnaas_nac.tools.cleanup import accounting_cleanup, users_cleanup
 from cnaas_nac.tools.scheduler import Scheduler
 
 os.environ['PYTHONPATH'] = os.getcwd()
@@ -9,7 +9,10 @@ os.environ['PYTHONPATH'] = os.getcwd()
 
 def run_scheduler():
     scheduler = Scheduler()
-    scheduler.add(db_cleanup, interval=900, maxruns=0)
+    scheduler.add(users_cleanup, job_id="user cleanup",
+                  interval=900, maxruns=0)
+    scheduler.add(accounting_cleanup, job_id="accounting cleanup",
+                  interval=3600, maxruns=0)
     scheduler.start()
 
 

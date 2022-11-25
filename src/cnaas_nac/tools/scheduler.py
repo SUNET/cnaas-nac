@@ -5,9 +5,8 @@ import flock
 from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
-from pytz import utc
-
 from cnaas_nac.tools.log import get_logger
+from pytz import utc
 
 logger = get_logger()
 
@@ -86,6 +85,8 @@ class Scheduler(object):
 
     def add(self, func, job_id="", comment="", timeout=120,
             interval=60, maxruns=1, starttime=None, **kwargs):
+        logger.debug(f"Scheduling recurrent job {job_id}")
+
         if job_id == "":
             self.job_id += 1
             kwargs["job_id"] = str(self.job_id)
@@ -107,8 +108,6 @@ class Scheduler(object):
                                  seconds=interval,
                                  next_run_time=starttime,
                                  kwargs=kwargs)
-
-        logger.debug(f"Scheduled recurrent job {job_id}")
 
         return self.job_id
 
