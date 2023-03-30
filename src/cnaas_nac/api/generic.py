@@ -85,8 +85,13 @@ def csv_to_json(text):
         res_line = re.sub(r",\s", ",", line)
         csv_fields = res_line.split(",")
 
-        if len(csv_fields) != 11:
-            raise ValueError("Invalid number of fields in CSV, should be 11.")
+        csvlen = len(csv_fields)
+
+        if csv_fields == [] or csv_fields == ['']:
+            continue
+
+        if csvlen != 13:
+            raise ValueError(f"Invalid number of fields in CSV, should be 13 was {csvlen}.")
 
         tmp_dict = {
             "username": csv_fields[0],
@@ -98,9 +103,19 @@ def csv_to_json(text):
             "nas_ip_address": csv_fields[6],
             "calling_station_id": csv_fields[7],
             "called_station_id": csv_fields[8],
-            "access_start": csv_fields[9],
-            "access_stop": csv_fields[10],
+            "comment": csv_fields[9],
+            "reason": csv_fields[10],
+            "access_start": csv_fields[11],
+            "access_stop": csv_fields[12],
         }
+
+        for key in tmp_dict:
+            if tmp_dict[key] == "None":
+                tmp_dict[key] = None
+            if tmp_dict[key] == "True" or tmp_dict[key] == "true":
+                tmp_dict[key] = True
+            if tmp_dict[key] == "False" or tmp_dict[key] == "false":
+                tmp_dict[key] = False
 
         json_data.append(tmp_dict)
 

@@ -93,6 +93,7 @@ class AuthApi(Resource):
             try:
                 json_request = csv_to_json(request.data.decode())
             except ValueError as e:
+                logger.info("Exception: " + str(e))
                 return empty_result(status="error",
                                     data=str(e)), 400
         else:
@@ -130,7 +131,7 @@ class AuthApi(Resource):
                     access_start = datetime.strptime(
                         json_data["access_start"], "%Y-%m-%d %H:%M")
                 except ValueError:
-                    errors.append(f"{username}: Invalid date and time format")
+                    errors.append(f"{username}: Invalid date and time format: " + json_data["access_start"])
                     access_start = False
             else:
                 access_start = None
@@ -140,7 +141,7 @@ class AuthApi(Resource):
                     access_stop = datetime.strptime(
                         json_data["access_stop"], "%Y-%m-%d %H:%M")
                 except ValueError:
-                    errors.append(f"{username}: Invalid date and time format.")
+                    errors.append(f"{username}: Invalid date and time format: " + json_data["access_stop"])
                     access_stop = False
             else:
                 access_stop = None
