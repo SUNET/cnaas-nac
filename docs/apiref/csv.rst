@@ -43,3 +43,9 @@ The fields are:
 An example CSV file can look like this::
   
   username,password,true,vlan,nas,ethernet1,1.2.3.4,aa:bb:cc:dd:ee:ff,ff:ee:dd:cc:bb:aa,comment,reason,2023-03-14 23:00,2023-03-20 01:00
+  
+A minimalistik example::
+
+  username1,password1,true,vlan,,,,,,comment,,,
+  username2,password2,true,vlan,,,,,,comment,,,
+  username3,password3,true,vlan,,,,,,comment,,,
