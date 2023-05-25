@@ -7,7 +7,7 @@ from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.reply import Reply
 from cnaas_nac.db.session import sqla_session
 from cnaas_nac.db.userinfo import UserInfo
-from mac_vendor_lookup import MacLookup
+from cnaas_nac.tools.ouis import ouis
 from sqlalchemy import (Column, Integer, Unicode, UniqueConstraint, asc, desc,
                         func)
 from sqlalchemy.ext.declarative import declarative_base
@@ -265,9 +265,11 @@ def get_users(field=None, condition="", order="", when=None, client_type=None,
             res_dict["accepts"] = userinfos[user.username]["accepts"]
             res_dict["rejects"] = userinfos[user.username]["rejects"]
 
+            user_oui = user.username[:8]
+
             try:
-                res_dict["vendor"] = MacLookup().lookup(user.username)
-            except Exception:
+                res_dict["vendor"] = ouis[user_oui]
+            except KeyError:
                 res_dict["vendor"] = ""
 
             if "authdate" not in userinfos[user.username]:
