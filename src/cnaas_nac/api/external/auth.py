@@ -22,7 +22,6 @@ api = Namespace("auth", description="Authentication API",
 logger.debug("Loading auth.py")
 
 
-@api.route("/<string:username>")
 class AuthApi(Resource):
     @jwt_required()
     def get(self):
@@ -124,7 +123,7 @@ class AuthApi(Resource):
             if Reply.get(username) != []:
                 errors.append(f"Reply for {username} already exists")
 
-            if UserInfo.get([username])[username] != {}:
+            if UserInfo.get([username]) != {}:
                 errors.append(f"UserInfo for {username} already exists")
 
             if NasPort.get(username):
