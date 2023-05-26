@@ -29,7 +29,7 @@ apt-get update && \
       postgresql-server-dev-all \
     && apt-get clean
 
-pip3 install uwsgi
+pip3 install --break-system-packages uwsgi
 
 # Start venv
 python3 -m venv /opt/cnaas/venv
