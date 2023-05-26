@@ -152,7 +152,7 @@ class User(Base):
 
 
 def get_users(field=None, condition="", order="", when=None, client_type=None,
-              usernames_list=None, group=None):
+              usernames_list=[], group=None):
     result = []
 
     if group is not None and group != "all":
@@ -229,18 +229,10 @@ def get_users(field=None, condition="", order="", when=None, client_type=None,
             .all()
         )
 
-        usernames = []
+        userinfos = UserInfo.get(usernames=usernames_list)
         for user, reply, nas_port, userinfo in res:
-            if usernames_list:
+            if usernames_list != []:
                 if user.username not in usernames_list:
-                    continue
-
-            usernames.append(user.username)
-
-        userinfos = UserInfo.get(usernames=usernames)
-        for user, reply, nas_port, userinfo in res:
-            if usernames != []:
-                if user.username not in usernames:
                     continue
 
             res_dict = dict()

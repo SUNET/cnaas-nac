@@ -19,6 +19,9 @@ api = Namespace("auth", description="Authentication API",
                 prefix="/api/{}".format(__api_version__))
 
 
+logger.debug("Loading auth.py")
+
+
 class AuthApi(Resource):
     @jwt_required()
     def get(self):
@@ -120,7 +123,7 @@ class AuthApi(Resource):
             if Reply.get(username) != []:
                 errors.append(f"Reply for {username} already exists")
 
-            if UserInfo.get([username])[username] != {}:
+            if UserInfo.get([username]) != {}:
                 errors.append(f"UserInfo for {username} already exists")
 
             if NasPort.get(username):
@@ -131,7 +134,8 @@ class AuthApi(Resource):
                     access_start = datetime.strptime(
                         json_data["access_start"], "%Y-%m-%d %H:%M")
                 except ValueError:
-                    errors.append(f"{username}: Invalid date and time format: " + json_data["access_start"])
+                    errors.append(
+                        f"{username}: Invalid date and time format: " + json_data["access_start"])
                     access_start = False
             else:
                 access_start = None
@@ -141,7 +145,8 @@ class AuthApi(Resource):
                     access_stop = datetime.strptime(
                         json_data["access_stop"], "%Y-%m-%d %H:%M")
                 except ValueError:
-                    errors.append(f"{username}: Invalid date and time format: " + json_data["access_stop"])
+                    errors.append(
+                        f"{username}: Invalid date and time format: " + json_data["access_stop"])
                     access_stop = False
             else:
                 access_stop = None
