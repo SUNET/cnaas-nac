@@ -41,7 +41,7 @@ source bin/activate
 # Fetch the code and install dependencies
 git clone https://github.com/SUNET/cnaas-nac.git
 cd cnaas-nac/
-/opt/cnaas/venv/bin/pip3 install -r requirements.txt
+/opt/cnaas/venv/bin/pip3 install -r requirements.txt --break-system-packages
 
 # Clean up packages
 apt-get clean
