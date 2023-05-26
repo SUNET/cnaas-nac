@@ -12,7 +12,8 @@ from cnaas_nac.version import __api_version__
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, decode_token
-from flask_jwt_extended.exceptions import NoAuthorizationError
+from flask_jwt_extended.exceptions import (InvalidHeaderError,
+                                           NoAuthorizationError)
 from flask_restx import Api
 from jwt.exceptions import (DecodeError, InvalidSignatureError,
                             InvalidTokenError)
@@ -38,6 +39,8 @@ class CnaasApi(Api):
             data = {'status': 'error', 'data': 'Invalid authentication header'}
         elif isinstance(e, InvalidSignatureError):
             data = {'status': 'error', 'data': 'Invalid token signature'}
+        elif isinstance(e, InvalidHeaderError):
+            data = {'status': 'error', 'data': 'Invalid authentication header'}
         elif isinstance(e, IndexError):
             # We might catch IndexErrors which are not cuased by JWT,
             # but this is better than nothing.
