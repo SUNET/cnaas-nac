@@ -12,16 +12,16 @@ jobs:
       - uses: actions/checkout@v3
         
       - name: Clone repo
-      - run: git clone https://github.com/sunet/cnaas-nac.git
+        run: git clone https://github.com/sunet/cnaas-nac.git
 
       - name: Install dependencies
-      - run: sudo apt install -y python3-pip docker-compose
+        run: sudo apt install -y python3-pip docker-compose
         
       - name: Start PostgreSQL
-      - run: (cd cnaas-nac/docker; docker-compose up -d nac_postgres)
+        run: (cd cnaas-nac/docker; docker-compose up -d nac_postgres)
 
       - name: Install requirements
-      - run: (cd cnaas-nac; pip3 install -r requirements.txt)
+        run: (cd cnaas-nac; pip3 install -r requirements.txt)
 
       - name: Run tests
-      - run: (cd cnaas-nac/src; nose2)
+        run: (cd cnaas-nac/src; nose2)
