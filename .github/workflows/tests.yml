@@ -23,5 +23,8 @@ jobs:
       - name: Install requirements
         run: (cd cnaas-nac; pip3 install -r requirements.txt)
 
+      - name: Update database tables
+        run: (cd cnaas-nac; alembic upgrade)
+
       - name: Run tests
         run: (cd cnaas-nac/src; nose2)
