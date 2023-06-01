@@ -29,7 +29,7 @@ apt-get update && \
       postgresql-server-dev-all \
     && apt-get clean
 
-pip3 install --break-system-packages uwsgi
+pip3 install uwsgi
 
 # Start venv
 python3 -m venv /opt/cnaas/venv
@@ -41,7 +41,7 @@ source bin/activate
 # Fetch the code and install dependencies
 git clone https://github.com/SUNET/cnaas-nac.git
 cd cnaas-nac/
-/opt/cnaas/venv/bin/pip3 install -r requirements.txt --break-system-packages
+/opt/cnaas/venv/bin/pip3 install -r requirements.txt
 
 # Clean up packages
 apt-get clean
