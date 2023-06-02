@@ -272,7 +272,7 @@ class AuthApi(Resource):
             logger.info('[{}] Error: {}'.format(username, errors))
             return reject(username, errors)
 
-        logger.info('[{}] User did not match any rules, rejeecting'.format(
+        logger.info('[{}] User did not match any rules, rejecting'.format(
             username))
         return reject(username, 'User is disabled')
 
