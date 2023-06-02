@@ -24,11 +24,19 @@ def diff_rows(list_a: list, list_b: list) -> list:
             del x['id']
         if 'authdate' in x:
             del x['authdate']
+        if 'accepts' in x:
+            del x['accepts']
+        if 'rejects' in x:
+            del x['rejects']
     for x in list_b:
         if 'id' in x:
             del x['id']
         if 'authdate' in x:
             del x['authdate']
+        if 'accepts' in x:
+            del x['accepts']
+        if 'rejects' in x:
+            del x['rejects']
 
     for item in list_a:
         if item not in list_b:
