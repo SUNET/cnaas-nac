@@ -65,11 +65,27 @@ def accept(username):
 
 def reject(username, errstr=''):
     """
-    Reject the user with a 400.
+    Reject the user with a 401.
+
+    From FreeRADIUS documentation:
+
+    #  Authorize/Authenticate
+    #
+    #  Code   Meaning       Process body  Module code
+    #  404    not found     no            notfound
+    #  410    gone          no            notfound
+    #  403    forbidden     no            userlock
+    #  401    unauthorized  yes           reject
+    #  204    no content    no            ok
+    #  2xx    successful    yes           ok/updated
+    #  5xx    server error  no            fail
+    #  xxx    -             no            invalid
+    #
+    #  The status code is held in %{reply:REST-HTTP-Status-Code}.
     """
     UserInfo.add(username, reasonstr=errstr, auth=True, reason="reject")
 
-    return empty_result(status='error', data=errstr), 400
+    return empty_result(status='error', data=errstr), 401
 
 
 class AuthApi(Resource):
