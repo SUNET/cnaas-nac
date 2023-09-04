@@ -84,7 +84,7 @@ pycryptodome==3.18.0
 pyflakes==3.1.0
 PyJWT==2.8.0
 pyOpenSSL==23.2.0
-pyparsing==3.1.1
+pyparsing==3.0.9
 pyproject_hooks==1.0.0
 pyrad==2.4
 pyrsistent==0.19.3
