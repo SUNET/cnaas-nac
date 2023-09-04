@@ -73,7 +73,7 @@ class Reply(Base):
             tunnel_id.username = username
             tunnel_id.attribute = 'Tunnel-Private-Group-Id'
             tunnel_id.op = '='
-            tunnel_id.value = vlan
+            tunnel_id.value = str(vlan)
             session.add(tunnel_id)
         return ''
 
