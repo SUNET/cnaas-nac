@@ -195,7 +195,7 @@ class ApiTests(unittest.TestCase):
 
         res = self.client_internal.post(
             "/api/v1.0/auth", json=json)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.status_code, 401)
 
     def test_11_verify_user_data(self):
         res = self.client_external.get(
@@ -230,7 +230,7 @@ class ApiTests(unittest.TestCase):
         }
 
         res = self.client_internal.post("/api/v1.0/auth", json=json)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.status_code, 401)
 
         json = {
             "active": True
@@ -263,7 +263,7 @@ class ApiTests(unittest.TestCase):
         }
 
         res = self.client_internal.post("/api/v1.0/auth", json=json)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.status_code, 401)
 
     def test_13_repeated_auth(self):
         json = {
@@ -290,7 +290,7 @@ class ApiTests(unittest.TestCase):
 
         for i in range(20):
             res = self.client_internal.post("/api/v1.0/auth", json=json)
-            self.assertEqual(res.status_code, 400)
+            self.assertEqual(res.status_code, 401)
 
         json = {
             "username": "unittest_wrong",
@@ -303,7 +303,7 @@ class ApiTests(unittest.TestCase):
 
         for i in range(20):
             res = self.client_internal.post("/api/v1.0/auth", json=json)
-            self.assertEqual(res.status_code, 400)
+            self.assertEqual(res.status_code, 401)
 
     def test_14_disable_port_lock(self):
         os.environ["RADIUS_NO_PORT_LOCK"] = "yes"
@@ -332,7 +332,7 @@ class ApiTests(unittest.TestCase):
 
         res = self.client_internal.post(
             "/api/v1.0/auth", json=json)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.status_code, 401)
 
     def test_15_add_user_wrong_time(self):
         date = datetime.datetime.now() + datetime.timedelta(minutes=1)
@@ -475,7 +475,7 @@ class ApiTests(unittest.TestCase):
 
         res = self.client_internal.post("/api/v1.0/auth", json=json)
 
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.status_code, 401)
 
         json = {
             "active": True
@@ -498,7 +498,7 @@ class ApiTests(unittest.TestCase):
 
         res = self.client_internal.post("/api/v1.0/auth", json=json)
 
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.status_code, 401)
 
         time.sleep(65)
 
@@ -510,7 +510,7 @@ class ApiTests(unittest.TestCase):
 
         res = self.client_internal.post("/api/v1.0/auth", json=json)
 
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.status_code, 401)
 
     def test_17_export_csv(self):
         headers = self.headers.copy()
