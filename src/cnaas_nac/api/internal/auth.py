@@ -201,6 +201,9 @@ class AuthApi(Resource):
             nas_ports = NasPort.get(username)
             userinfo = UserInfo.get([username])
 
+            if userinfo == {}:
+                continue
+
             if "access_restricted" in userinfo[username]:
                 if userinfo[username]["access_restricted"]:
                     logger.info(f"[{username}] Time based access, rejecting")
