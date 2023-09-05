@@ -75,6 +75,7 @@ class User(Base):
         new_user.value = password
         new_user.op = ""
         session.add(new_user)
+        session.commit()
         return ""
 
     @classmethod
@@ -103,6 +104,7 @@ class User(Base):
             return f"Username {username} not found"
         user.attribute = "Cleartext-Password"
         user.op = ""
+        user.commit()
         return ""
 
     @classmethod
