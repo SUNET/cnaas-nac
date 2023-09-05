@@ -2,11 +2,12 @@ import datetime
 import enum
 import ipaddress
 
-from cnaas_nac.db.session import sqla_session
+from cnaas_nac.db.session import get_session
 from sqlalchemy import Column, Integer, Unicode, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
+session = get_session()
 
 
 class NasPort(Base):
@@ -42,15 +43,14 @@ class NasPort(Base):
 
     @classmethod
     def get(cls, username=None):
-        with sqla_session() as session:
-            if username:
-                nas: NasPort = session.query(NasPort).filter(NasPort.username ==
-                                                             username).one_or_none()
-            else:
-                nas: NasPort = session.query(NasPort).one_or_none()
-            if nas is None:
-                return None
-            return nas.as_dict()
+        if username:
+            nas: NasPort = session.query(NasPort).filter(NasPort.username ==
+                                                         username).one_or_none()
+        else:
+            nas: NasPort = session.query(NasPort).one_or_none()
+        if nas is None:
+            return None
+        return nas.as_dict()
 
     @classmethod
     def add(cls, username, nas_ip_address, nas_identifier, nas_port_id,
@@ -58,24 +58,23 @@ class NasPort(Base):
             called_station_id):
         if cls.get(username):
             return ''
-        with sqla_session() as session:
-            nas = NasPort()
-            nas.username = username
-            nas.nas_ip_address = nas_ip_address
-            nas.nas_identifier = nas_identifier
-            nas.nas_port_id = nas_port_id
-            nas.calling_station_id = calling_station_id
-            nas.called_station_id = called_station_id
-            session.add(nas)
+        nas = NasPort()
+        nas.username = username
+        nas.nas_ip_address = nas_ip_address
+        nas.nas_identifier = nas_identifier
+        nas.nas_port_id = nas_port_id
+        nas.calling_station_id = calling_station_id
+        nas.called_station_id = called_station_id
+        session.add(nas)
+        session.commit()
         return ''
 
     @classmethod
     def delete(cls, username):
         if not cls.get(username):
             return ''
-        with sqla_session() as session:
-            port: NasPort = session.query(NasPort).filter(NasPort.username ==
-                                                          username).one_or_none()
-            session.delete(port)
-            session.commit()
+        port: NasPort = session.query(NasPort).filter(NasPort.username ==
+                                                      username).one_or_none()
+        session.delete(port)
+        session.commit()
         return ''
