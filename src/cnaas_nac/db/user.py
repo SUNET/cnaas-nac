@@ -216,6 +216,8 @@ def get_users(field=None, condition="", order="", when=None, client_type=None,
         else:
             db_order = desc(User.username)
 
+    userinfos = UserInfo.get(usernames=usernames_list)
+
     with sqla_session() as session:
         res = (
             session.query(User, Reply, NasPort, UserInfo)
@@ -229,7 +231,6 @@ def get_users(field=None, condition="", order="", when=None, client_type=None,
             .all()
         )
 
-        userinfos = UserInfo.get(usernames=usernames_list)
         for user, reply, nas_port, userinfo in res:
             if usernames_list != []:
                 if user.username not in usernames_list:
