@@ -29,7 +29,18 @@ def users_cleanup():
             continue
 
         userinfo = UserInfo.get([username])
-        authdate = userinfo[username]["authdate"]
+
+        if username not in userinfo:
+            logger.info("No userinfo for user {}, skipping".format(username))
+            continue
+
+        authdates = userinfo[username]
+
+        if "authdate" in authdates:
+            authdate = userinfo[username]["authdate"]
+        else:
+            logger.info("No authdate for user {}, skipping".format(username))
+            continue
 
         if authdate is None or authdate == "":
             logger.info("No timestamp for user {}, skipping".format(username))
@@ -43,6 +54,7 @@ def users_cleanup():
             User.delete(user["username"])
             Reply.delete(user["username"])
             NasPort.delete(user["username"])
+            UserInfo.delete(user["username"])
         else:
             logger.info("Keeping user {}".format(user["username"]))
 
