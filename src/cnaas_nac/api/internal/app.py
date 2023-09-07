@@ -49,11 +49,13 @@ def log_request(response):
     return response
 
 
-@scheduler.task('interval', id='cleanup_users', seconds=900, misfire_grace_time=900)
+@scheduler.task('interval', id='cleanup_users', seconds=3600,
+                misfire_grace_time=900)
 def users():
     users_cleanup()
 
 
-@scheduler.task('interval', id='cleanup_accounting', seconds=3600, misfire_grace_time=900)
+@scheduler.task('interval', id='cleanup_accounting', seconds=3600,
+                misfire_grace_time=900)
 def accounting():
     accounting_cleanup()
