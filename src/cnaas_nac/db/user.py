@@ -300,7 +300,7 @@ def add_new_user(username, password, vlan, nas_ip_address,
                 username=username,
                 attribute="Tunnel-Private-Group-Id",
                 op=":=",
-                value=vlan
+                value=str(vlan)
             )
             tunnel_type = Reply(
                 username=username,

@@ -62,7 +62,7 @@ def accounting():
     accounting_cleanup()
 
 
-@scheduler.task("interval", id="cleanup_postauth", seconds=3600,
+@scheduler.task("interval", id="cleanup_postauth", seconds=7200,
                 misfire_grace_time=900)
 def postauth():
     postauth_cleanup()

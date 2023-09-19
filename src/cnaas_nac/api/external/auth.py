@@ -243,7 +243,7 @@ class AuthApi(Resource):
                                  access_stop=access_stop)
 
             if error != "":
-                logger.errors("Error: " + error)
+                logger.error("Error: " + error)
                 return empty_result(status="error", data=error), 400
 
             if "active" in json_data and isinstance(json_data["active"], bool):
