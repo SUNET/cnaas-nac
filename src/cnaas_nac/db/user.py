@@ -258,6 +258,7 @@ def get_users(field=None, condition="", order="", when=None, client_type=None,
             res_dict["access_restricted"] = userinfos[user.username]["access_restricted"]
             res_dict["accepts"] = userinfos[user.username]["accepts"]
             res_dict["rejects"] = userinfos[user.username]["rejects"]
+            res_dict["authdate"] = userinfos[user.username]["authdate"]
 
             user_oui = user.username[:8]
 
@@ -338,6 +339,22 @@ def add_new_user(username, password, vlan, nas_ip_address,
             session.add(tunnel_medium)
             session.add(nas_port)
             session.add(userinfo)
+            session.commit()
+    except Exception as e:
+        return str(e)
+
+    return ""
+
+
+def delete_user(username):
+    try:
+        with sqla_session() as session:
+            session.query(User).filter(User.username == username).delete()
+            session.query(Reply).filter(Reply.username == username).delete()
+            session.query(NasPort).filter(
+                NasPort.username == username).delete()
+            session.query(UserInfo).filter(
+                UserInfo.username == username).delete()
             session.commit()
     except Exception as e:
         return str(e)
