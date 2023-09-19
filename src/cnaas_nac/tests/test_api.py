@@ -63,7 +63,7 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(res.json["data"][0]["called_station_id"], "unittest")
         self.assertEqual(res.json["data"][0]["calling_station_id"], "unittest")
         self.assertEqual(res.json["data"][0]["accepts"], 0)
-        self.assertEqual(res.json["data"][0]["rejects"], 0)
+        self.assertEqual(res.json["data"][0]["rejects"], 1)
 
     def test_03_authenticate_user(self):
         json = {
@@ -89,7 +89,7 @@ class ApiTests(unittest.TestCase):
 
         self.assertEqual(res.json["data"][0]["reason"], "User accepted")
         self.assertEqual(res.json["data"][0]["accepts"], 1)
-        self.assertEqual(res.json["data"][0]["rejects"], 0)
+        self.assertEqual(res.json["data"][0]["rejects"], 1)
 
     def test_04_set_vlan(self):
         json = {
@@ -266,6 +266,28 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(res.status_code, 401)
 
     def test_13_repeated_auth(self):
+        json = {
+            "username": "unittest_external",
+            "nas_identifier": "unittest_external",
+            "nas_port_id": "unittest_new_port_external",
+            "nas_ip_address": "unittest_external",
+            "calling_station_id": "unittest_external",
+            "called_station_id": "unittest_new_station_external"
+        }
+
+        res = self.client_external.post(
+            "/api/v1.0/auth", json=json, headers=self.headers)
+        self.assertEqual(res.status_code, 200)
+
+        for i in range(20):
+            res = self.client_external.post(
+                "/api/v1.0/auth", json=json, headers=self.headers)
+            self.assertEqual(res.status_code, 400)
+
+        res = self.client_external.delete(
+            "/api/v1.0/auth/unittest_external", headers=self.headers)
+        self.assertEqual(res.status_code, 200)
+
         json = {
             "username": "unittest",
             "nas_identifier": "unittest",

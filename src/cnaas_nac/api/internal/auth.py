@@ -4,7 +4,7 @@ from cnaas_nac.api.generic import empty_result
 from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.oui import DeviceOui
 from cnaas_nac.db.reply import Reply
-from cnaas_nac.db.user import User, UserInfo, get_users
+from cnaas_nac.db.user import User, UserInfo, add_new_user, get_users
 from cnaas_nac.tools.log import get_logger
 from cnaas_nac.version import __api_version__
 from flask import request
@@ -262,27 +262,15 @@ class AuthApi(Resource):
 
         # If we don't run in slave mode and the user don't exist,
         # create it and set the default reply (VLAN 13).
-        if User.add(username, password) != '':
-            logger.info('[{}] Not creating user again'.format(username))
+        if User.get(username) == []:
+            err = add_new_user(username, password, vlan,
+                               nas_ip_address, nas_identifier,
+                               nas_port_id, calling_station_id,
+                               called_station_id)
 
-        if Reply.add(username, vlan) != '':
-            logger.info('[{}] Not creating reply for user'.format(username))
-        else:
-            if DeviceOui.exists(username):
-                logger.info('[{}] Setting user VLAN to OUI VLAN.'.format(
-                    username))
-
-                oui_vlan = DeviceOui.get_vlan(username)
-
-                Reply.vlan(username, oui_vlan)
-                User.enable(username)
-
-        res = NasPort.add(username, nas_ip_address, nas_identifier,
-                          nas_port_id,
-                          calling_station_id,
-                          called_station_id)
-        if res != '':
-            logger.info('[{}] {}'.format(username, res))
+            if err != "":
+                logger.error('[{}] {}'.format(username, err))
+                return reject(username, errstr=err)
 
         if User.is_enabled(username):
             return accept(username)
@@ -293,6 +281,7 @@ class AuthApi(Resource):
 
         logger.info('[{}] User did not match any rules, rejecting'.format(
             username))
+
         return reject(username, 'User is disabled')
 
 

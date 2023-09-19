@@ -7,7 +7,7 @@ from cnaas_nac.api.generic import (csv_export, csv_to_json, empty_result,
                                    jwt_required)
 from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.reply import Reply
-from cnaas_nac.db.user import User, UserInfo, get_users
+from cnaas_nac.db.user import User, UserInfo, add_new_user, get_users
 from cnaas_nac.tools.log import get_logger
 from cnaas_nac.version import __api_version__
 from flask import jsonify, make_response, request
@@ -119,15 +119,19 @@ class AuthApi(Resource):
 
             if User.get(username) != []:
                 errors.append(f"User {username} already exists")
+                break
 
             if Reply.get(username) != []:
                 errors.append(f"Reply for {username} already exists")
+                break
 
             if UserInfo.get([username]) != {}:
                 errors.append(f"UserInfo for {username} already exists")
+                break
 
             if NasPort.get(username):
                 errors.append(f"NasPort for {username} already exists")
+                break
 
             if "access_start" in json_data and json_data["access_start"] is not None and json_data["access_start"] != "":
                 try:
@@ -226,30 +230,21 @@ class AuthApi(Resource):
             if nas_identifier == "" or nas_identifier is None:
                 nas_identifier = username
 
-            err = User.add(username, password)
+            if errors != []:
+                logger.errors("Errors:\n" + "    \n".join(errors))
+                return empty_result(status="error", data=errors), 400
 
-            if err != "":
-                return empty_result(status="error", data=err), 400
+            error = add_new_user(username, password, vlan,
+                                 nas_ip_address, nas_identifier,
+                                 nas_port_id, calling_station_id,
+                                 called_station_id, reason="",
+                                 comment=comment,
+                                 access_start=access_start,
+                                 access_stop=access_stop)
 
-            err = Reply.add(username, vlan)
-
-            if err != "":
-                return empty_result(status="error", data=err), 400
-
-            err = UserInfo.add(username, comment=comment,
-                               access_start=access_start,
-                               access_stop=access_stop)
-
-            if err != "":
-                return empty_result(status="error", data=err), 400
-
-            err = NasPort.add(username, nas_ip_address, nas_identifier,
-                              nas_port_id,
-                              calling_station_id,
-                              called_station_id)
-
-            if err != "":
-                return empty_result(status="error", data=err), 400
+            if error != "":
+                logger.errors("Error: " + error)
+                return empty_result(status="error", data=error), 400
 
             if "active" in json_data and isinstance(json_data["active"], bool):
                 if json_data["active"]:

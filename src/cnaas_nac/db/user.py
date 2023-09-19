@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 from cnaas_nac.db.groups import Group
 from cnaas_nac.db.nas import NasPort
+from cnaas_nac.db.oui import DeviceOui
 from cnaas_nac.db.reply import Reply
 from cnaas_nac.db.session import sqla_session
 from cnaas_nac.db.userinfo import UserInfo
@@ -23,7 +24,7 @@ class User(Base):
     )
 
     id = Column(Integer, autoincrement=True, primary_key=True)
-    username = Column(Unicode(64), nullable=False)
+    username = Column(Unicode(64), nullable=False, index=True, unique=True)
     attribute = Column(Unicode(64), nullable=False)
     op = Column(Unicode(2), nullable=False)
     value = Column(Unicode(253), nullable=False)
@@ -274,3 +275,71 @@ def get_users(field=None, condition="", order="", when=None, client_type=None,
             result.append(res_dict)
 
     return result
+
+
+def add_new_user(username, password, vlan, nas_ip_address,
+                 nas_identifier, nas_port_id, calling_station_id,
+                 called_station_id, reason="", comment="",
+                 access_start=None, access_stop=None):
+
+    op = ""
+
+    if DeviceOui.exists(username):
+        vlan = DeviceOui.get_vlan(username)
+        op = ":="
+
+    try:
+        with sqla_session() as session:
+            user = User(
+                username=username,
+                attribute="Cleartext-Password",
+                value=password, op=op
+            )
+            tunnel_id = Reply(
+                username=username,
+                attribute="Tunnel-Private-Group-Id",
+                op=":=",
+                value=vlan
+            )
+            tunnel_type = Reply(
+                username=username,
+                attribute="Tunnel-Type",
+                op=":=",
+                value="VLAN"
+            )
+            tunnel_medium = Reply(
+                username=username,
+                attribute="Tunnel-Medium-Type",
+                op=":=",
+                value="IEEE-802"
+            )
+            nas_port = NasPort(
+                username=username,
+                nas_ip_address=nas_ip_address,
+                nas_identifier=nas_identifier,
+                nas_port_id=nas_port_id,
+                calling_station_id=calling_station_id,
+                called_station_id=called_station_id
+            )
+            userinfo = UserInfo(
+                username=username,
+                reason=reason,
+                comment=comment,
+                authdate=datetime.utcnow(),
+                access_start=access_start,
+                access_stop=access_stop,
+                accepts=0,
+                rejects=0
+            )
+
+            session.add(user)
+            session.add(tunnel_id)
+            session.add(tunnel_type)
+            session.add(tunnel_medium)
+            session.add(nas_port)
+            session.add(userinfo)
+            session.commit()
+    except Exception as e:
+        return str(e)
+
+    return ""
