@@ -1,6 +1,6 @@
 import os
-import setuptools
 
+import setuptools
 
 from src.cnaas_nms import version
 
@@ -17,7 +17,7 @@ setuptools.setup(
     author='SUNET',
     author_email='',
     version=version,
-    description='Campus Network as-a-Service - Network Management System (Campus network automation software)',
+    description='Campus Network as-a-Service - NAC (Campus network automation software)',
     long_description=README,
     long_description_content_type='text/markdown',
     url='https://github.com/sunet/cnaas-nac',
