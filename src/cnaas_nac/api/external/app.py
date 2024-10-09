@@ -1,9 +1,11 @@
 import os
 import sys
 
+from authlib.integrations.flask_client import OAuth
 from cnaas_nac.api.external.auth import api as auth_api
 from cnaas_nac.api.external.export import api as export_api
 from cnaas_nac.api.external.groups import api as groups_api
+from cnaas_nac.api.external.login import api as login_api
 from cnaas_nac.api.external.oui import api as oui_api
 from cnaas_nac.api.external.stats import api as stats_api
 from cnaas_nac.api.external.vlans import api as vlans_api
@@ -22,11 +24,11 @@ logger = get_logger()
 
 
 authorizations = {
-    'apikey': {
-        'type': 'apiKey',
-        'in': 'header',
-        'name': 'Authorization',
-        'description': "Type in 'Bearer: <your JWT token here' to autheticate."
+    "apikey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "Type in 'Bearer: <your JWT token here' to autheticate.",
     }
 }
 
@@ -34,36 +36,48 @@ authorizations = {
 class CnaasApi(Api):
     def handle_error(self, e):
         if isinstance(e, DecodeError):
-            data = {'status': 'error', 'data': 'Could not deode JWT token'}
+            data = {"status": "error", "data": "Could not deode JWT token"}
         elif isinstance(e, InvalidTokenError):
-            data = {'status': 'error', 'data': 'Invalid authentication header'}
+            data = {"status": "error", "data": "Invalid authentication header"}
         elif isinstance(e, InvalidSignatureError):
-            data = {'status': 'error', 'data': 'Invalid token signature'}
+            data = {"status": "error", "data": "Invalid token signature"}
         elif isinstance(e, InvalidHeaderError):
-            data = {'status': 'error', 'data': 'Invalid authentication header'}
+            data = {"status": "error", "data": "Invalid authentication header"}
         elif isinstance(e, IndexError):
             # We might catch IndexErrors which are not cuased by JWT,
             # but this is better than nothing.
-            data = {'status': 'error', 'data': 'JWT token missing?'}
+            data = {"status": "error", "data": "JWT token missing?"}
         elif isinstance(e, NoAuthorizationError):
-            data = {'status': 'error', 'data': 'JWT token missing?'}
+            data = {"status": "error", "data": "JWT token missing?"}
         else:
             return super(CnaasApi, self).handle_error(e)
 
         return jsonify(data)
 
 
+def get_oidc_credentials():
+    try:
+        oidc_metadata_url = os.environ["OIDC_METADATA_URL"]
+        oidc_client_id = os.environ["OIDC_CLIENT_ID"]
+        oidc_client_secret = os.environ["OIDC_CLIENT_SECRET"]
+    except KeyError:
+        logger.error("OIDC_METADATA_URL, OIDC_CLIENT_ID or OIDC_CLIENT_SECRET not set")
+        sys.exit(1)
+
+    return oidc_metadata_url, oidc_client_id, oidc_client_secret
+
+
 try:
     # If we don't find a "real" cert, fall back to a self-signed
     # one. We need this for running tests.
-    if os.path.exists('/opt/cnaas/certs/jwt_pubkey.pem'):
-        cert_path = '/opt/cnaas/certs/jwt_pubkey.pem'
-    elif os.path.exists('./src/cert/jwt_pubkey.pem'):
-        cert_path = './src/cert/jwt_pubkey.pem'
+    if os.path.exists("/opt/cnaas/certs/jwt_pubkey.pem"):
+        cert_path = "/opt/cnaas/certs/jwt_pubkey.pem"
+    elif os.path.exists("./src/cert/jwt_pubkey.pem"):
+        cert_path = "./src/cert/jwt_pubkey.pem"
     else:
-        cert_path = './cert/jwt_pubkey.pem'
+        cert_path = "./cert/jwt_pubkey.pem"
 
-    logger.debug(f'Reading JWT certificate from {cert_path}')
+    logger.debug(f"Reading JWT certificate from {cert_path}")
 
     jwt_pubkey = open(cert_path).read()
 except Exception as e:
@@ -72,42 +86,58 @@ except Exception as e:
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.urandom(128)
-app.config['JWT_PUBLIC_KEY'] = jwt_pubkey
-app.config['JWT_IDENTITY_CLAIM'] = 'sub'
-app.config['JWT_ALGORITHM'] = 'ES256'
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
+app.config["SECRET_KEY"] = os.urandom(128)
+app.config["JWT_PUBLIC_KEY"] = jwt_pubkey
+app.config["JWT_IDENTITY_CLAIM"] = "sub"
+app.config["JWT_ALGORITHM"] = "ES256"
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = False
 
 jwt = JWTManager(app)
 
+oidc_metadata_url, oidc_client_id, oidc_client_secret = get_oidc_credentials()
 
-cors = CORS(app,
-            resources={r"/api/*": {"origins": "*"}},
-            expose_headers=["Content-Type", "Authorization", "X-Total-Count"])
+oauth = OAuth(app)
+oauth.register(
+    "connext",
+    server_metadata_url=oidc_metadata_url,
+    client_id=oidc_client_id,
+    client_secret=oidc_client_secret,
+)
 
-api = Api(app, prefix='/api/{}'.format(__api_version__),
-          authorizations=authorizations,
-          security='apikey')
+cors = CORS(
+    app,
+    resources={r"/api/*": {"origins": "*"}},
+    expose_headers=["Content-Type", "Authorization", "X-Total-Count"],
+)
+
+api = Api(
+    app,
+    prefix="/api/{}".format(__api_version__),
+    authorizations=authorizations,
+    security="apikey",
+)
 
 api.add_namespace(auth_api)
-api.add_namespace(vlans_api)
-api.add_namespace(groups_api)
 api.add_namespace(export_api)
+api.add_namespace(groups_api)
+api.add_namespace(login_api)
 api.add_namespace(oui_api)
 api.add_namespace(stats_api)
-
-# Log all requests, include username etc
+api.add_namespace(vlans_api)
 
 
 @app.after_request
 def log_request(response):
     try:
-        token = request.headers.get('Authorization').split(' ')[-1]
-        user = decode_token(token).get('sub')
+        token = request.headers.get("Authorization").split(" ")[-1]
+        user = decode_token(token).get("sub")
     except Exception:
-        user = 'unknown'
+        user = "unknown"
 
-    app.logger.info('[External API] User: {}, Method: {}, Status: {}, URL: {}'.format(
-        user, request.method, response.status_code, request.url))
+    app.logger.info(
+        "[External API] User: {}, Method: {}, Status: {}, URL: {}".format(
+            user, request.method, response.status_code, request.url
+        )
+    )
 
     return response

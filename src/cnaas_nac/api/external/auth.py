@@ -15,14 +15,18 @@ from flask_restx import Namespace, Resource
 from netaddr import EUI, mac_unix_expanded
 
 logger = get_logger()
-api = Namespace("auth", description="Authentication API",
-                prefix="/api/{}".format(__api_version__))
+
+api = Namespace(
+    "clients",
+    description="Authentication API",
+    prefix="/api/{}".format(__api_version__),
+)
 
 
 logger.debug("Loading auth.py")
 
 
-class AuthApi(Resource):
+class ClientAuthApi(Resource):
     @jwt_required()
     def get(self):
         """
@@ -41,7 +45,7 @@ class AuthApi(Resource):
 
         for arg in request.args:
             if "filter" in arg:
-                field = arg[arg.find("[")+1: arg.find("]")]
+                field = arg[arg.find("[") + 1 : arg.find("]")]
                 condition = request.args[arg].split("?")[0]
             if "sort" in arg:
                 direction = request.args[arg]
@@ -54,10 +58,14 @@ class AuthApi(Resource):
             if "group" in arg:
                 groupname = request.args[arg]
 
-        users = get_users(field=field, condition=condition,
-                          order=direction, when=when,
-                          client_type=client_type,
-                          group=groupname)
+        users = get_users(
+            field=field,
+            condition=condition,
+            order=direction,
+            when=when,
+            client_type=client_type,
+            group=groupname,
+        )
         user_count = len(users)
 
         if "Content-Type" in request.headers and user_count > 0:
@@ -68,12 +76,15 @@ class AuthApi(Resource):
                 response.headers["Content-type"] = request.headers["Content-Type"]
 
                 if csv_file:
-                    response.headers["Content-Disposition"] = "attachment; filename=export.csv"
+                    response.headers[
+                        "Content-Disposition"
+                    ] = "attachment; filename=export.csv"
                     response.headers["Content-Type"] = "application/octet-stream"
 
         if not response:
-            response = make_response(jsonify(empty_result(status="success",
-                                                          data=users)), 200)
+            response = make_response(
+                jsonify(empty_result(status="success", data=users)), 200
+            )
 
         response.headers["X-Total-Count"] = user_count
 
@@ -89,16 +100,22 @@ class AuthApi(Resource):
 
         if "RADIUS_SLAVE" in os.environ:
             if os.environ["RADIUS_SLAVE"] == "yes":
-                return empty_result(status="error",
-                                    data="Users can only be added to master server."), 400
+                return (
+                    empty_result(
+                        status="error", data="Users can only be added to master server."
+                    ),
+                    400,
+                )
 
-        if "Content-Type" in request.headers and request.headers["Content-Type"] in ("application/csv", "text/csv"):
+        if "Content-Type" in request.headers and request.headers["Content-Type"] in (
+            "application/csv",
+            "text/csv",
+        ):
             try:
                 json_request = csv_to_json(request.data.decode())
             except ValueError as e:
                 logger.info("Exception: " + str(e))
-                return empty_result(status="error",
-                                    data=str(e)), 400
+                return empty_result(status="error", data=str(e)), 400
         else:
             if isinstance(request.get_json(), list):
                 json_request = request.get_json()
@@ -112,8 +129,9 @@ class AuthApi(Resource):
                 break
             else:
                 try:
-                    username = str(EUI(
-                        json_data["username"], dialect=mac_unix_expanded))
+                    username = str(
+                        EUI(json_data["username"], dialect=mac_unix_expanded)
+                    )
                 except Exception:
                     username = json_data["username"]
 
@@ -133,24 +151,38 @@ class AuthApi(Resource):
                 errors.append(f"NasPort for {username} already exists")
                 break
 
-            if "access_start" in json_data and json_data["access_start"] is not None and json_data["access_start"] != "":
+            if (
+                "access_start" in json_data
+                and json_data["access_start"] is not None
+                and json_data["access_start"] != ""
+            ):
                 try:
                     access_start = datetime.strptime(
-                        json_data["access_start"], "%Y-%m-%d %H:%M")
+                        json_data["access_start"], "%Y-%m-%d %H:%M"
+                    )
                 except ValueError:
                     errors.append(
-                        f"{username}: Invalid date and time format: " + json_data["access_start"])
+                        f"{username}: Invalid date and time format: "
+                        + json_data["access_start"]
+                    )
                     access_start = False
             else:
                 access_start = None
 
-            if "access_stop" in json_data and json_data["access_stop"] is not None and json_data["access_stop"] != "":
+            if (
+                "access_stop" in json_data
+                and json_data["access_stop"] is not None
+                and json_data["access_stop"] != ""
+            ):
                 try:
                     access_stop = datetime.strptime(
-                        json_data["access_stop"], "%Y-%m-%d %H:%M")
+                        json_data["access_stop"], "%Y-%m-%d %H:%M"
+                    )
                 except ValueError:
                     errors.append(
-                        f"{username}: Invalid date and time format: " + json_data["access_stop"])
+                        f"{username}: Invalid date and time format: "
+                        + json_data["access_stop"]
+                    )
                     access_stop = False
             else:
                 access_stop = None
@@ -161,29 +193,30 @@ class AuthApi(Resource):
 
                 if start_time == stop_time:
                     errors.append(
-                        f"{username}: Start time and stop time must not be identical.")
+                        f"{username}: Start time and stop time must not be identical."
+                    )
 
                 if start_time > stop_time:
-                    errors.append(
-                        f"{username}: Start time must be before stop time.")
+                    errors.append(f"{username}: Start time must be before stop time.")
 
         if errors != []:
             logger.debug("Errors:\n" + "    \n".join(errors))
 
-            return make_response(jsonify(empty_result(status="error",
-                                                      data=errors)), 400)
+            return make_response(
+                jsonify(empty_result(status="error", data=errors)), 400
+            )
 
         for json_data in json_request:
             try:
-                username = str(EUI(
-                    json_data["username"], dialect=mac_unix_expanded))
+                username = str(EUI(json_data["username"], dialect=mac_unix_expanded))
             except Exception:
                 username = json_data["username"]
 
             if "password" in json_data:
                 try:
-                    password = str(EUI(
-                        json_data["password"], dialect=mac_unix_expanded))
+                    password = str(
+                        EUI(json_data["password"], dialect=mac_unix_expanded)
+                    )
                 except Exception:
                     password = json_data["password"]
             else:
@@ -234,13 +267,20 @@ class AuthApi(Resource):
                 logger.errors("Errors:\n" + "    \n".join(errors))
                 return empty_result(status="error", data=errors), 400
 
-            error = add_new_user(username, password, vlan,
-                                 nas_ip_address, nas_identifier,
-                                 nas_port_id, calling_station_id,
-                                 called_station_id, reason="",
-                                 comment=comment,
-                                 access_start=access_start,
-                                 access_stop=access_stop)
+            error = add_new_user(
+                username,
+                password,
+                vlan,
+                nas_ip_address,
+                nas_identifier,
+                nas_port_id,
+                calling_station_id,
+                called_station_id,
+                reason="",
+                comment=comment,
+                access_start=access_start,
+                access_stop=access_stop,
+            )
 
             if error != "":
                 logger.error("Error: " + error)
@@ -253,14 +293,15 @@ class AuthApi(Resource):
             user = get_users(field="username", condition=username)[0]
             users.append(user)
 
-        response = make_response(jsonify(empty_result(status="success",
-                                                      data=users)), 200)
+        response = make_response(
+            jsonify(empty_result(status="success", data=users)), 200
+        )
         response.headers["X-Total-Count"] = len(users)
 
         return response
 
 
-class AuthApiByName(Resource):
+class ClientAuthApiByName(Resource):
     @jwt_required()
     def get(self, usernames):
         """
@@ -268,8 +309,9 @@ class AuthApiByName(Resource):
         """
 
         users = get_users(field="username", condition=usernames)
-        response = make_response(jsonify(empty_result(status="success",
-                                                      data=users)), 200)
+        response = make_response(
+            jsonify(empty_result(status="success", data=users)), 200
+        )
 
         response.headers["X-Total-Count"] = len(users)
         response.headers["Content-Type"] = "application/json"
@@ -314,11 +356,14 @@ class AuthApiByName(Resource):
             attrs = {
                 "NAS-IP-Address": nas_ip_address,
                 "NAS-Port-Id": nas_port_id,
-                "Arista-PortFlap": "1"
+                "Arista-PortFlap": "1",
             }
 
             if "RADIUS_COA_SECRET" not in os.environ:
-                return empty_result(status="error", data="CoA secret not configured."), 400
+                return (
+                    empty_result(status="error", data="CoA secret not configured."),
+                    400,
+                )
             secret = str.encode(os.environ["RADIUS_COA_SECRET"])
 
             try:
@@ -331,8 +376,9 @@ class AuthApiByName(Resource):
             return empty_result(status="error", data=result), 400
 
         user = get_users(field="username", condition=usernames)
-        response = make_response(jsonify(empty_result(status="success",
-                                                      data=user)), 200)
+        response = make_response(
+            jsonify(empty_result(status="success", data=user)), 200
+        )
         return response
 
     @jwt_required()
@@ -372,7 +418,7 @@ class AuthApiByName(Resource):
         return empty_result(status="success", data=[])
 
 
-api.add_resource(AuthApi, "")
-api.add_resource(AuthApi, "/")
-api.add_resource(AuthApiByName, "/<string:usernames>")
-api.add_resource(AuthApiByName, "/<string:usernames>/")
+api.add_resource(ClientAuthApi, "")
+api.add_resource(ClientAuthApi, "/")
+api.add_resource(ClientAuthApiByName, "/<string:usernames>")
+api.add_resource(ClientAuthApiByName, "/<string:usernames>/")
