@@ -17,7 +17,7 @@ from netaddr import EUI, mac_unix_expanded
 logger = get_logger()
 
 api = Namespace(
-    "clients",
+    "auth",
     description="Authentication API",
     prefix="/api/{}".format(__api_version__),
 )

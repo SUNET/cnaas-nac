@@ -56,6 +56,9 @@ class CnaasApi(Api):
 
 
 def get_oidc_credentials():
+    if "OIDC_ENABLED" not in os.environ:
+        return None, None, None
+
     try:
         oidc_metadata_url = os.environ["OIDC_METADATA_URL"]
         oidc_client_id = os.environ["OIDC_CLIENT_ID"]
@@ -67,25 +70,37 @@ def get_oidc_credentials():
     return oidc_metadata_url, oidc_client_id, oidc_client_secret
 
 
-try:
-    # If we don't find a "real" cert, fall back to a self-signed
-    # one. We need this for running tests.
-    if os.path.exists("/opt/cnaas/certs/jwt_pubkey.pem"):
-        cert_path = "/opt/cnaas/certs/jwt_pubkey.pem"
-    elif os.path.exists("./src/cert/jwt_pubkey.pem"):
-        cert_path = "./src/cert/jwt_pubkey.pem"
-    else:
-        cert_path = "./cert/jwt_pubkey.pem"
+def get_jwt_pubkey():
+    if "OIDC_ENABLED" in os.environ:
+        return None
 
-    logger.debug(f"Reading JWT certificate from {cert_path}")
+    try:
+        # If we don't find a "real" cert, fall back to a self-signed
+        # one. We need this for running tests.
+        if os.path.exists("/opt/cnaas/certs/jwt_pubkey.pem"):
+            cert_path = "/opt/cnaas/certs/jwt_pubkey.pem"
+        elif os.path.exists("./src/cert/jwt_pubkey.pem"):
+            cert_path = "./src/cert/jwt_pubkey.pem"
+        else:
+            cert_path = "./cert/jwt_pubkey.pem"
 
-    jwt_pubkey = open(cert_path).read()
-except Exception as e:
-    print("Could not load public JWT cert: {0}".format(e))
-    sys.exit(1)
+        logger.debug(f"Reading JWT certificate from {cert_path}")
+
+        jwt_pubkey = open(cert_path).read()
+    except Exception as e:
+        print("Could not load public JWT cert: {0}".format(e))
+        sys.exit(1)
+
+    return jwt_pubkey
 
 
 app = Flask(__name__)
+
+# Try to load JWT public key. If it fails, we assume we are running in
+# OIDC mode.
+jwt_pubkey = get_jwt_pubkey()
+logger.info("JWT enabled")
+
 app.config["SECRET_KEY"] = os.urandom(128)
 app.config["JWT_PUBLIC_KEY"] = jwt_pubkey
 app.config["JWT_IDENTITY_CLAIM"] = "sub"
@@ -94,15 +109,19 @@ app.config["JWT_ACCESS_TOKEN_EXPIRES"] = False
 
 jwt = JWTManager(app)
 
-oidc_metadata_url, oidc_client_id, oidc_client_secret = get_oidc_credentials()
 
-oauth = OAuth(app)
-oauth.register(
-    "connext",
-    server_metadata_url=oidc_metadata_url,
-    client_id=oidc_client_id,
-    client_secret=oidc_client_secret,
-)
+if "OIDC_ENABLED" in os.environ:
+    oidc_url, oidc_id, oidc_secret = get_oidc_credentials()
+
+    oauth = OAuth(app)
+    oauth.register(
+        "connext",
+        server_metadata_url=oidc_url,
+        client_id=oidc_id,
+        client_secret=oidc_secret,
+        response_type="code",
+        response_mode="query",
+    )
 
 cors = CORS(
     app,
