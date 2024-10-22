@@ -119,6 +119,8 @@ if "OIDC_ENABLED" in os.environ:
         server_metadata_url=oidc_url,
         client_id=oidc_id,
         client_secret=oidc_secret,
+        client_kwargs={"scope": "openid email offline_access"},
+        authorize_params={"audience": "https://norpan.cnaas.sunet.se"},
         response_type="code",
         response_mode="query",
     )

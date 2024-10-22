@@ -3,8 +3,8 @@ import time
 from datetime import datetime
 
 from cnaas_nac.api.external.coa import CoA
-from cnaas_nac.api.generic import (csv_export, csv_to_json, empty_result,
-                                   jwt_required)
+from cnaas_nac.api.generic import csv_export, csv_to_json, empty_result
+from cnaas_nac.api.security import get_identity, login_required
 from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.reply import Reply
 from cnaas_nac.db.user import User, UserInfo, add_new_user, get_users
@@ -27,7 +27,7 @@ logger.debug("Loading auth.py")
 
 
 class ClientAuthApi(Resource):
-    @jwt_required()
+    @login_required
     def get(self):
         """
         Get a JSON blob with all users, replies and other information.
@@ -42,6 +42,8 @@ class ClientAuthApi(Resource):
         user_count = 0
         csv_file = False
         groupname = None
+
+        logger.info(f"Request from {get_identity()}")
 
         for arg in request.args:
             if "filter" in arg:
@@ -90,13 +92,15 @@ class ClientAuthApi(Resource):
 
         return response
 
-    @jwt_required()
+    @login_required
     def post(self):
         """
         Add a user manually.
         """
         users = []
         errors = []
+
+        logger.info(f"Request from {get_identity()}")
 
         if "RADIUS_SLAVE" in os.environ:
             if os.environ["RADIUS_SLAVE"] == "yes":
@@ -302,11 +306,13 @@ class ClientAuthApi(Resource):
 
 
 class ClientAuthApiByName(Resource):
-    @jwt_required()
+    @login_required
     def get(self, usernames):
         """
         Return a JSON blob with all users, VLANs and other information.
         """
+
+        logger.info(f"Request from {get_identity()}")
 
         users = get_users(field="username", condition=usernames)
         response = make_response(
@@ -318,7 +324,7 @@ class ClientAuthApiByName(Resource):
 
         return response
 
-    @jwt_required()
+    @login_required
     def put(self, usernames):
         """
         Update user parameters such as VLAN, if the user is
@@ -326,6 +332,8 @@ class ClientAuthApiByName(Resource):
         """
         json_data = request.get_json()
         result = ""
+
+        logger.info(f"Request from {get_identity()}")
 
         if json_data is None:
             return empty_result(status="error", data="No JSON input found"), 400
@@ -381,11 +389,14 @@ class ClientAuthApiByName(Resource):
         )
         return response
 
-    @jwt_required()
+    @login_required
     def delete(self, usernames):
         """
         Remove a user.
         """
+
+        logger.info(f"Request from {get_identity()}")
+
         if usernames == "__all_really_remove_all":
             userdict = get_users()
             usernames = []
