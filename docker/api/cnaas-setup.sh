@@ -5,8 +5,6 @@ set -x
 
 export DEBIAN_FRONTEND noninteractive
 
-/bin/sed -i s/deb.debian.org/ftp.se.debian.org/g /etc/apt/sources.list
-
 apt-get update && \
     apt-get -y dist-upgrade && \
     apt-get install -y \
@@ -27,6 +25,8 @@ apt-get update && \
       cron \
       emacs-nox \
       uwsgi-plugin-python3 \
+      postgresql \
+      postgresql-server-dev-all \
     && apt-get clean
 
 pip3 install uwsgi

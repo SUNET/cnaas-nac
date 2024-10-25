@@ -1,11 +1,11 @@
+import datetime
 import enum
 import ipaddress
-import datetime
 
-from sqlalchemy import Column, BigInteger, DateTime, Text, UniqueConstraint
-from sqlalchemy.ext.declarative import declarative_base
+from cnaas_nac.db.session import sqla_session
+from sqlalchemy import BigInteger, Column, DateTime, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import INET
-
+from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
@@ -59,3 +59,26 @@ class Accounting(Base):
                 value = str(value)
             d[col.name] = value
         return d
+
+    @classmethod
+    def get(cls):
+        records = []
+        with sqla_session() as session:
+            items = session.query(Accounting).all()
+
+            if not items:
+                return records
+
+            for item in items:
+                records.append(item.as_dict())
+        return records
+
+    @classmethod
+    def delete(cls, username, acctstoptime):
+        with sqla_session() as session:
+            res = session.query(Accounting).filter(Accounting.username == username).filter(
+                Accounting.acctstoptime == acctstoptime).all()
+            if not res or res == []:
+                return
+            for account in res:
+                session.delete(account)

@@ -1,11 +1,10 @@
+import datetime
 import enum
 import ipaddress
-import datetime
 
+from cnaas_nac.db.session import sqla_session
 from sqlalchemy import Column, Integer, Unicode, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
-from cnaas_nac.db.session import sqla_session
-
 
 Base = declarative_base()
 

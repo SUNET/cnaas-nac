@@ -1,17 +1,14 @@
 import os
 
-from flask import request
-from flask_restx import Resource, Namespace, fields
-
 from cnaas_nac.api.generic import empty_result
-from cnaas_nac.tools.log import get_logger
-from cnaas_nac.db.user import User, get_users, UserInfo
-from cnaas_nac.db.oui import DeviceOui
 from cnaas_nac.db.nas import NasPort
+from cnaas_nac.db.oui import DeviceOui
 from cnaas_nac.db.reply import Reply
-
+from cnaas_nac.db.user import User, UserInfo, get_users
+from cnaas_nac.tools.log import get_logger
 from cnaas_nac.version import __api_version__
-
+from flask import request
+from flask_restx import Namespace, Resource, fields
 
 logger = get_logger()
 
@@ -60,7 +57,8 @@ def accept(username):
             'value': reply['value']
         }
 
-    UserInfo.add(username, reason='User accepted', auth=True)
+    UserInfo.add(username, reasonstr='User accepted',
+                 auth=True, reason="accept")
 
     return json_reply
 
@@ -69,7 +67,8 @@ def reject(username, errstr=''):
     """
     Reject the user with a 400.
     """
-    UserInfo.add(username, reason=errstr, auth=True)
+    UserInfo.add(username, reasonstr=errstr, auth=True, reason="reject")
+
     return empty_result(status='error', data=errstr), 400
 
 
@@ -199,15 +198,20 @@ class AuthApi(Resource):
             if user['username'] != username:
                 continue
 
-            logger.info('[{}] User already exists.'.format(user['username']))
-
             nas_ports = NasPort.get(username)
+            userinfo = UserInfo.get([username])
+
+            if "access_restricted" in userinfo[username]:
+                if userinfo[username]["access_restricted"]:
+                    logger.info(f"[{username}] Time based access, rejecting")
+                    return reject(username, errstr="User restrcited due to time constraints.")
+                else:
+                    logger.info(
+                        f"[{username}] Time based access, accepting")
 
             if not User.is_enabled(username) or port_locking is False:
                 logger.info('[{}] User is disabled'.format(username))
-                if nas_ports['nas_port_id'] != nas_port_id or \
-                   nas_ports['called_station_id'] != called_station_id:
-
+                if nas_ports['nas_port_id'] != nas_port_id or nas_ports['called_station_id'] != called_station_id:
                     logger.info('[{}] Updating port info'.format(username))
                     NasPort.delete(username)
                     NasPort.add(username, nas_ip_address, nas_identifier,

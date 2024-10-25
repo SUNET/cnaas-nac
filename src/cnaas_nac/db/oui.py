@@ -1,11 +1,10 @@
+import datetime
 import enum
 import ipaddress
-import datetime
 
+from cnaas_nac.db.session import sqla_session
 from sqlalchemy import Column, Integer, Unicode, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
-from cnaas_nac.db.session import sqla_session
-
 
 Base = declarative_base()
 
@@ -20,7 +19,7 @@ class DeviceOui(Base):
     id = Column(Integer, autoincrement=True, primary_key=True)
     oui = Column(Unicode(64), nullable=False)
     vlan = Column(Unicode(64), nullable=False)
-    description = Column(Unicode(64), nullable=False)
+    description = Column(Unicode(64), nullable=True)
 
     def as_dict(self):
         """Return JSON serializable dict."""
@@ -71,9 +70,48 @@ class DeviceOui(Base):
         oui_list = []
         with sqla_session() as session:
             ouis: DeviceOui = session.query(DeviceOui).all()
+
             for oui in ouis:
                 oui_list.append(oui.as_dict())
         return oui_list
+
+    @classmethod
+    def add(cls, ouistr, vlan, description=None):
+        if cls.exists(ouistr):
+            return 'OUI already exists'
+
+        with sqla_session() as session:
+            oui = DeviceOui()
+
+            if ouistr and ouistr != "":
+                oui.oui = ouistr
+            else:
+                return "Invalid OUI"
+
+            if vlan and vlan != "":
+                oui.vlan = vlan
+            else:
+                return "Invalid VLAN"
+
+            if description and description != "":
+                oui.description = description
+
+            session.add(oui)
+        return ''
+
+    @classmethod
+    def delete(cls, ouistr):
+        with sqla_session() as session:
+            instance = (
+                session.query(DeviceOui).filter(DeviceOui.oui == ouistr).all()
+            )
+            if not instance:
+                return f"OUI {ouistr} not found"
+            for oui in instance:
+                session.delete(oui)
+                session.commit()
+
+        return ""
 
 
 if __name__ == '__main__':

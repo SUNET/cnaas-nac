@@ -1,19 +1,21 @@
 import os
 import sys
 
+from cnaas_nac.api.external.auth import api as auth_api
+from cnaas_nac.api.external.export import api as export_api
+from cnaas_nac.api.external.groups import api as groups_api
+from cnaas_nac.api.external.oui import api as oui_api
+from cnaas_nac.api.external.stats import api as stats_api
+from cnaas_nac.api.external.vlans import api as vlans_api
+from cnaas_nac.tools.log import get_logger
+from cnaas_nac.version import __api_version__
+from flask import Flask, jsonify, request
 from flask_cors import CORS
-from flask import Flask, request, jsonify
-from flask_restx import Api
 from flask_jwt_extended import JWTManager, decode_token
 from flask_jwt_extended.exceptions import NoAuthorizationError
-
-from cnaas_nac.api.external.auth import api as auth_api
-from cnaas_nac.version import __api_version__
-from cnaas_nac.tools.log import get_logger
-
-from jwt.exceptions import DecodeError, InvalidSignatureError, \
-    InvalidTokenError
-
+from flask_restx import Api
+from jwt.exceptions import (DecodeError, InvalidSignatureError,
+                            InvalidTokenError)
 
 logger = get_logger()
 
@@ -44,6 +46,7 @@ class CnaasApi(Api):
             data = {'status': 'error', 'data': 'JWT token missing?'}
         else:
             return super(CnaasApi, self).handle_error(e)
+
         return jsonify(data)
 
 
@@ -73,18 +76,26 @@ app.config['JWT_ALGORITHM'] = 'ES256'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
 
 jwt = JWTManager(app)
+
+
 cors = CORS(app,
             resources={r"/api/*": {"origins": "*"}},
             expose_headers=["Content-Type", "Authorization", "X-Total-Count"])
 
-api = CnaasApi(app, prefix='/api/{}'.format(__api_version__),
-               authorizations=authorizations,
-               security='apikey')
+api = Api(app, prefix='/api/{}'.format(__api_version__),
+          authorizations=authorizations,
+          security='apikey')
 
 api.add_namespace(auth_api)
-
+api.add_namespace(vlans_api)
+api.add_namespace(groups_api)
+api.add_namespace(export_api)
+api.add_namespace(oui_api)
+api.add_namespace(stats_api)
 
 # Log all requests, include username etc
+
+
 @app.after_request
 def log_request(response):
     try:
@@ -92,6 +103,8 @@ def log_request(response):
         user = decode_token(token).get('sub')
     except Exception:
         user = 'unknown'
-    logger.info('[External API] User: {}, Method: {}, Status: {}, URL: {}, JSON: {}'.format(
-        user, request.method, response.status_code, request.url, request.json))
+
+    app.logger.info('[External API] User: {}, Method: {}, Status: {}, URL: {}'.format(
+        user, request.method, response.status_code, request.url))
+
     return response

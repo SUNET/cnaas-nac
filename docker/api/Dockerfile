@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM debian:bullseye
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -20,11 +20,9 @@ COPY config/nginx_internal.conf /etc/nginx/sites-available/
 COPY config/nginx_external.conf /etc/nginx/sites-available/
 COPY cert/*.pem /opt/cnaas/certs/
 COPY exec-pre-app.sh /opt/cnaas/
-COPY config/cleanup /etc/cron.daily/
 COPY config/replicate /etc/cron.hourly/
 
 RUN touch /var/log/cron.log
-RUN chmod +x /etc/cron.daily/cleanup
 RUN chmod +x /etc/cron.hourly/replicate
 
 # Give nginx some special treatment

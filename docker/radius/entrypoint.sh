@@ -55,7 +55,6 @@ if [ ${AD_PASSWORD} ] && [ "$DISABLE_AD" != "True" ]; then
 
     # Write Samba config
     REALM=`echo "${NTLM_DOMAIN}" | tr '[:lower:]' '[:upper:]'`
-    WORKGROUP=`echo ${REALM} | cut -d"." -f1`
 
     cat <<EOF > /etc/samba/smb.conf
 [global]
@@ -80,8 +79,14 @@ EOF
 	usermod -a -G winbindd_priv freerad
 	chown root:winbindd_priv /var/lib/samba/winbindd_privileged/
 
-	# Join the AD domain
-	net ads join -U "${AD_USERNAME}"%"${AD_PASSWORD}"
+	# Join the AD domain, use the specified server if needed
+	if [ ${AD_SERVER} ]; then
+	    net ads join -U "${AD_USERNAME}"%"${AD_PASSWORD}" -S ${AD_SERVER}
+	else
+	    net ads join -U "${AD_USERNAME}"%"${AD_PASSWORD}"
+	fi
+
+	# Bail out if we failed to join the AD domain
 	if [ $? != 0 ]; then
 	    echo "Failed to join AD domain, exiting."
 	    exit
@@ -93,8 +98,7 @@ EOF
 	wbinfo -p
 
 	if [ $? != 0 ]; then
-	    echo "Could not start windbindd, exiting."
-	    exit
+	    echo "Could not start windbindd, panic?"
 	else
 	    echo "[entrypoint.sh] Started windbindd"
 	fi
