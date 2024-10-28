@@ -39,7 +39,7 @@ services:
     volumes:
       - type: volume
         source: nac-freeradius-data
-        target: /etc/Freeradius/3.0/
+        target: /etc/freeradius/3.0/
       - type: volume
         source: nac-var-data
         target: /var/
