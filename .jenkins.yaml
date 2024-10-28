@@ -34,7 +34,7 @@ extra_jobs:
     docker_name: cnaas/nac-postgres
     docker_context_dir: docker/postgres
 
-  - name: nac-authapi
+  - name: nac-authapi-3.2
     git:
       branch: feature.network_radius
     builders:
@@ -44,7 +44,7 @@ extra_jobs:
     docker_tags:
       - "freeradius-3.2"
 
-  - name: nac-radius
+  - name: nac-radius-3.2
     git:
       branch: feature.network_radius
     builders:
@@ -54,7 +54,7 @@ extra_jobs:
     docker_tags:
       - "freeradius-3.2"
 
-  - name: nac-postgres
+  - name: nac-postgres-3.2
     git:
       branch: feature.network_radius
     builders:
