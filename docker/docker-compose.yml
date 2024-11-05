@@ -75,10 +75,10 @@ networks:
 
 volumes:
   nac-postgres-data:
-    external: false
+    external: true
   nac-freeradius-data:
-    external: false
+    external: true
   nac-var-data:
-    external: false
+    external: true
   nac-api-certs:
-    external: false
+    external: true

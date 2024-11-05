@@ -115,4 +115,6 @@ fi
 chown freerad:freerad /var/run/freeradius
 
 # Start freeradius in the foreground with debug enabled
-freeradius -f -l stdout
+freeradius -f -l stdout -d /etc/freeradius/3.0/
+
+#sleep infinity
