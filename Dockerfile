@@ -11,22 +11,22 @@ RUN /bin/sed -i s/deb.debian.org/ftp.se.debian.org/g /etc/apt/sources.list
 RUN apt-get update && \
     apt-get -y dist-upgrade && \
     apt-get install -y \
-    git \
-    python3-venv \
-    python3-pip \
-    python3-yaml \
-    iputils-ping \
-    procps \
     bind9-host \
-    netcat-openbsd \
-    net-tools \
-    curl \
-    netcat \
-    nginx \
-    supervisor \
-    libssl-dev \
     cron \
+    curl \
     emacs-nox \
+    git \
+    iputils-ping \
+    libssl-dev \
+    net-tools \
+    netcat \
+    netcat-openbsd \
+    nginx \
+    procps \
+    python3-pip \
+    python3-venv \
+    python3-yaml \
+    supervisor \
     uwsgi-plugin-python3 \
     && apt-get clean
 
