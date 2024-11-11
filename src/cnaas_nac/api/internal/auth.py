@@ -4,7 +4,7 @@ from cnaas_nac.api.generic import empty_result
 from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.oui import DeviceOui
 from cnaas_nac.db.reply import Reply
-from cnaas_nac.db.user import User, UserInfo, get_users
+from cnaas_nac.db.user import User, UserInfo, add_new_user, get_users
 from cnaas_nac.tools.log import get_logger
 from cnaas_nac.version import __api_version__
 from flask import request
@@ -65,11 +65,27 @@ def accept(username):
 
 def reject(username, errstr=''):
     """
-    Reject the user with a 400.
+    Reject the user with a 401.
+
+    From FreeRADIUS documentation:
+
+    #  Authorize/Authenticate
+    #
+    #  Code   Meaning       Process body  Module code
+    #  404    not found     no            notfound
+    #  410    gone          no            notfound
+    #  403    forbidden     no            userlock
+    #  401    unauthorized  yes           reject
+    #  204    no content    no            ok
+    #  2xx    successful    yes           ok/updated
+    #  5xx    server error  no            fail
+    #  xxx    -             no            invalid
+    #
+    #  The status code is held in %{reply:REST-HTTP-Status-Code}.
     """
     UserInfo.add(username, reasonstr=errstr, auth=True, reason="reject")
 
-    return empty_result(status='error', data=errstr), 400
+    return empty_result(status='error', data=errstr), 401
 
 
 class AuthApi(Resource):
@@ -201,6 +217,9 @@ class AuthApi(Resource):
             nas_ports = NasPort.get(username)
             userinfo = UserInfo.get([username])
 
+            if userinfo == {}:
+                continue
+
             if "access_restricted" in userinfo[username]:
                 if userinfo[username]["access_restricted"]:
                     logger.info(f"[{username}] Time based access, rejecting")
@@ -243,27 +262,15 @@ class AuthApi(Resource):
 
         # If we don't run in slave mode and the user don't exist,
         # create it and set the default reply (VLAN 13).
-        if User.add(username, password) != '':
-            logger.info('[{}] Not creating user again'.format(username))
+        if User.get(username) == []:
+            err = add_new_user(username, password, vlan,
+                               nas_ip_address, nas_identifier,
+                               nas_port_id, calling_station_id,
+                               called_station_id)
 
-        if Reply.add(username, vlan) != '':
-            logger.info('[{}] Not creating reply for user'.format(username))
-        else:
-            if DeviceOui.exists(username):
-                logger.info('[{}] Setting user VLAN to OUI VLAN.'.format(
-                    username))
-
-                oui_vlan = DeviceOui.get_vlan(username)
-
-                Reply.vlan(username, oui_vlan)
-                User.enable(username)
-
-        res = NasPort.add(username, nas_ip_address, nas_identifier,
-                          nas_port_id,
-                          calling_station_id,
-                          called_station_id)
-        if res != '':
-            logger.info('[{}] {}'.format(username, res))
+            if err != "":
+                logger.error('[{}] {}'.format(username, err))
+                return reject(username, errstr=err)
 
         if User.is_enabled(username):
             return accept(username)
@@ -274,6 +281,7 @@ class AuthApi(Resource):
 
         logger.info('[{}] User did not match any rules, rejecting'.format(
             username))
+
         return reject(username, 'User is disabled')
 
 

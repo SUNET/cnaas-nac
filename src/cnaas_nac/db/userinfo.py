@@ -18,7 +18,7 @@ class UserInfo(Base):
         UniqueConstraint("id"),
     )
     id = Column(Integer, autoincrement=True, primary_key=True)
-    username = Column(Unicode(64), nullable=False, index=True)
+    username = Column(Unicode(64), nullable=False, index=True, unique=True)
     comment = Column(Unicode(256))
     reason = Column(Unicode(256))
     authdate = Column(DateTime, default=datetime.datetime.utcnow)
