@@ -1,6 +1,5 @@
 import enum
 import ipaddress
-import re
 from datetime import datetime, timedelta
 
 from cnaas_nac.db.groups import Group
@@ -8,6 +7,7 @@ from cnaas_nac.db.nas import NasPort
 from cnaas_nac.db.reply import Reply
 from cnaas_nac.db.session import sqla_session
 from cnaas_nac.db.userinfo import UserInfo
+from cnaas_nac.tools.ouis import ouis
 from sqlalchemy import (Column, Integer, Unicode, UniqueConstraint, asc, desc,
                         func)
 from sqlalchemy.ext.declarative import declarative_base
@@ -152,7 +152,7 @@ class User(Base):
 
 
 def get_users(field=None, condition="", order="", when=None, client_type=None,
-              usernames_list=None, group=None):
+              usernames_list=[], group=None):
     result = []
 
     if group is not None and group != "all":
@@ -229,18 +229,10 @@ def get_users(field=None, condition="", order="", when=None, client_type=None,
             .all()
         )
 
-        usernames = []
+        userinfos = UserInfo.get(usernames=usernames_list)
         for user, reply, nas_port, userinfo in res:
-            if usernames_list:
+            if usernames_list != []:
                 if user.username not in usernames_list:
-                    continue
-
-            usernames.append(user.username)
-
-        userinfos = UserInfo.get(usernames=usernames)
-        for user, reply, nas_port, userinfo in res:
-            if usernames != []:
-                if user.username not in usernames:
                     continue
 
             res_dict = dict()
@@ -264,6 +256,13 @@ def get_users(field=None, condition="", order="", when=None, client_type=None,
             res_dict["access_restricted"] = userinfos[user.username]["access_restricted"]
             res_dict["accepts"] = userinfos[user.username]["accepts"]
             res_dict["rejects"] = userinfos[user.username]["rejects"]
+
+            user_oui = user.username[:8]
+
+            try:
+                res_dict["vendor"] = ouis[user_oui]
+            except KeyError:
+                res_dict["vendor"] = ""
 
             if "authdate" not in userinfos[user.username]:
                 authdate = ""

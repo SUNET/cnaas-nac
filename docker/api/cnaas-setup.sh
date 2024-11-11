@@ -18,7 +18,7 @@ apt-get update && \
       netcat-openbsd \
       net-tools \
       curl \
-      netcat \
+      netcat-openbsd \
       nginx \
       supervisor \
       libssl-dev \

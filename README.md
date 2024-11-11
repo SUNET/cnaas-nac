@@ -3,6 +3,7 @@
 # CNaaS NAC
 Campus Network-as-a-Service - Network Admission Control
 
+[![Build Status](https://github.com/sunet/cnaas-nac/actions/workflows/tests.yml/badge.svg)](https://github.com/sunet/cnaas-nac/actions/workflows/tests.yml)
 
 Software to automate management of a campus network(LAN). This is an
 open source software developed as part of SUNETs managed service.

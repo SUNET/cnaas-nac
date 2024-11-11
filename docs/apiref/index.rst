@@ -6,3 +6,4 @@ API Reference
 
    Home <self>
    auth
+   csv

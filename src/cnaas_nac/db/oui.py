@@ -16,7 +16,7 @@ class DeviceOui(Base):
         UniqueConstraint('id'),
     )
 
-    id = Column(Integer, autoincrement=True, primary_key=True)
+    id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     oui = Column(Unicode(64), nullable=False)
     vlan = Column(Unicode(64), nullable=False)
     description = Column(Unicode(64), nullable=True)

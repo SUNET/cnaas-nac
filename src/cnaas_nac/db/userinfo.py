@@ -18,7 +18,7 @@ class UserInfo(Base):
         UniqueConstraint("id"),
     )
     id = Column(Integer, autoincrement=True, primary_key=True)
-    username = Column(Unicode(64), nullable=False)
+    username = Column(Unicode(64), nullable=False, index=True)
     comment = Column(Unicode(256))
     reason = Column(Unicode(256))
     authdate = Column(DateTime, default=datetime.datetime.utcnow)
@@ -76,40 +76,49 @@ class UserInfo(Base):
     def get(cls, usernames=[]):
         users = dict()
         with sqla_session() as session:
-            for username in usernames:
-                userinfo = session.query(UserInfo).filter(UserInfo.username ==
-                                                          username).one_or_none()
-                user_info = dict()
-                access_restricted = False
+            userinfos = []
+            userdict = {}
+            if usernames != []:
+                for username in usernames:
+                    userinfo = session.query(UserInfo).filter(UserInfo.username ==
+                                                              username).all()
+                    userinfos.append(userinfo)
+            else:
+                userinfos = [session.query(UserInfo).all()]
 
-                if userinfo:
+            for users in userinfos:
+                for user in users:
+                    username = user.username
+                    user_info = dict()
+                    access_restricted = False
+
                     time_now = int(round(time.time()))
 
-                    if userinfo.access_start:
+                    if user.access_start:
                         start_time = int(round(time.mktime(
-                            userinfo.access_start.timetuple())))
+                            user.access_start.timetuple())))
 
                         if start_time > time_now:
                             access_restricted = True
 
-                    if userinfo.access_stop:
+                    if user.access_stop:
                         stop_time = int(round(time.mktime(
-                            userinfo.access_stop.timetuple())))
+                            user.access_stop.timetuple())))
 
                         if stop_time < time_now:
                             access_restricted = True
 
-                    user_info["comment"] = userinfo.comment
-                    user_info["reason"] = userinfo.reason
-                    user_info["authdate"] = userinfo.authdate
-                    user_info["access_start"] = userinfo.access_start
-                    user_info["access_stop"] = userinfo.access_stop
+                    user_info["comment"] = user.comment
+                    user_info["reason"] = user.reason
+                    user_info["authdate"] = user.authdate
+                    user_info["access_start"] = user.access_start
+                    user_info["access_stop"] = user.access_stop
                     user_info["access_restricted"] = access_restricted
-                    user_info["accepts"] = userinfo.accepts
-                    user_info["rejects"] = userinfo.rejects
+                    user_info["accepts"] = user.accepts
+                    user_info["rejects"] = user.rejects
 
-                users[username] = user_info
-        return users
+                    userdict[username] = user_info
+        return userdict
 
     @classmethod
     def get_stats(cls):

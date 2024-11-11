@@ -16,7 +16,7 @@ class Reply(Base):
         UniqueConstraint('id'),
     )
     id = Column(Integer, autoincrement=True, primary_key=True)
-    username = Column(Unicode(64), nullable=False)
+    username = Column(Unicode(64), nullable=False, index=True)
     attribute = Column(Unicode(64), nullable=False)
     op = Column(Unicode(2), nullable=False)
     value = Column(Unicode(253), nullable=False)

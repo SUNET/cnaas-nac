@@ -182,7 +182,11 @@ CREATE TABLE public.radacct (
     acctterminatecause text,
     servicetype text,
     framedprotocol text,
-    framedipaddress inet
+    framedipaddress inet,
+    framedipv6address inet,
+    framedipv6prefix inet,
+    framedinterfaceid text,
+    delegatedipv6prefix inet
 );
 
 

@@ -17,7 +17,7 @@ class NasPort(Base):
     )
 
     id = Column(Integer, autoincrement=True, primary_key=True)
-    username = Column(Unicode(64), nullable=False)
+    username = Column(Unicode(64), nullable=False, index=True)
     nas_identifier = Column(Unicode(64), nullable=False)
     nas_port_id = Column(Unicode(64), nullable=False)
     nas_ip_address = Column(Unicode(64), nullable=False)
