@@ -32,10 +32,6 @@ COPY entrypoint.sh /usr/local/bin/
 RUN ls
 
 RUN cp /root/config/dictionary .
-RUN cp /root/config/mods-available/* mods-available/
-RUN cp /root/config/sites-available/* sites-available/
-RUN cp /root/config/mods-config/files/authorize mods-config/files/authorize
-RUN cp /root/config/policy.d/* policy.d/
 
 # This should be removed in the future
 RUN cp /root/config/dictionary.arista /usr/share/freeradius/dictionary.arista
