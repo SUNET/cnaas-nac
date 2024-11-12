@@ -26,6 +26,14 @@ extra_jobs:
     docker_name: cnaas/nac-radius
     docker_context_dir: docker/radius
 
+  - name: nac-radius-alpine
+    git:
+      branch: develop
+    builders:
+      - docker
+    docker_name: cnaas/nac-radius-alpine
+    docker_context_dir: docker/radius-alpine
+
   - name: nac-postgres
     git:
       branch: develop
