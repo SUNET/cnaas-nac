@@ -115,4 +115,4 @@ fi
 chown freerad:freerad /var/run/freeradius
 
 # Start freeradius in the foreground with debug enabled
-radiusd -f -l stdout
+freeradius -f -l stdout
