@@ -71,7 +71,7 @@ class AuthApi(Resource):
                 500,
             )
 
-        url = "https://google.com"
+        url = "http://localhost:1234"
         parameters = {"token": token["access_token"]}
 
         if "userinfo" in token and "preferred_username" in token["userinfo"]:
@@ -128,7 +128,7 @@ class RefreshApi(Resource):
                 httponly=True,
                 secure=True,
                 samesite="None",
-                path="/api/v1.0/auth/refresh",
+                path="/api/v1.0/oidc/refresh",
                 max_age=60 * 60 * 24 * 14,
             )
         return resp
@@ -143,3 +143,4 @@ class IdentityApi(Resource):
 api.add_resource(LoginApi, "/login")
 api.add_resource(AuthApi, "/auth")
 api.add_resource(IdentityApi, "/identity")
+api.add_resource(RefreshApi, "/refresh")
