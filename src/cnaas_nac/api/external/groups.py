@@ -1,10 +1,11 @@
-from cnaas_nac.api.generic import empty_result, fields, jwt_required
+from cnaas_nac.api.generic import empty_result, fields
 from cnaas_nac.db.groups import Group
 from cnaas_nac.db.user import get_users
 from cnaas_nac.tools.log import get_logger
 from cnaas_nac.version import __api_version__
 from flask import jsonify, make_response, request
 from flask_restx import Namespace, Resource
+from cnaas_nac.api.security import get_identity, login_required
 
 logger = get_logger()
 
@@ -14,7 +15,7 @@ api = Namespace("groups", description="Groups API",
 
 
 class GroupsApi(Resource):
-    @jwt_required()
+    @login_required
     def post(self):
         errors = []
         json_request = request.get_json()
@@ -57,7 +58,7 @@ class GroupsApi(Resource):
 
         return make_response(jsonify(empty_result(status="success", data="")), 200)
 
-    @jwt_required()
+    @login_required
     def get(self):
         data = Group.get()
         tmp_data = list()
@@ -85,13 +86,13 @@ class GroupsApi(Resource):
 
         return response
 
-    @jwt_required()
+    @login_required
     def delete(self):
         pass
 
 
 class GroupsApiByName(Resource):
-    @jwt_required()
+    @login_required
     def get(self, groupname):
         errors = []
         group = Group.get(groupname)[0]
@@ -108,11 +109,11 @@ class GroupsApiByName(Resource):
 
         return make_response(jsonify(empty_result(status="success", data=users)), 200)
 
-    @jwt_required()
+    @login_required
     def put(self, groupname):
         pass
 
-    @jwt_required()
+    @login_required
     def delete(self, groupname):
         errors = []
 

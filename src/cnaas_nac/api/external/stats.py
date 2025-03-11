@@ -1,10 +1,11 @@
 import psutil
-from cnaas_nac.api.generic import empty_result, jwt_required
+from cnaas_nac.api.generic import empty_result
 from cnaas_nac.db.userinfo import UserInfo
 from cnaas_nac.tools.log import get_logger
 from cnaas_nac.version import __api_version__
 from flask import jsonify, make_response
 from flask_restx import Namespace, Resource
+from cnaas_nac.api.security import get_identity, login_required
 
 logger = get_logger()
 
@@ -17,7 +18,7 @@ api = Namespace(
 
 
 class StatsApi(Resource):
-    @jwt_required()
+    @login_required
     def get(self):
         data = UserInfo.get_stats()
 

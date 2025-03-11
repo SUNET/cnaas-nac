@@ -1,9 +1,10 @@
-from cnaas_nac.api.generic import empty_result, jwt_required
+from cnaas_nac.api.generic import empty_result
 from cnaas_nac.db.oui import DeviceOui
 from cnaas_nac.tools.log import get_logger
 from cnaas_nac.version import __api_version__
 from flask import jsonify, make_response, request
 from flask_restx import Namespace, Resource
+from cnaas_nac.api.security import get_identity, login_required
 
 logger = get_logger()
 
@@ -16,7 +17,7 @@ api = Namespace(
 
 
 class DeviceOuiApi(Resource):
-    @jwt_required()
+    @login_required
     def post(self):
         errors = []
         json_request = request.get_json()
@@ -58,7 +59,7 @@ class DeviceOuiApi(Resource):
 
         return make_response(jsonify(empty_result(status="success", data="")), 200)
 
-    @jwt_required()
+    @login_required
     def get(self):
         data = DeviceOui.get()
 
@@ -68,21 +69,21 @@ class DeviceOuiApi(Resource):
 
         return response
 
-    @jwt_required()
+    @login_required
     def delete(self):
         pass
 
 
 class DeviceOuiApiByName(Resource):
-    @jwt_required()
+    @login_required
     def get(self, groupname):
         pass
 
-    @jwt_required()
+    @login_required
     def put(self, groupname):
         pass
 
-    @jwt_required()
+    @login_required
     def delete(self, oui):
         errors = []
 
