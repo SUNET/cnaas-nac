@@ -78,9 +78,9 @@ class ClientAuthApi(Resource):
                 response.headers["Content-type"] = request.headers["Content-Type"]
 
                 if csv_file:
-                    response.headers[
-                        "Content-Disposition"
-                    ] = "attachment; filename=export.csv"
+                    response.headers["Content-Disposition"] = (
+                        "attachment; filename=export.csv"
+                    )
                     response.headers["Content-Type"] = "application/octet-stream"
 
         if not response:

@@ -1,8 +1,7 @@
 import json
 
 import requests
-from authlib.integrations.base_client.errors import (MismatchingStateError,
-                                                     OAuthError)
+from authlib.integrations.base_client.errors import MismatchingStateError, OAuthError
 from authlib.integrations.flask_client.apps import FlaskOAuth2App
 from cnaas_nac.api.generic import empty_result
 from cnaas_nac.api.security import get_identity
@@ -71,7 +70,7 @@ class AuthApi(Resource):
                 500,
             )
 
-        url = "http://localhost:1234"
+        url = "https://norpan-nac1.cnaas.sunet.se/"
         parameters = {"token": token["access_token"]}
 
         if "userinfo" in token and "preferred_username" in token["userinfo"]:
