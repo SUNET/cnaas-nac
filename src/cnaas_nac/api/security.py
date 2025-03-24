@@ -10,8 +10,7 @@ from cnaas_nac.tools.oidc.token import Token
 from flask_jwt_extended import get_jwt_identity as get_jwt_identity_orig
 from flask_jwt_extended import jwt_required
 from jose import exceptions, jwt
-from jwt.exceptions import (ExpiredSignatureError, InvalidKeyError,
-                            InvalidTokenError)
+from jwt.exceptions import ExpiredSignatureError, InvalidKeyError, InvalidTokenError
 
 logger = get_logger()
 
@@ -39,6 +38,7 @@ class MyBearerTokenValidator(BearerTokenValidator):
 
         # If OIDC is disabled, no token is needed (for future use)
         if not os.getenv("OIDC_ENABLED"):
+            logger.debug("OIDC is disabled, no token needed")
             return "no-token-needed"
 
         # First decode the header
@@ -57,16 +57,18 @@ class MyBearerTokenValidator(BearerTokenValidator):
 
         # decode the token
         algorithm = unverified_header.get("alg")
+
         try:
             decoded_token = jwt.decode(
                 token_string,
                 key,
                 algorithms=algorithm,
-                audience="https://norpan.cnaas.sunet.se",
+                audience="https://norpan-nac1.cnaas.sunet.se",
                 options={"verify_aud": False},
             )
             # make an token object to make it easier to validate
             token = Token(token_string, decoded_token)
+
             return token
         except exceptions.ExpiredSignatureError as e:
             raise ExpiredSignatureError(e)
@@ -103,6 +105,7 @@ def get_oauth_identity() -> str:
     oidc_username_attribute = os.getenv("OIDC_USERNAME_ATTRIBUTE")
 
     token_info = get_oauth_token_info(current_token)
+
     if oidc_username_attribute:
         return token_info[oidc_username_attribute]
     elif "client_id" in token_info:
@@ -122,15 +125,11 @@ def get_jwt_identity():
 
 # check which method we use to log in and load vars needed for that
 if os.getenv("OIDC_ENABLED"):
-    logger.info("OIDC is enabled")
-
     oauth_required = ResourceProtector()
     oauth_required.register_token_validator(MyBearerTokenValidator())
     login_required = oauth_required(optional=not os.getenv("OIDC_ENABLED"))
     get_identity = get_oauth_identity
 else:
-    logger.info("JWT is enabled")
-
     oauth_required = None
     get_identity = get_jwt_identity
     login_required = jwt_required

@@ -41,6 +41,8 @@ source bin/activate
 # Fetch the code and install dependencies
 git clone https://github.com/SUNET/cnaas-nac.git
 cd cnaas-nac/
+git switch feature_sso
+
 /opt/cnaas/venv/bin/pip3 install -r requirements.txt
 
 # Clean up packages

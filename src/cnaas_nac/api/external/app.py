@@ -14,11 +14,9 @@ from cnaas_nac.version import __api_version__
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, decode_token
-from flask_jwt_extended.exceptions import (InvalidHeaderError,
-                                           NoAuthorizationError)
+from flask_jwt_extended.exceptions import InvalidHeaderError, NoAuthorizationError
 from flask_restx import Api
-from jwt.exceptions import (DecodeError, InvalidSignatureError,
-                            InvalidTokenError)
+from jwt.exceptions import DecodeError, InvalidSignatureError, InvalidTokenError
 
 logger = get_logger()
 
@@ -95,24 +93,29 @@ def get_jwt_pubkey():
 
 
 app = Flask(__name__)
+app.config["SECRET_KEY"] = os.urandom(128)
+app.config["JWT_TOKEN_LOCATION"] = ("headers", "query_string")
+app.config["JWT_HEADER_NAME"] = "Authorization"
+app.config["JWT_HEADER_TYPE"] = "Bearer"
 
 # Try to load JWT public key. If it fails, we assume we are running in
 # OIDC mode.
-jwt_pubkey = get_jwt_pubkey()
-logger.info("JWT enabled")
 
-app.config["SECRET_KEY"] = os.urandom(128)
-app.config["JWT_PUBLIC_KEY"] = jwt_pubkey
-app.config["JWT_IDENTITY_CLAIM"] = "sub"
-app.config["JWT_ALGORITHM"] = "ES256"
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = False
+if not os.environ.get("OIDC_ENABLED"):
+    logger.info("JWT mode enabled.")
 
-jwt = JWTManager(app)
+    jwt_pubkey = get_jwt_pubkey()
+    app.config["JWT_PUBLIC_KEY"] = jwt_pubkey
+    app.config["JWT_IDENTITY_CLAIM"] = "sub"
+    app.config["JWT_ALGORITHM"] = "ES256"
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = False
+    
+    jwt = JWTManager(app)
+else:
+    logger.info("OIDC mode enabled.")
 
-
-if "OIDC_ENABLED" in os.environ:
     oidc_url, oidc_id, oidc_secret = get_oidc_credentials()
-
+    jwt = JWTManager(app)
     oauth = OAuth(app)
     oauth.register(
         "connext",
@@ -128,7 +131,15 @@ if "OIDC_ENABLED" in os.environ:
 cors = CORS(
     app,
     resources={r"/api/*": {"origins": "*"}},
-    expose_headers=["Content-Type", "Authorization", "X-Total-Count"],
+    expose_headers=[
+        "Content-Type",
+        "Authorization",
+        "X-Total-Count",
+        "Link",
+        "Set-Cookie",
+        "Cookie",
+    ],
+    supports_credentials=True,
 )
 
 api = Api(
