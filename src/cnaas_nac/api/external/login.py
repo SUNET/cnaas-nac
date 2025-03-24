@@ -49,7 +49,8 @@ class AuthApi(Resource):
             token = oauth_client.connext.authorize_access_token()
         except MismatchingStateError as e:
             logger.error(
-                "Exception during authorization of the access token: {}".format(str(e))
+                "Exception during authorization of the access token: {}".format(
+                    str(e))
             )
             return (
                 empty_result(
@@ -60,7 +61,8 @@ class AuthApi(Resource):
             )
         except OAuthError as e:
             logger.error(
-                "Missing information needed for authorization: {}".format(str(e))
+                "Missing information needed for authorization: {}".format(
+                    str(e))
             )
             return (
                 empty_result(

@@ -1,16 +1,23 @@
 import os
 
-from authlib.integrations.flask_oauth2 import ResourceProtector, current_token
+from authlib.integrations.flask_oauth2 import ResourceProtector
+from authlib.integrations.flask_oauth2 import current_token
 from authlib.oauth2.rfc6749.requests import OAuth2Request
 from authlib.oauth2.rfc6750 import BearerTokenValidator
 from cnaas_nac.tools.log import get_logger
 from cnaas_nac.tools.oidc.key_management import get_key
 from cnaas_nac.tools.oidc.oidc_client_call import get_oauth_token_info
 from cnaas_nac.tools.oidc.token import Token
+from cnaas_nac.tools.rbac import get_permissions_user
+from cnaas_nac.tools.rbac.rbac import check_if_api_call_is_permitted
+from cnaas_nac.tools.rbac.rbac import get_oauth_identity
 from flask_jwt_extended import get_jwt_identity as get_jwt_identity_orig
 from flask_jwt_extended import jwt_required
-from jose import exceptions, jwt
-from jwt.exceptions import ExpiredSignatureError, InvalidKeyError, InvalidTokenError
+from jose import exceptions
+from jose import jwt
+from jwt.exceptions import ExpiredSignatureError
+from jwt.exceptions import InvalidKeyError
+from jwt.exceptions import InvalidTokenError
 
 logger = get_logger()
 
@@ -79,10 +86,41 @@ class MyBearerTokenValidator(BearerTokenValidator):
             logger.error("Invalid Token")
             raise InvalidTokenError(e)
 
+    def get_permissions_file(self, file_name="/etc/cnaas-nac/permissions.yml"):
+        if "OIDC_PERMISSIONS_FILE" in os.environ:
+            file_name = os.environ["OIDC_PERMISSIONS_FILE"]
+
+        try:
+            with open(file_name, "r") as permission_file:
+                permissions_rules = yaml.safe_load(permission_file)
+        except FileNotFoundError:
+            logger.error(f"Permissions file {file_name} not found")
+            return None
+
+        return permissions_rules
+
     def validate_token(self, token, scopes, request: OAuth2Request) -> Token:
         """Check if token matches the requested scopes and user has permission to execute the API call."""
+        if os.getenv("OIDC_PERMISSIONS_DISABLED"):
+            return token
+        #  For api call that everyone is always allowed to do
+        if scopes is not None and "always_permitted" in scopes:
+            return token
 
-        return token
+        permissions_rules = self.get_permissions_file()
+
+        if not permissions_rules:
+            logger.warning(
+                "No permissions defined, so nobody is permitted to do any api calls.")
+            raise PermissionError()
+        user_info = get_oauth_token_info(token)
+        permissions = get_permissions_user(permissions_rules, user_info)
+        if len(permissions) == 0:
+            raise PermissionError()
+        if check_if_api_call_is_permitted(request, permissions):
+            return token
+        else:
+            raise PermissionError()
 
 
 def get_oauth_identity() -> str:
