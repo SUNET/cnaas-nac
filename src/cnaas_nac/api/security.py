@@ -9,7 +9,7 @@ from cnaas_nac.tools.oidc.key_management import get_key
 from cnaas_nac.tools.oidc.oidc_client_call import get_oauth_token_info
 from cnaas_nac.tools.oidc.token import Token
 from cnaas_nac.tools.oidc.rbac import get_permissions_user
-from cnaas_nac.tools.oidc.rbac import check_if_api_call_is_permitted
+from cnaas_nac.tools.oidc.rbac import check_if_api_call_is_permitted, PermissionsModel
 from flask_jwt_extended import get_jwt_identity as get_jwt_identity_orig
 from flask_jwt_extended import jwt_required
 from jose import exceptions
@@ -17,6 +17,8 @@ from jose import jwt
 from jwt.exceptions import ExpiredSignatureError
 from jwt.exceptions import InvalidKeyError
 from jwt.exceptions import InvalidTokenError
+from pyaml import yaml
+
 
 logger = get_logger()
 
@@ -113,7 +115,7 @@ class MyBearerTokenValidator(BearerTokenValidator):
                 "No permissions defined, so nobody is permitted to do any api calls.")
             raise PermissionError()
         user_info = get_oauth_token_info(token)
-        permissions = get_permissions_user(permissions_rules, user_info)
+        permissions = get_permissions_user(PermissionsModel(**permissions_rules), user_info)
         if len(permissions) == 0:
             raise PermissionError()
         if check_if_api_call_is_permitted(request, permissions):

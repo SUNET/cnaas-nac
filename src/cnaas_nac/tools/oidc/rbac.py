@@ -1,11 +1,9 @@
 import fnmatch
 
-from typing import List
-
+from typing import Dict, Optional, List
 from authlib.integrations.flask_oauth2.requests import FlaskJsonRequest
-
 from cnaas_nac.version import __api_version__
-
+from pydantic import BaseModel, model_validator
 
 class PermissionModel(BaseModel):
     methods: Optional[list[str]] = []
@@ -13,6 +11,11 @@ class PermissionModel(BaseModel):
     pages: Optional[list[str]] = []
     rights: Optional[list[str]] = []
 
+class RoleModel(BaseModel):
+    permissions: list[PermissionModel]
+
+class PemissionConfig(BaseModel):
+    default_permissions: str
 
 class PermissionsModel(BaseModel):
     config: Optional[PemissionConfig] = None
