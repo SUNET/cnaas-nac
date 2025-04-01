@@ -8,9 +8,8 @@ from cnaas_nac.tools.log import get_logger
 from cnaas_nac.tools.oidc.key_management import get_key
 from cnaas_nac.tools.oidc.oidc_client_call import get_oauth_token_info
 from cnaas_nac.tools.oidc.token import Token
-from cnaas_nac.tools.rbac import get_permissions_user
-from cnaas_nac.tools.rbac.rbac import check_if_api_call_is_permitted
-from cnaas_nac.tools.rbac.rbac import get_oauth_identity
+from cnaas_nac.tools.oidc.rbac import get_permissions_user
+from cnaas_nac.tools.oidc.rbac import check_if_api_call_is_permitted
 from flask_jwt_extended import get_jwt_identity as get_jwt_identity_orig
 from flask_jwt_extended import jwt_required
 from jose import exceptions
