@@ -1,0 +1,33 @@
+publiccodeYmlVersion: 0.4.0
+name: cnaas-nac
+applicationSuite: CNaaS
+url: https://github.com/sunet/cnaas-nac
+softwareVersion: 1.1.0
+releaseDate: 2021-02-24
+platforms:
+  - linux
+  - mac
+categories:
+  - network-management
+usedBy:
+  - SUNET
+developmentStatus: stable
+softwareType: standalone/backend
+description:
+  en:
+    localisedName: CNaaS NAC
+    shortDescription: CNaaS Network Admission Controller
+    longDescription: Authorization server that authenticates users and network
+      devices using RADIUS. Provides an easy web interface and the possibility
+      to integrate towards AD etc.
+    features:
+      - NETCONF
+      - API
+legal:
+  license: Apache-2.0
+maintenance:
+  type: community
+localisation:
+  localisationReady: false
+  availableLanguages:
+    - en
